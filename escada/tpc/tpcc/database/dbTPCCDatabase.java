@@ -56,7 +56,8 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 		} catch (java.sql.SQLException sqlex) {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("TPC-C Generated Abort") == -1)) {
+					&& (sqlex.getMessage().indexOf("not found") == -1)
+					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
@@ -109,7 +110,8 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 		} catch (java.sql.SQLException sqlex) {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("TPC-C Generated Abort") == -1)) {
+					&& (sqlex.getMessage().indexOf("not found") == -1)
+					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
@@ -173,7 +175,8 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 		} catch (java.sql.SQLException sqlex) {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("TPC-C Generated Abort") == -1)) {
+					&& (sqlex.getMessage().indexOf("not found") == -1)
+					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
@@ -238,7 +241,8 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 		} catch (java.sql.SQLException sqlex) {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("TPC-C Generated Abort") == -1)) {
+					&& (sqlex.getMessage().indexOf("not found") == -1)
+					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
@@ -291,7 +295,8 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 		} catch (java.sql.SQLException sqlex) {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("TPC-C Generated Abort") == -1)) {
+					&& (sqlex.getMessage().indexOf("not found") == -1)
+					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
