@@ -122,7 +122,8 @@ public class dbVirtualDatabase {
      **/
     public dbVirtualDatabase(int totcli) throws InvalidDatabaseException{
         if (ptrClass == null) {
-	    if ((totcli % 10) != 0) throw new InvalidDatabaseException("Wrong number of clients, \"totcli % 10 != 0\".");
+	    //TODO: See this block, if it is necessary.
+	    //if ((totcli % 10) != 0) throw new InvalidDatabaseException("Wrong number of clients, \"totcli % 10 != 0\".");
             ptrClass = new persistentObjects(totcli);
         }
     }

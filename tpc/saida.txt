@@ -1,7 +1,0 @@
-tpcc/NewOrderTrans.java:13:    int wid = (em.getEmulationId() / 10) + 1;
-tpcc/DeliveryTrans.java:15:    int wid = (em.getEmulationId() / 10) + 1;
-tpcc/PaymentTrans.java:14:    int wid = (em.getEmulationId() / 10) + 1;
-tpcc/StockLevelTrans.java:13:    int wid = (em.getEmulationId() / 10) + 1;
-tpcc/StockLevelTrans.java:20:    if ( ( (em.getEmulationId() + 1) % 10) == 0) {
-tpcc/StockLevelTrans.java:24:      outInfo.putInfo("did", Integer.toString( (em.getEmulationId() + 1) % 10));
-tpcc/OrderStatusTrans.java:14:    int wid = (em.getEmulationId() / 10) + 1;
