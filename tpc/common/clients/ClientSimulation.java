@@ -135,9 +135,9 @@ public class ClientSimulation extends Resource implements Notifiable {
 
 	     long tt = t.userThinkTime() * 1000000;
 
-	     CommandController.write(exec, rightOutc(),tt);
+	     trans2stream.put(t,new Integer(slot));
 
-	     trans2stream.put(new Integer(slot),t);
+	     CommandController.write(exec, rightOutc(),tt);
 	}
     }
 
