@@ -47,11 +47,28 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -POOL 50 \
              -mi 50
 
+PGSQL_FLAGS=-EBclass Escada.tpc.tpcc.TPCCEmulation \
+             -KEY false \
+             -CLI 1 \
+             -Stclass Escada.tpc.tpcc.TPCCStateTransition \
+             -DBclass Escada.tpc.tpcc.database.postgresql.dbPostgresql \
+             -TRACEFLAG TRACE \
+             -PREFIX TPC-C \
+             -DBpath jdbc:postgresql://localhost:5432/tpcc \
+             -DBdriver org.postgresql.Driver \
+             -DBusr tpcc \
+             -DBpasswd tpcc \
+             -POOL 1 \
+             -MI 4
+
 real-oracle:
 	$(JVM) -cp $(classpath) -Xmx1024 escada.tpc.common.clients.ClientStartup $(ORACLE_FLAGS)
 
 real-mysql:
 	$(JVM) -cp $(classpath) -Xmx1024 escada.tpc.common.clients.ClientStartup $(MYSQL_FLAGS)
+
+real-pgsql:
+	$(JVM) -cp $(classpath) -Xmx1024 escada.tpc.common.clients.ClientStartup $(PGSQL_FLAGS)
 
 
 # arch-tag: 35a104c6-523c-493b-9afe-e85f72d9d865
