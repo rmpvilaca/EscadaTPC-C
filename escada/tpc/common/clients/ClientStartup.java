@@ -165,6 +165,7 @@ public class ClientStartup {
 			Emulation.setTraceInformation(prefix.s);
 			Emulation.setNumberConcurrentEmulators(cli.num);
 			Emulation.setStatusThinkTime(key.flag);
+			Emulation.setStatusReSubmit(resArg.flag);
 
 			int i = 0;
 			for (i = 0; i < cli.num; i++) {

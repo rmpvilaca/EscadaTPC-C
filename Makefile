@@ -48,6 +48,22 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 
 PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY false \
+             -CLI 1 \
+             -STclass escada.tpc.tpcc.TPCCStateTransition \
+             -DBclass escada.tpc.tpcc.database.postgresql.dbPostgresql \
+             -TRACEFLAG TRACE \
+             -PREFIX TPC-C \
+             -DBpath jdbc:postgresql://lhona:5432/tpcc \
+             -DBdriver org.postgresql.Driver \
+             -DBusr tpcc \
+             -DBpasswd tpcc \
+             -POOL 20 \
+             -MI 45 \
+	     -FRAG 1 \
+	     -RESUBMIT false
+
+PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
+             -KEY false \
              -CLI 10 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.postgresql.dbPostgresql \
@@ -60,21 +76,6 @@ PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
              -POOL 10 \
              -MI 45 \
 	     -FRAG 1
-
-PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
-             -KEY false \
-             -CLI 5 \
-             -STclass escada.tpc.tpcc.TPCCStateTransition \
-             -DBclass escada.tpc.tpcc.database.postgresql.dbPostgresql \
-             -TRACEFLAG TRACE \
-             -PREFIX TPC-C \
-             -DBpath jdbc:postgresql://localhost:5433/tpcc \
-             -DBdriver org.postgresql.Driver \
-             -DBusr tpcc \
-             -DBpasswd tpcc \
-             -POOL 10 \
-             -MI 45 \
-	     -FRAG 2
 
 real-oracle:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientStartup $(ORACLE_FLAGS)

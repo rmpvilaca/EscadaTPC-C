@@ -1,4 +1,4 @@
-package escada.tpc.tpcc.database.postgresql;
+package escada.tpc.tpcc.database.transaction.postgresql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,7 +10,7 @@ import java.util.HashSet;
 import org.apache.log4j.Logger;
 
 import escada.tpc.common.OutInfo;
-import escada.tpc.tpcc.database.dbTPCCDatabase;
+import escada.tpc.tpcc.database.transaction.*;
 
 /**
  * It is an interface to a postgreSQL, which based is based on the the

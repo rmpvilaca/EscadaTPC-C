@@ -1,4 +1,4 @@
-package escada.tpc.tpcc.database;
+package escada.tpc.tpcc.database.transaction;
 
 import escada.tpc.common.OutInfo;
 import escada.tpc.common.database.CommonDatabase;

@@ -3,7 +3,7 @@ package escada.tpc.tpcc;
 import escada.tpc.common.Emulation;
 import escada.tpc.common.StateObject;
 import escada.tpc.common.util.RandGen;
-import escada.tpc.tpcc.database.dbTPCCDatabase;
+import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
 import escada.tpc.tpcc.util.TPCCRandGen;
 
 /**

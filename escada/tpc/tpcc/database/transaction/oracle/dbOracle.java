@@ -1,4 +1,4 @@
-package escada.tpc.tpcc.database.oracle;
+package escada.tpc.tpcc.database.transaction.oracle;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -9,7 +9,7 @@ import java.util.HashSet;
 import org.apache.log4j.Logger;
 
 import escada.tpc.common.OutInfo;
-import escada.tpc.tpcc.database.dbTPCCDatabase;
+import escada.tpc.tpcc.database.transaction.*;
 
 /** It is an interface to a postgreSQL, which based is based on the
  * the distributions of the TPC-C.
