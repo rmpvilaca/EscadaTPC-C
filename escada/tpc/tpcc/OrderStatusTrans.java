@@ -12,11 +12,12 @@ import escada.tpc.tpcc.util.TPCCRandGen;
 public class OrderStatusTrans
     extends StateObject {
   public void initProcess(Emulation em,String hid) {
-    int wid = (em.getEmulationId() / 10) + 1;
+    int wid = (em.getEmulationId() / 10) + 1; // TODO: Change to constant
     int cid = 0;
     int did = 0;
     String lastname = null;
 
+    outInfo.putInfo("resubmit",Boolean.toString(Emulation.getStatusReSubmit()));
     outInfo.putInfo("trace", Emulation.getTraceInformation());
     outInfo.putInfo("abort", "0");
     outInfo.putInfo("wid", Integer.toString(wid));

@@ -57,6 +57,6 @@ public abstract class StateTransition {
   * @return the next simulation's state
   **/
   abstract public StateObject nextState();
-}// arch-tag: 61f8f74e-e1b2-435f-8ea8-90f7e3e5f269
-// arch-tag: 38631b4d-ab8c-49a2-8958-081a4fa19aac
-// arch-tag: dc9623ba-0f85-4b74-aae2-77f0442ad603
+}
+// arch-tag: 61f8f74e-e1b2-435f-8ea8-90f7e3e5f269
+

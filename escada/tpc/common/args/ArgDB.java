@@ -1,73 +1,63 @@
 package escada.tpc.common.args;
 
-import java.io.PrintStream;
 import java.util.Vector;
 
-public class ArgDB
-{
-   private Vector argsList = new Vector(0);
+import org.apache.log4j.Logger;
 
-   public ArgDB() {};
+public class ArgDB {
+	private Vector argsList = new Vector(0);
 
-   public void add(Arg a)
-   {
-      argsList.addElement(a);
-   }
+	public ArgDB() {
+	};
 
-   public final void parse(String [] args)
-   throws Arg.Exception
-   {
-      int i;
-      int a, a2;
+	public void add(Arg a) {
+		argsList.addElement(a);
+	}
 
-      for (a=0;a<args.length;)
-      {
-	 a2 = a;
-	 for (i=0;i<argsList.size();i++)
-	 {
-	    a = ((Arg) argsList.elementAt(i)).parse(args, a);
-	    if (a2!=a) break;
-	 }
-	 if (i==argsList.size())
-	 {
-	    Arg.Exception ex =
-		  new Arg.Exception("Unknown argument (" + args[a] + ").", a);
-	    ex.start = a;
-	    throw(ex);
-	 }
-      }
+	public final void parse(String[] args) throws Arg.Exception {
+		int i;
+		int a, a2;
 
-      String req = "";
-      int numErr = 0;
+		for (a = 0; a < args.length;) {
+			a2 = a;
+			for (i = 0; i < argsList.size(); i++) {
+				a = ((Arg) argsList.elementAt(i)).parse(args, a);
+				if (a2 != a)
+					break;
+			}
+			if (i == argsList.size()) {
+				Arg.Exception ex = new Arg.Exception("Unknown argument ("
+						+ args[a] + ").", a);
+				ex.start = a;
+				throw (ex);
+			}
+		}
 
-      for (i=0;i<argsList.size();i++)
-      {
-	 Arg e = ((Arg) argsList.elementAt(i));
-	 if (e.required() && !e.set())
-	 {
-	    req = req + e.toString() + "\n";
-	    numErr++;
-	 }
-      }
+		String req = "";
+		int numErr = 0;
 
-      if (numErr>0)
-      {
-	 Arg.Exception ex =
-	       new Arg.Exception("" + numErr + " arguments not given.\n" + req,
-	       args.length-1);
-	 ex.start = 0;
-	 throw ex;
-      }
-   }
+		for (i = 0; i < argsList.size(); i++) {
+			Arg e = ((Arg) argsList.elementAt(i));
+			if (e.required() && !e.set()) {
+				req = req + e.toString() + "\n";
+				numErr++;
+			}
+		}
 
-   public void print(PrintStream out)
-   {
-      int a;
+		if (numErr > 0) {
+			Arg.Exception ex = new Arg.Exception("" + numErr
+					+ " arguments not given.\n" + req, args.length - 1);
+			ex.start = 0;
+			throw ex;
+		}
+	}
 
-      for (a=0;a<argsList.size();a++)
-      {
-	 out.println("% "+ argsList.elementAt(a));
-      }
-   }
+	public void print(Logger out) {
+		int a;
+
+		for (a = 0; a < argsList.size(); a++) {
+			out.info("% " + argsList.elementAt(a));
+		}
+	}
 }
 // arch-tag: d256796e-d042-42b1-9045-f71762ea6327

@@ -11,10 +11,11 @@ import escada.tpc.tpcc.database.dbTPCCDatabase;
 public class StockLevelTrans
     extends StateObject {
   public void initProcess(Emulation em,String hid) {
-    int wid = (em.getEmulationId() / 10) + 1;
+    int wid = (em.getEmulationId() / 10) + 1; //TODO -- Change to constant...
     int did = 0;
     int threshhold = 0;
 
+    outInfo.putInfo("resubmit",Boolean.toString(Emulation.getStatusReSubmit()));
     outInfo.putInfo("trace", Emulation.getTraceInformation());
     outInfo.putInfo("abort", "0");
     outInfo.putInfo("wid", Integer.toString(wid));
@@ -70,5 +71,3 @@ public class StockLevelTrans
     return ("StockLevelTrans");
   }
 }// arch-tag: 0694849b-7a20-4b66-872a-668c3adf88f0
-// arch-tag: 31385b62-6dd2-4948-a0f7-80e983c8f1a1
-// arch-tag: 82e679b7-9458-477b-9c33-236dc7df5c5a

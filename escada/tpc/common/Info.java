@@ -67,13 +67,11 @@ public class Info {
     Enumeration e = hs.keys();
     StringBuffer str = new StringBuffer();
 
-    System.out.println();
     while (e.hasMoreElements()) {
       Object o = e.nextElement();
       str.append("key=" + o + "  value=" + hs.get(o) + "    ");
     }
     return (str.toString());
   }
-}// arch-tag: dfc5609b-83d1-465d-95de-de3cf9c99597
-// arch-tag: 086049d0-e20a-47f2-937a-25ca589c7a83
-// arch-tag: ec37801d-57f4-45e9-84ce-4b8623b2db11
+}
+// arch-tag: dfc5609b-83d1-465d-95de-de3cf9c99597

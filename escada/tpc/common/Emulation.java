@@ -11,13 +11,13 @@ public abstract class Emulation {
 
   private static String traceInformation = null;
   private static int numberConcurrentEmulators = 1;
+  private static boolean key = true;
+  private static boolean resubmit = true;
 
   private CommonDatabase db = null;
-
   private StateTransition sb = null;
   private String name = null;
   private int id = 0;
-
   private long usmd = 0;
   private long thinkTime = 0;
   private long keyTime = 0;
@@ -132,6 +132,23 @@ public abstract class Emulation {
   **/
   public String getEmulationName() {
     return (name);
+  }
+  
+  
+  public static void setStatusThinkTime(boolean key) {
+  	Emulation.key = key;
+  }
+  
+  public static boolean getStatusThinkTime() {
+  	return(key);
+  }
+  
+  public static void setStatusReSubmit(boolean resubmit) {
+  	Emulation.resubmit = resubmit;
+  }
+  
+  public static boolean getStatusReSubmit() {
+  	return resubmit;
   }
 
   /**

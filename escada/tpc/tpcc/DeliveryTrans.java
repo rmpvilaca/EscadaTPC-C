@@ -13,9 +13,10 @@ import escada.tpc.tpcc.database.dbTPCCDatabase;
 public class DeliveryTrans
     extends StateObject {
   public void initProcess(Emulation em,String hid) {
-    int wid = (em.getEmulationId() / 10) + 1;
+    int wid = (em.getEmulationId() / 10) + 1; //TODO: CHANGE TO CONSTANT
     int crid = 0;
 
+    outInfo.putInfo("resubmit",Boolean.toString(Emulation.getStatusReSubmit()));
     outInfo.putInfo("trace", Emulation.getTraceInformation());
     outInfo.putInfo("abort", "0");
     outInfo.putInfo("wid", Integer.toString(wid));

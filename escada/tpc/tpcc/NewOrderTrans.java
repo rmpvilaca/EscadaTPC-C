@@ -18,6 +18,7 @@ public class NewOrderTrans
     boolean error = false;
     boolean localWarehouse = false;
 
+    outInfo.putInfo("resubmit",Boolean.toString(Emulation.getStatusReSubmit()));
     outInfo.putInfo("trace", Emulation.getTraceInformation());
     outInfo.putInfo("abort", Integer.toString(0));
     outInfo.putInfo("wid", Integer.toString(wid));
@@ -118,5 +119,3 @@ public class NewOrderTrans
     return ("NewOrderTrans");
   }
 }// arch-tag: 74f56eb7-28a1-454b-8d3e-cb80a85557e3
-// arch-tag: e7238740-3c18-4ecf-bc2f-9b3dff342029
-// arch-tag: e054f8b3-a556-4b9a-811d-0e1fd1421e06

@@ -12,7 +12,7 @@ import escada.tpc.tpcc.util.TPCCRandGen;
 public class PaymentTrans
     extends StateObject {
   public void initProcess(Emulation em,String hid) {
-    int wid = (em.getEmulationId() / 10) + 1;
+    int wid = (em.getEmulationId() / 10) + 1; // TODO: MODIFICAR ISSO.
     int cid = 0;
     int did = 0;
     int cwid = 0;
@@ -21,6 +21,7 @@ public class PaymentTrans
     float hamount = 0;
 
     outInfo.putInfo("trace", Emulation.getTraceInformation());
+    outInfo.putInfo("resubmit",Boolean.toString(Emulation.getStatusReSubmit()));
     outInfo.putInfo("abort", "0");
     outInfo.putInfo("wid", Integer.toString(wid));
     did = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
@@ -104,6 +105,6 @@ public class PaymentTrans
   public String toString() {
     return ("PaymentTrans");
   }
-}// arch-tag: 903bfad5-d906-42fd-8d7c-cc9051459c7d
-// arch-tag: e24ea8d7-b0d2-40df-ab64-c35cc4dc2f22
-// arch-tag: ec1d6a90-1685-4abb-b672-7c822244936b
+}
+// arch-tag: 903bfad5-d906-42fd-8d7c-cc9051459c7d
+
