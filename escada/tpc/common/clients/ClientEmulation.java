@@ -51,7 +51,7 @@ public ClientEmulation(String emParam,String stateParam,String dbParam,int total
 	    if (co == null) d = (CommonDatabase) cl.newInstance();
 	    else d = (CommonDatabase) co.newInstance(new Object[] {new Integer(totalCli)});
 
-	    int temp = (ncli + nfrag); 
+	    int temp = (ncli + ((nfrag - 1) * 10)); 
 
     	    e.initialize();
     	    e.setEmulationId(temp);
