@@ -1071,14 +1071,15 @@ extends dbTPCCDatabase {
       java.sql.SQLException {
     Statement statement = null;
     try {
+	
       statement = con.createStatement();
-      statement.execute("start transaction");
+      /*statement.execute("start transaction");
       if (trace(obj) || traceString(obj)) {
         statement.execute("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
       }
       else {
         statement.execute("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
-      }
+      }*/
       statement.execute("select '" + transaction + "'");
     }
     catch (java.lang.Exception ex) {
@@ -1099,8 +1100,8 @@ extends dbTPCCDatabase {
     {
       Statement statement = null;
       try {
-        statement = con.createStatement();
-        statement.execute("commit");
+        /*statement = con.createStatement();
+        statement.execute("commit");*/
       }
       catch (java.lang.Exception ex) {
         if (con != null) {
@@ -1120,8 +1121,8 @@ extends dbTPCCDatabase {
       java.sql.SQLException {
     Statement statement = null;
     try {
-      statement = con.createStatement();
-      statement.execute("rollback");
+      /*statement = con.createStatement();
+      statement.execute("rollback");*/
     }
     catch (java.lang.Exception ex) {
       ex.printStackTrace();

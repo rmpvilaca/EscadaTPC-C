@@ -124,9 +124,7 @@ public class ClientStartup {
     Emulation.setTraceInformation(prefix.s);
     Emulation.setNumberConcurrentEmulators(cli.num);
 
-    System.out.println("\nThe simulation will be started shifting the clients by " + fragArg.num + "\n");
-
-    if (traceFlag.equals("TRACETIME") ) dbLog.openFile();
+    dbLog.openFile(); // We must change it for log4j.
 
     int i=0;
     for (i=0; i < cli.num; i++) {
@@ -159,7 +157,7 @@ public class ClientStartup {
 
     System.out.println("EBs finished.");
 
-    if (traceFlag.equals("TRACETIME") ) dbLog.closeFile();
+    dbLog.closeFile(); //TODO: We must change it for log4j
 
     }
     catch (Arg.Exception ae) {
@@ -195,7 +193,7 @@ public class ClientStartup {
          try {
 	     waitForStart(start);
 	     if (term < 0) return;
-	     Thread.sleep(term * 60 * 1000);  // ...PORRA...
+	     Thread.sleep(term * 60 * 1000); // It must be changed to a constant.
 	 }
 	 catch (InterruptedException ie) {
 	     System.out.println("In waitforrampdown, caught interrupted exception");
@@ -207,7 +205,7 @@ public class ClientStartup {
   {
      if (start < 0) return;
 
-     Thread.sleep(start * 60 * 1000);  // PORRA
+     Thread.sleep(start * 60 * 1000);  // It must be changed to a constant.
   }
  
 }

@@ -18,7 +18,7 @@ clean:
 	
 ORACLE_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY false \
-             -CLI 50 \
+             -CLI 10 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.oracle.dbOracle \
              -TRACEflaf TRACE \
@@ -33,12 +33,12 @@ ORACLE_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 
 MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY false \
-             -CLI 50 \
+             -CLI 10 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.mysql.dbMySql \
              -TRACEflag TRACE \
              -PREFIX Client \
-             -DBpath jdbc:mysql://192.168.2.144/tpcc \
+             -DBpath jdbc:mysql://localhost/tpcc \
              -DBdriver com.mysql.jdbc.Driver \
              -DBusr root \
              -DBpasswd 123456 \
@@ -48,7 +48,7 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 
 PGSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY false \
-             -CLI 1 \
+             -CLI 10 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \

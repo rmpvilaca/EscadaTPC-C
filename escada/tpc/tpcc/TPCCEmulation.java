@@ -40,7 +40,7 @@ public class TPCCEmulation
         setKeyingTime(keyingTime());
         setThinkTime(getKeyingTime() + thinkTime());
 
-        Thread.sleep(getThinkTime()); // PORRA
+        Thread.sleep(getThinkTime()); // TODO: We must define a parameter to enable or disable this behavior sometimes.
 
         curTrans.requestProcess(this,hid);
 
