@@ -1,11 +1,14 @@
-package Escada.tpc.common.clients;
+package escada.tpc.common.clients;
 
 import java.util.*;
 
-import Escada.tpc.common.*;
-import Escada.tpc.common.util.*;
-import Escada.tpc.common.args.*;
-import Escada.tpc.common.database.*;
+import escada.tpc.common.*;
+import escada.tpc.common.util.*;
+import escada.tpc.common.args.*;
+import escada.tpc.common.database.*;
+
+// TODO -- MAKE IT GENERIC //
+import escada.tpc.tpcc.trace.*;
 
 public class ClientStartup {
 

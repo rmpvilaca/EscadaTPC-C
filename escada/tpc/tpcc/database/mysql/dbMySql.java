@@ -1,7 +1,8 @@
-package Escada.tpc.tpcc.database.mysql;
+package escada.tpc.tpcc.database.mysql;
 
-import Escada.tpc.tpcc.database.*;
-import Escada.tpc.common.*;
+import escada.tpc.tpcc.database.*;
+import escada.tpc.tpcc.trace.*;
+import escada.tpc.common.*;
 
 import java.io.*;
 import java.sql.*;
@@ -36,11 +37,11 @@ extends dbTPCCDatabase {
 
 	    InitTransaction(obj, con, "tx neworder");
 
-            Date lDateBegin1 = new Date();
+            java.util.Date lDateBegin1 = new java.util.Date();
 
             dbtrace = NewOrderDB(obj, con);
 
-            Date lDateEnd1 = new Date();
+            java.util.Date lDateEnd1 = new java.util.Date();
 
             CommitTransaction(con);
 
@@ -68,9 +69,9 @@ extends dbTPCCDatabase {
             ResultSet rs= null, rs02 = null;
             String cursor = null;
            
-            Date startTime = null;
-            Date endTime = null;
-            startTime = new Date();
+            java.util.Date startTime = null;
+            java.util.Date endTime = null;
+            startTime = new java.util.Date();
 
             HashSet dbtrace = new HashSet();
             
@@ -283,7 +284,7 @@ extends dbTPCCDatabase {
                 rs = null;
                 statement = null;
 
-                endTime   = new Date();
+                endTime = new java.util.Date();
                 dbLog.logToFile(dbLog.NO,"NEW_ORDER_EXECUTION_TIME = " +dbMySql.NewOrderTransNum++
                                         +" T= "+(endTime.getTime()-startTime.getTime())
                                         +" E= "+pErro+" T1= "+startTime.getTime()
@@ -324,7 +325,7 @@ extends dbTPCCDatabase {
 
             dbLog.log("Beginning trasaction delivery (thread(" + Thread.currentThread().getName() + "))");
 
-            Date lDateBegin1 = new Date();
+            java.util.Date lDateBegin1 = new java.util.Date();
 
             InitTransaction(obj, con, "tx delivery");
             
@@ -332,7 +333,7 @@ extends dbTPCCDatabase {
 
             CommitTransaction(con);
 
-	    Date lDateEnd1 = new Date();
+	    java.util.Date lDateEnd1 = new java.util.Date();
 
             dbLog.log("\tFinishing trasaction delivery (thread(" + Thread.currentThread().getName()
                     + "))\tB1 = "+lDateBegin1.getTime()
@@ -358,9 +359,9 @@ extends dbTPCCDatabase {
             ResultSet rs = null;
             String cursor = null;
 
-            Date startTime = null;
-            Date endTime = null;
-            startTime = new Date();
+            java.util.Date startTime = null;
+            java.util.Date endTime = null;
+            startTime = new java.util.Date();
 
             HashSet dbtrace = new HashSet();
             
@@ -492,7 +493,7 @@ extends dbTPCCDatabase {
                 rs = null;
                 statement = null;
 
-		endTime   = new Date();
+		endTime = new java.util.Date();
                 dbLog.logToFile(dbLog.DL,"DELIVERY_EXECUTION_TIME = "+dbMySql.DeliveryTransNum++
                                         +" T= "+(endTime.getTime()-startTime.getTime())
                                         +" E= "+pErro+" T1= "+startTime.getTime()
@@ -534,7 +535,7 @@ extends dbTPCCDatabase {
 
 	    dbLog.log("Beginning transaction order status (thread(" + Thread.currentThread().getName() + "))");
 
-            Date lDateBegin1 = new Date();
+            java.util.Date lDateBegin1 = new java.util.Date();
 
             InitTransaction(obj, con, "tx orderstatus");
 
@@ -542,7 +543,7 @@ extends dbTPCCDatabase {
 
             CommitTransaction(con);
 
-            Date lDateEnd1 = new Date();
+            java.util.Date lDateEnd1 = new java.util.Date();
 
             dbLog.log("\tFinishing transaction order status (thread(" + Thread.currentThread().getName()
                     + "))\tB1 = "+lDateBegin1.getTime()
@@ -569,9 +570,9 @@ extends dbTPCCDatabase {
             ResultSet rs = null;
             String cursor = null;
 
-            Date startTime = null;
-	    Date endTime = null;
-            startTime = new Date();
+            java.util.Date startTime = null;
+	    java.util.Date endTime = null;
+            startTime = new java.util.Date();
  
             HashSet dbtrace = new HashSet();
             
@@ -667,7 +668,7 @@ extends dbTPCCDatabase {
                 rs = null;
                 statement = null;
 
-                endTime   = new Date();
+                endTime = new java.util.Date();
                 dbLog.logToFile(dbLog.OS,"ORDER_STATUS_EXECUTION_TIME = "+dbMySql.OrderStatusTransNum++
                                         +" T= "+(endTime.getTime()-startTime.getTime())
                                         +" E= "+pErro+" T1= "+startTime.getTime()
@@ -682,7 +683,7 @@ extends dbTPCCDatabase {
             catch (java.lang.Exception ex) {
                 System.err.println(Thread.currentThread().getName() + " OrderStatus - General Exception " + ex.getMessage());
                 ex.printStackTrace();
-                throw ex;
+		throw new java.sql.SQLException(ex.getMessage());
             }
             finally {
                 if (rs != null) {
@@ -708,7 +709,7 @@ extends dbTPCCDatabase {
 
             dbLog.log("Beginning transaction payment (thread(" + Thread.currentThread().getName() + "))");
 
-            Date lDateBegin1 = new Date();
+            java.util.Date lDateBegin1 = new java.util.Date();
 
             InitTransaction(obj, con, "tx payment");
             
@@ -716,7 +717,7 @@ extends dbTPCCDatabase {
 
             CommitTransaction(con);
 
-            Date lDateEnd1 = new Date();
+            java.util.Date lDateEnd1 = new java.util.Date();
 
             dbLog.log("\tFinishing transaction payment (thread(" + Thread.currentThread().getName()
                     + "))\tB1 = "+lDateBegin1.getTime()
@@ -742,9 +743,9 @@ extends dbTPCCDatabase {
             ResultSet rs = null;
             String cursor = null;
 
-            Date startTime = null;
-            Date endTime = null;
-	    startTime = new Date();
+            java.util.Date startTime = null;
+            java.util.Date endTime = null;
+	    startTime = new java.util.Date();
 
             HashSet dbtrace = new HashSet();
             
@@ -923,7 +924,7 @@ extends dbTPCCDatabase {
                 rs = null;
                 statement = null;
 
-                endTime   = new Date();
+                endTime = new java.util.Date();
                 dbLog.logToFile(dbLog.PA,"PAYMENT_EXECUTION_TIME = "+dbMySql.PaymentTransNum++
                                         +" T= "+(endTime.getTime()-startTime.getTime())
                                         +" E= "+pErro+" T1= "+startTime.getTime()
@@ -963,7 +964,7 @@ extends dbTPCCDatabase {
 
             dbLog.log("Beginning transaction stock level (thread(" + Thread.currentThread().getName() + "))");
 
-            Date lDateBegin1 = new Date();
+            java.util.Date lDateBegin1 = new java.util.Date();
 
             InitTransaction(obj, con, "tx stocklevel");
 
@@ -971,7 +972,7 @@ extends dbTPCCDatabase {
 
             CommitTransaction(con);
 
-            Date lDateEnd1 = new Date();
+            java.util.Date lDateEnd1 = new java.util.Date();
 
             dbLog.log("\tFinishing transaction stock level (thread(" + Thread.currentThread().getName()
                     + "))\tB1 = "+lDateBegin1.getTime()
@@ -996,9 +997,9 @@ extends dbTPCCDatabase {
             ResultSet rs = null;
             String cursor = null;
 
-            Date startTime = null;
-            Date endTime = null;
-            startTime = new Date();
+            java.util.Date startTime = null;
+            java.util.Date endTime = null;
+            startTime = new java.util.Date();
 
             HashSet dbtrace = new HashSet();
             
@@ -1037,7 +1038,7 @@ extends dbTPCCDatabase {
                 rs = null;
                 statement = null;
 
-                endTime   = new Date();
+                endTime = new java.util.Date();
                 dbLog.logToFile(dbLog.SL,"STOCK_LEVEL_EXECUTION_TIME = "+dbMySql.StockLevelTransNum++
                                         +" T= "+(endTime.getTime()-startTime.getTime())
                                         +" E= "+pErro+" T1= "+startTime.getTime()
