@@ -38,9 +38,9 @@ public class ClientSimulation extends Resource implements Notifiable {
     
     /**
     * The client id.
-    * <p>Default is -1.
+    * <p>Default is null.
     */
-    private int hid = -1;
+    private String hid = null;
 
     /**
     * Creates an instance of the simulation client.
@@ -52,7 +52,6 @@ public class ClientSimulation extends Resource implements Notifiable {
     public ClientSimulation(Resource parent, Configuration dml)throws configException  {
 	    super(parent,dml);
 	    trans2stream = new HashMap();    	
-	    createClients();
     }
 
     public void consume(Object obj) {
@@ -71,8 +70,14 @@ public class ClientSimulation extends Resource implements Notifiable {
     }
                                                                                 
     public void notify(int action, Object data) {
-	System.out.println(getClass().getName() + " : " + hid + " : start : client initiates the activities!");
-        if(generators != null) { for(int i=0; i < generators.length; i++) { sendTransaction(i); } }
+	hid = (String) data;
+	System.out.println(getClass().getName() + " : " + hid + " : start : client initiates the activities!"); //DEBUG
+	int ncli = Integer.parseInt(attributeValue("-CLI"));
+	System.out.println("Starting " + ncli + " clients for host " + hid);
+
+	createClients();
+
+        for(int i=0; i < ncli; i++) { System.out.println("Building client " + i + " for host " + hid); sendTransaction(i); }
     }
 
 
@@ -117,7 +122,7 @@ public class ClientSimulation extends Resource implements Notifiable {
 				
 	if (t != null) {
 
-	    t.header().hid(null);  // porra o id do host
+	    t.header().hid(hid);
 	  
 	    ttid++;
 		
@@ -130,7 +135,7 @@ public class ClientSimulation extends Resource implements Notifiable {
 
 	     long tt = t.userThinkTime() * 1000000;
 
-	     rightOutc().write(exec,tt); 
+	     CommandController.write(exec, rightOutc(),tt);
 	}
     }
 
@@ -143,7 +148,7 @@ public class ClientSimulation extends Resource implements Notifiable {
   	
        generators = new ClientEmulation[Integer.parseInt(attributeValue("-CLI"))];
        for(int i=0;i < generators.length;i++) {
-	   generators[i] = new ClientEmulation(attributeValue("-EBclass"),attributeValue("-STclass"),attributeValue("-DBclass"),Integer.parseInt(attributeValue("-CLI")),i,attributeValue("-TRACEflag"),null,Integer.parseInt(attributeValue("-WAREHOUSE")));
+	   generators[i] = new ClientEmulation(attributeValue("-EBclass"),attributeValue("-STclass"),attributeValue("-DBclass"),Integer.parseInt(attributeValue("-CLI")),i,attributeValue("-TRACEflag"),hid,Integer.parseInt(attributeValue("-WAREHOUSE")));
 	   generators[i].setName(attributeValue("-TRACEflag") + "-" + i);
        }
    }
