@@ -1,6 +1,6 @@
 package escada.tpc.common.util;
 
-import java.util.*;
+import java.util.Random;
 
 public class RandGen {
   

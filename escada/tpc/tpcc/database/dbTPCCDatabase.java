@@ -1,7 +1,7 @@
 package escada.tpc.tpcc.database;
 
-import escada.tpc.common.*;
-import escada.tpc.common.database.*;
+import escada.tpc.common.OutInfo;
+import escada.tpc.common.database.CommonDatabase;
 
 /**
  * It defines the common methods that must be available at any dbImplementation

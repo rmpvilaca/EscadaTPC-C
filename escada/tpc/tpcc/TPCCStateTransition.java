@@ -1,10 +1,11 @@
 package escada.tpc.tpcc;
 
 
-import java.util.*;
+import java.util.Random;
 
-import escada.tpc.common.*;
-import escada.tpc.common.util.*;
+import escada.tpc.common.StateObject;
+import escada.tpc.common.StateTransition;
+import escada.tpc.common.util.RandGen;
 
 /**
 * It defines the state machine of the TPC-C. First of all, it

@@ -1,6 +1,7 @@
 package escada.tpc.common;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 /**
 * This class implements a map (repository) using a string as index to

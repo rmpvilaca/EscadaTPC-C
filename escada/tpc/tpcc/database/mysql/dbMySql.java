@@ -1,11 +1,15 @@
 package escada.tpc.tpcc.database.mysql;
 
-import escada.tpc.tpcc.database.*;
-import escada.tpc.tpcc.trace.*;
-import escada.tpc.common.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashSet;
 
-import java.sql.*;
-import java.util.*;
+import escada.tpc.common.OutInfo;
+import escada.tpc.tpcc.database.dbTPCCDatabase;
+import escada.tpc.tpcc.trace.dbLog;
 
 /** It is an interface to a postgreSQL, which based is based on the
  * the distributions of the TPC-C.

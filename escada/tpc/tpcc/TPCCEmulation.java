@@ -1,7 +1,8 @@
 package escada.tpc.tpcc;
 
-import escada.tpc.common.*;
-import escada.tpc.common.util.*;
+import escada.tpc.common.Emulation;
+import escada.tpc.common.StateObject;
+import escada.tpc.common.util.RandGen;
 
 /**
 * It extends the emulation class defining some methods according to the TPC-C
@@ -40,15 +41,15 @@ public class TPCCEmulation
         setKeyingTime(keyingTime());
         setThinkTime(getKeyingTime() + thinkTime());
 
-        Thread.sleep(getThinkTime()); // TODO: We must define a parameter to enable or disable this behavior sometimes.
+        //Thread.sleep(getThinkTime()); // TODO: We must define a parameter to enable or disable this behavior sometimes.
 
         curTrans.requestProcess(this,hid);
 
         curTrans.postProcess(this,hid);
       }
     }
-    catch (java.lang.InterruptedException it) {
-    }
+//    catch (java.lang.InterruptedException it) {
+ //   }
     catch (java.lang.Exception ex) {
       ex.printStackTrace();
       return;

@@ -1,9 +1,10 @@
 package escada.tpc.tpcc;
 
-import escada.tpc.common.*;
-import escada.tpc.common.util.*;
-import escada.tpc.tpcc.database.*;
-import escada.tpc.tpcc.util.*;
+import escada.tpc.common.Emulation;
+import escada.tpc.common.StateObject;
+import escada.tpc.common.util.RandGen;
+import escada.tpc.tpcc.database.dbTPCCDatabase;
+import escada.tpc.tpcc.util.TPCCRandGen;
 
 /**
 * It implements the states according to the definition  of the TPC-C. Basically, it sets up import information used in the execution of the order status transaction. Additionally, it defines the trace flag, which is a boolean value used to log traces or not and the trace file.

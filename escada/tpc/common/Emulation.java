@@ -1,8 +1,8 @@
 package escada.tpc.common;
 
-import java.util.*;
+import java.util.Random;
 
-import escada.tpc.common.database.*;
+import escada.tpc.common.database.CommonDatabase;
 
 public abstract class Emulation {
 

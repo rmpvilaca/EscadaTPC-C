@@ -48,12 +48,12 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 
 PGSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY false \
-             -CLI 10 \
+             -CLI 1 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
-             -DBpath jdbc:postgresql://localhost:5432/tpcc \
+             -DBpath jdbc:postgresql://lhona:5432/tpcc \
              -DBdriver org.postgresql.Driver \
              -DBusr tpcc \
              -DBpasswd tpcc \
@@ -62,13 +62,13 @@ PGSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -FRAG 1
 
 real-oracle:
-	$(JVM) -cp $(classpath) -Xmx1024 escada.tpc.common.clients.ClientStartup $(ORACLE_FLAGS)
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientStartup $(ORACLE_FLAGS)
 
 real-mysql:
-	$(JVM) -cp $(classpath) -Xmx1024 escada.tpc.common.clients.ClientStartup $(MYSQL_FLAGS)
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientStartup $(MYSQL_FLAGS)
 
 real-pgsql:
-	$(JVM) -cp $(classpath) -Xmx1024 escada.tpc.common.clients.ClientStartup $(PGSQL_FLAGS)
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientStartup $(PGSQL_FLAGS)
 
 
 # arch-tag: 35a104c6-523c-493b-9afe-e85f72d9d865

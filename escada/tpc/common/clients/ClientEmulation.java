@@ -1,9 +1,10 @@
 package escada.tpc.common.clients;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
 
-import escada.tpc.common.*;
-import escada.tpc.common.database.*;
+import escada.tpc.common.Emulation;
+import escada.tpc.common.StateTransition;
+import escada.tpc.common.database.CommonDatabase;
 
 
 /**

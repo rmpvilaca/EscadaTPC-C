@@ -1,10 +1,12 @@
 package escada.tpc.tpcc.database.mssql;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.util.HashSet;
 
-import escada.tpc.common.*;
-import escada.tpc.tpcc.database.*;
+import escada.tpc.common.OutInfo;
+import escada.tpc.tpcc.database.dbTPCCDatabase;
 
 /** It is an interface to a postgreSQL, which based is based on the
 * the distributions of the TPC-C.

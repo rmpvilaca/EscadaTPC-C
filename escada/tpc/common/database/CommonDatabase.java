@@ -1,6 +1,6 @@
 package escada.tpc.common.database;
 
-import java.sql.*;
+import java.sql.Connection;
 
 /**
  * It implements a generic database interface with connection control (connection pool).

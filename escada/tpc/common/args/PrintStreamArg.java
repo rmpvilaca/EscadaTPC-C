@@ -1,7 +1,7 @@
 package escada.tpc.common.args;
 
-import java.io.PrintStream;
 import java.io.FileOutputStream;
+import java.io.PrintStream;
 
 public class PrintStreamArg extends Arg {
   public PrintStream s = null;

@@ -1,7 +1,7 @@
 package escada.tpc.common.args;
 
-import java.util.Vector;
 import java.io.PrintStream;
+import java.util.Vector;
 
 public class ArgDB
 {
