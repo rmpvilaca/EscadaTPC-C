@@ -226,7 +226,7 @@ public class dbTrace {
 			if (bagtrans.masterWS.size() != 0)
 			{
 				masterWS = new long[bagtrans.masterWS.size()];
-				tableMasterWS = new int[bagtrans.tableMasterWS.size() + 1];		
+				tableMasterWS = new int[bagtrans.tableMasterWS.size()];		
 
 				it = bagtrans.masterWS.iterator();
 				i = 0; j = 0; lastTable = -1;
