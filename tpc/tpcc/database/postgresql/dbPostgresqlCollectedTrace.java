@@ -33,7 +33,7 @@ public class dbPostgresqlCollectedTrace
         InitTransaction(obj, con, "tx neworder");
 
         tid = dbTrace.initTransactionTrace("tx neworder",
-                                           (String) obj.getInfo("thinktime"));
+                                           (String) obj.getInfo("thinktime"),hid);
 
         statement = con.prepareStatement("select tracetpcc_getdistrict (?,?)");
         statement.setInt(1, Integer.parseInt( (String) obj.getInfo("wid")));
@@ -489,7 +489,7 @@ public class dbPostgresqlCollectedTrace
         InitTransaction(obj, con, "tx delivery");
 
         tid = dbTrace.initTransactionTrace("tx delivery",
-                                           (String) obj.getInfo("thinktime"));
+                                           (String) obj.getInfo("thinktime"), hid);
 
         statement = con.prepareStatement("select tracetpcc_deliveryneworder(?)");
         statement.setInt(1, Integer.parseInt( (String) obj.getInfo("wid")));
@@ -780,7 +780,7 @@ public class dbPostgresqlCollectedTrace
 
           InitTransaction(obj, con, "tx orderstatus 01");
           tid = dbTrace.initTransactionTrace("tx orderstatus 01",
-                                             (String) obj.getInfo("thinktime"));
+                                             (String) obj.getInfo("thinktime"),hid);
 
           statement = con.prepareStatement(
               "select tracetpcc_getcustomerbyname(?,?,?,?)");
@@ -823,7 +823,7 @@ public class dbPostgresqlCollectedTrace
         else {
           InitTransaction(obj, con, "tx orderstatus 02");
           tid = dbTrace.initTransactionTrace("tx orderstatus 02",
-                                             (String) obj.getInfo("thinktime"));
+                                             (String) obj.getInfo("thinktime"),hid);
 
           statement = con.prepareStatement(
               "select tracetpcc_getcustomer(?,?,?)");
@@ -1114,7 +1114,7 @@ public class dbPostgresqlCollectedTrace
         if (str.equals("0")) {
           InitTransaction(obj, con, "tx payment 01");
           tid = dbTrace.initTransactionTrace("tx payment 01",
-                                             (String) obj.getInfo("thinktime"));
+                                             (String) obj.getInfo("thinktime"),hid);
 
           statement = con.prepareStatement(
               "select tracetpcc_getcustomerbyname(?,?,?,?)");
@@ -1157,7 +1157,7 @@ public class dbPostgresqlCollectedTrace
         else {
           InitTransaction(obj, con, "tx payment 02");
           tid = dbTrace.initTransactionTrace("tx payment 02",
-                                             (String) obj.getInfo("thinktime"));
+                                             (String) obj.getInfo("thinktime"),hid);
 
           statement = con.prepareStatement(
               "select tracetpcc_getcustomer(?,?,?)");
@@ -1455,7 +1455,7 @@ public class dbPostgresqlCollectedTrace
         InitTransaction(obj, con, "tx stocklevel");
 
         tid = dbTrace.initTransactionTrace("tx stocklevel",
-                                           (String) obj.getInfo("thinktime"));
+                                           (String) obj.getInfo("thinktime"),hid);
 
         statement = con.prepareStatement("select tracetpcc_getdistrict(?,?)");
 

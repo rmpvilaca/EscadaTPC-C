@@ -39,7 +39,7 @@ public class dbIntegrated
 
     try {
       tid = dbTrace.initTransactionTrace("tx neworder",
-                                         (String) obj.getInfo("thinktime"));
+                                         (String) obj.getInfo("thinktime"),hid);
       dbtrace.add(wid + did);
       dbTrace.TransactionTrace(dbtrace, "r", tid, "district", iwid,hid);
       dbTrace.TransactionTrace(dbtrace, "w", tid, "district", iwid,hid);
@@ -113,7 +113,7 @@ public class dbIntegrated
       }
       else
       {
-         TraceNewOrderDB = dbTrace.closeErrorTransactionTrace(tid);
+         TraceNewOrderDB = dbTrace.closeErrorTransactionTrace(tid,hid);
       }
     }
     catch (java.lang.Exception ex) {
@@ -134,7 +134,7 @@ public class dbIntegrated
     
     try {
       tid = dbTrace.initTransactionTrace("tx delivery",
-                                         (String) obj.getInfo("thinktime"));
+                                         (String) obj.getInfo("thinktime"), hid);
 
       dbtrace = dbVirtual.getNewOrder(wid);
       dbTrace.TransactionTrace(dbtrace, "r", tid, "neworder", iwid,hid);
@@ -165,7 +165,7 @@ public class dbIntegrated
       }
       else
       {
-         TraceDeliveryDB = dbTrace.closeErrorTransactionTrace(tid);
+         TraceDeliveryDB = dbTrace.closeErrorTransactionTrace(tid,hid);
       }
     }
     catch (java.lang.Exception ex) {
@@ -193,13 +193,13 @@ public class dbIntegrated
       if (str.equals("0")) {
         HashSet customertrace = null;
         tid = dbTrace.initTransactionTrace("tx orderstatus 01",
-                                           (String) obj.getInfo("thinktime"));
+                                           (String) obj.getInfo("thinktime"),hid);
         
         customertrace = dbVirtual.getCustomerLastName(wid,did,(String)obj.getInfo("lastname"));
         dbTrace.TransactionTrace(customertrace, "r", tid, "customer", iwid,hid);
 
         if (customertrace.size() == 0) {
-          TraceOrderStatusDB = dbTrace.closeErrorTransactionTrace(tid);
+          TraceOrderStatusDB = dbTrace.closeErrorTransactionTrace(tid,hid);
           return(TraceOrderStatusDB);
         }
         it = customertrace.iterator();
@@ -215,7 +215,7 @@ public class dbIntegrated
       }
       else {
         tid = dbTrace.initTransactionTrace("tx orderstatus 02",
-                                           (String) obj.getInfo("thinktime"));
+                                           (String) obj.getInfo("thinktime"),hid);
 
         dbtrace.add(wid + did + (String) obj.getInfo("cid"));
         tmptrace.add(obj.getInfo("cid"));
@@ -223,7 +223,7 @@ public class dbIntegrated
         dbtrace.clear();
       }
       if (tmptrace.size() == 0) {
-          TraceOrderStatusDB = dbTrace.closeErrorTransactionTrace(tid);
+          TraceOrderStatusDB = dbTrace.closeErrorTransactionTrace(tid,hid);
           return(TraceOrderStatusDB);
       }
 
@@ -243,7 +243,7 @@ public class dbIntegrated
       }
       else
       {
-         TraceOrderStatusDB = dbTrace.closeErrorTransactionTrace(tid);
+         TraceOrderStatusDB = dbTrace.closeErrorTransactionTrace(tid,hid);
       }
     }
     catch (java.lang.Exception ex) {
@@ -270,13 +270,13 @@ public class dbIntegrated
       if (str.equals("0")) {
         HashSet customertrace = null;
         tid = dbTrace.initTransactionTrace("tx payment 01",
-                                           (String) obj.getInfo("thinktime"));
+                                           (String) obj.getInfo("thinktime"),hid);
 
         customertrace = dbVirtual.getCustomerLastName(wid,did,(String)obj.getInfo("lastname"));
         dbTrace.TransactionTrace(customertrace, "r", tid, "customer", iwid,hid);
 
         if (customertrace.size() == 0) {
-          TracePaymentDB = dbTrace.closeErrorTransactionTrace(tid);
+          TracePaymentDB = dbTrace.closeErrorTransactionTrace(tid,hid);
           return(TracePaymentDB);
         }
         it = customertrace.iterator();
@@ -292,15 +292,15 @@ public class dbIntegrated
       }
       else {
         tid = dbTrace.initTransactionTrace("tx payment 02",
-                                           (String) obj.getInfo("thinktime"));
+                                           (String) obj.getInfo("thinktime"),hid);
 
         dbtrace.add(wid + did + (String) obj.getInfo("cid"));
         dbTrace.TransactionTrace(dbtrace, "r", tid, "customer", iwid,hid);
-        tmptrace.add(obj.getInfo("cid"));
+        tmptrace.add(wid + did + (String) obj.getInfo("cid"));
         dbtrace.clear();
       }
       if (tmptrace.size() == 0) {
-          TracePaymentDB = dbTrace.closeErrorTransactionTrace(tid);
+          TracePaymentDB = dbTrace.closeErrorTransactionTrace(tid,hid);
           return(TracePaymentDB);
       }
 
@@ -308,7 +308,7 @@ public class dbIntegrated
       dbTrace.TransactionTrace(tmptrace, "w", tid, "customer", iwid,hid);
       tmptrace.clear();
 
-      dbtrace.add(obj.getInfo("did"));
+      dbtrace.add((String) obj.getInfo("wid") + obj.getInfo("did"));
       dbTrace.TransactionTrace(dbtrace, "r", tid, "district",
                                Integer.parseInt( (String) obj.getInfo("wid")),hid);
       dbTrace.TransactionTrace(dbtrace, "w", tid, "district",
@@ -329,7 +329,7 @@ public class dbIntegrated
       }
       else
       {
-         TracePaymentDB = dbTrace.closeErrorTransactionTrace(tid);
+         TracePaymentDB = dbTrace.closeErrorTransactionTrace(tid,hid);
       }
     }
     catch (java.lang.Exception ex) {
@@ -351,7 +351,7 @@ public class dbIntegrated
     
     try {
       tid = dbTrace.initTransactionTrace("tx stocklevel",
-                                         (String) obj.getInfo("thinktime"));
+                                         (String) obj.getInfo("thinktime"),hid);
 
       dbtrace.add(wid + did);
       dbTrace.TransactionTrace(dbtrace, "r", tid, "district", iwid,hid);
@@ -369,7 +369,7 @@ public class dbIntegrated
       }
       else
       {
-         TraceStockLevelDB = dbTrace.closeErrorTransactionTrace(tid);
+         TraceStockLevelDB = dbTrace.closeErrorTransactionTrace(tid,hid);
       }  
     }
     catch (java.lang.Exception ex) {

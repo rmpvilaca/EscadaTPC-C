@@ -17,6 +17,6 @@ clean:
 	echo $(GARBAGE)
 	
 docs:
-	$(JAVADOC) -d $(docsdir)  Escada/tpc
+	$(JAVADOC) -d $(docsdir)/tpc -classpath $(classpath) `find tpc -name \*.java`
 
 # arch-tag: 35a104c6-523c-493b-9afe-e85f72d9d865

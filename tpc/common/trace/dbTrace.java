@@ -22,6 +22,7 @@ import java.io.*;
 class BagTransaction
 {
 	Transaction trans = null;
+
   	TreeSet masterWS = new TreeSet(); 
    	TreeSet masterRS = new TreeSet();
 
@@ -117,8 +118,8 @@ public class dbTrace {
 
   /**
   * It initializes the structures that stores the transaction information. First of all, it creates
-  * an internal object "transaction" which is used by simulator. This object is composed by
-  * a Header and a resource usage that is populated during the transaction execution. It also associates
+  * an internal object "transaction" which is used by the simulator. This object is composed by
+  * a header and a resource usage that is populated during the transaction execution. It also associates
   * a unique identifier to the transaction.
   *
   * @param String the transaction name which is used to compose the header.
@@ -128,11 +129,9 @@ public class dbTrace {
   *
   * @see closeTransactionTrance, transactionTrace.
   **/
-  public static String initTransactionTrace(String transaction, String thinkTime) {
+  public static String initTransactionTrace(String transaction, String thinkTime, String hid) {
 
-	// Configuration dml = Simulation.config(); // porra
-	
-  	Header hd = new Header(transaction, (int)tid, "10"); // porra
+  	Header hd = new Header(transaction, (int)tid, hid);
   	ResourceUsage payload = new ResourceUsage(null, null, null, null);  	
     	Transaction tran = new Transaction(hd, payload,Long.parseLong(thinkTime));
 	BagTransaction bagtrans = new BagTransaction();
@@ -248,17 +247,37 @@ public class dbTrace {
 			{
 				masterRS = new long[bagtrans.masterRS.size()];
 				tableMasterRS = new int[bagtrans.tableMasterRS.size()];
-	
+
 				it = bagtrans.masterRS.iterator();
 				i = 0; j = 0; lastTable = -1;
-
+				
 				while(it.hasNext()) {
 				      	masterRS[i] = ((Long)it.next()).longValue();
-
-                                        if (lastTable != dmlinfo.table_of(masterRS[i])) {
-                                                tableMasterRS[j] = i;
-                                                lastTable = dmlinfo.table_of(masterRS[i]);
-                                                j++;
+					
+					long nextTable = dmlinfo.table_of(masterRS[i]);
+                                        if (lastTable != nextTable) {
+						if(tableMasterRS == null) {
+							tableMasterRS = new int[1];
+							tableMasterRS[0] = i;
+						}
+						else {
+							int[] aux = new int[tableMasterRS.length+1];
+							System.arraycopy(tableMasterRS, 0, aux, 0, tableMasterRS.length);
+							aux[tableMasterRS.length] = i;
+							tableMasterRS = aux;
+						}
+/*
+						try { tableMasterRS[j] = i; }
+						catch(Exception exc) { 	
+							System.out.println("dbTrace:i:" + i);
+							System.out.println("dbTrace:nextTable:" + nextTable);
+							System.out.println("dbTrace:lastTable:" + lastTable);
+							System.out.println("dbTrace:bagtrans.masterRS:" + bagtrans.masterRS);
+							System.out.println("dbTrace:bagtrans.tableMasterRS:" + bagtrans.tableMasterRS);
+							System.exit(0);
+						}*/
+                                                lastTable = nextTable;
+//                                                j++;
                                         }
 
                 		        i++;
@@ -329,41 +348,66 @@ public class dbTrace {
 			for (i = tmpModel.length - 1; i >= 0; i--) { 
                                 transModel = tmpModel[i];
 
+//				System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]:" + transModel.get(0) ); //DEBUG
+
 				if (((String)transModel.get(0)).equalsIgnoreCase("DBSMAdapter")) {
+//					System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]: DBSMAdapter"); //DEBUG
 					req = new NetRequest (Integer.valueOf(tid),(String)transModel.get(1),closeTransactionTrace);  // DBSM
 				
 				}
 				else if (((String)transModel.get(0)).equalsIgnoreCase("Storage")) {
 				 	info = (String)transModel.get(2);
-	
+					
 					if (info.equalsIgnoreCase("R")) {
 						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true); 
 					}
 					else {
-						if ((masterWS == null) && (slaveWS == null)) {
+						if ((masterWS != null) && (slaveWS == null)) {
 							req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false);
 						}
 					}
+
 				}
+
+				else if (((String)transModel.get(0)).equalsIgnoreCase("SANDevice")) {
+				 	info = (String)transModel.get(2);
+					if (info.equalsIgnoreCase("R")) {
+						req = new SANStorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true, masterRS); 
+					}
+					else {
+						if ((masterWS != null) && (slaveWS == null)) {
+							req = new SANStorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false, masterWS);
+						}
+					}
+
+				}
+
+
 				else if (((String)transModel.get(0)).equalsIgnoreCase("CPU")) {
+//					System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]: CPU"); //DEBUG
 				
 					req = new ProcessRequest(Integer.valueOf(tid),(String)transModel.get(1),cpuUsage,false); // CPU
 				}
 				else if (((String)transModel.get(0)).equalsIgnoreCase("Thinker")) {
+//					System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]: Thinker"); //DEBUG
 					req = new ProcessRequest(Integer.valueOf(tid),(String)transModel.get(1),qttUsage,false); // QTT
 				
 				}
 				else if (((String)transModel.get(0)).equalsIgnoreCase("DDbProxyProcess")) {
+//					System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]: DDbProxyProcess"); //DEBUG
 					req = new NetRequest (Integer.valueOf(tid),(String)transModel.get(1),closeTransactionTrace);  // DDB
 				
 				}
 				else if (((String)transModel.get(0)).equalsIgnoreCase("LockManager")) {
 				 	info = (String)transModel.get(2);
-					if (info.equalsIgnoreCase("L"))
+					if (info.equalsIgnoreCase("L")) {
+//						System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]: LockManager:L"); //DEBUG
 						req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_LOCK,masterRS,masterWS,false); 
-					else
+					}
+					else {
+//						System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]: LockManager:U"); //DEBUG
 						req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_UNLOCK,masterRS,masterWS,false); 
-						
+					}	
 				}
 				closeTransactionTrace.payload().push(req);
 			}
@@ -376,8 +420,199 @@ public class dbTrace {
 	return (closeTransactionTrace);
 }
 
-  public static Transaction closeErrorTransactionTrace(String tid) {
+  public static Transaction closeErrorTransactionTrace(String tid, String hid) {
     Transaction closeTransactionTrace = null;
+	try {
+		BagTransaction bagtrans = (BagTransaction) outPutBag.get(tid);
+		closeTransactionTrace = bagtrans.trans;
+		Iterator it = null;
+		int i = 0, j = 0; 
+		long lastTable = -1;
+
+		long[] masterWS = null;
+		long[] masterRS = null;
+		long[] slaveWS = null;
+		long[] slaveRS = null;
+		int[] tableMasterWS = null;
+		int[] tableMasterRS = null;
+		int[] tableSlaveWS = null;
+		int[] tableSlaveRS = null;
+
+		if (closeTransactionTrace != null) {
+			outPutBag.remove(tid);
+
+			if (bagtrans.masterWS.size() != 0)
+			{
+				masterWS = new long[bagtrans.masterWS.size()];
+				tableMasterWS = new int[bagtrans.tableMasterWS.size()];		
+
+				it = bagtrans.masterWS.iterator();
+				i = 0; j = 0; lastTable = -1;
+				
+				while(it.hasNext()) {
+				      	masterWS[i] = ((Long)it.next()).longValue();
+
+					if (lastTable != dmlinfo.table_of(masterWS[i])) { 
+						tableMasterWS[j] = i;
+						lastTable = dmlinfo.table_of(masterWS[i]);
+						j++;
+					}
+					
+                		        i++;
+			
+				}
+			}
+			if (bagtrans.masterRS.size() != 0)
+			{
+				masterRS = new long[bagtrans.masterRS.size()];
+				tableMasterRS = new int[bagtrans.tableMasterRS.size()];
+	
+				it = bagtrans.masterRS.iterator();
+				i = 0; j = 0; lastTable = -1;
+
+				while(it.hasNext()) {
+				      	masterRS[i] = ((Long)it.next()).longValue();
+
+                                        if (lastTable != dmlinfo.table_of(masterRS[i])) {
+                                                tableMasterRS[j] = i;
+                                                lastTable = dmlinfo.table_of(masterRS[i]);
+                                                j++;
+                                        }
+
+                		        i++;
+				}
+			}
+			if (bagtrans.slaveRS.size() != 0)
+			{
+				slaveRS = new long[bagtrans.slaveRS.size()];
+				tableSlaveRS = new int[bagtrans.tableSlaveRS.size()];	
+	
+				it = bagtrans.slaveRS.iterator();
+				i = 0; j = 0; lastTable = -1;
+
+				while(it.hasNext()) {
+				      	slaveRS[i] = ((Long)it.next()).longValue();
+
+                                        if (lastTable != dmlinfo.table_of(slaveRS[i])) {
+                                                tableSlaveRS[j] = i;
+                                                lastTable = dmlinfo.table_of(slaveRS[i]);
+                                                j++;
+                                        }
+
+                		        i++;
+				}
+			}
+			if (bagtrans.slaveWS.size() != 0)
+			{
+				slaveWS = new long[bagtrans.slaveWS.size()];
+				tableSlaveWS = new int[bagtrans.tableSlaveWS.size()];
+
+				it = bagtrans.slaveWS.iterator();
+				i = 0; j = 0; lastTable = -1;
+
+				while(it.hasNext()) {
+				      	slaveWS[i] = ((Long)it.next()).longValue();
+
+                                        if (lastTable != dmlinfo.table_of(slaveWS[i])) {
+                                                tableSlaveWS[j] = i;
+                                                lastTable = dmlinfo.table_of(slaveWS[i]);
+                                                j++;
+                                        }
+
+                		        i++;
+				}
+			}
+
+			masterWS = new long[1];
+			masterWS[0] = 1;
+
+			closeTransactionTrace.payload().WS(masterWS);
+			closeTransactionTrace.payload().RS(masterRS);
+			closeTransactionTrace.payload().indexOfWrittenTables(tableMasterWS);
+			closeTransactionTrace.payload().indexOfReadTables(tableMasterRS);
+
+			Simulation em = Simulation.self();
+			Tuple transModel = null;
+			Tuple []tmpModel = null;
+
+			masterWS = null;
+			if ((masterWS == null) && (slaveWS == null)) {
+				tmpModel = em.getTemplate(hid,true); 
+			}
+			else {
+				tmpModel = em.getTemplate(hid,false); 
+			}
+
+			long qttUsage = TransactionTimers.calculateQueryThinkTime(closeTransactionTrace.header().name()); 
+			long cpuUsage = TransactionTimers.calculateCPUTime(closeTransactionTrace.header().name()); 
+			Request req = null;
+			String info = null;
+
+			for (i = tmpModel.length - 1; i >= 0; i--) { 
+                                transModel = tmpModel[i];
+/*
+				if (((String)transModel.get(0)).equalsIgnoreCase("DBSMAdapter")) {
+					req = new NetRequest (Integer.valueOf(tid),(String)transModel.get(1),closeTransactionTrace);  // DBSM
+				
+				}*/
+				if (((String)transModel.get(0)).equalsIgnoreCase("Storage")) {
+				 	info = (String)transModel.get(2);
+					
+					if (info.equalsIgnoreCase("R")) {
+						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true); 
+					}
+/*
+					else {
+
+						if ((masterWS != null) && (slaveWS == null)) {
+						//if ((masterWS == null) && (slaveWS == null)) {
+							req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false);
+						}
+					}
+*/
+				}
+
+				else if (((String)transModel.get(0)).equalsIgnoreCase("SANDevice")) {
+				 	info = (String)transModel.get(2);
+					if (info.equalsIgnoreCase("R")) {
+						req = new SANStorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true, masterRS); 
+					}
+/*					else {
+						if ((masterWS != null) && (slaveWS == null)) {
+							req = new SANStorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false, masterWS);
+						}
+					}*/
+
+				}
+
+				else if (((String)transModel.get(0)).equalsIgnoreCase("CPU")) {
+					req = new ProcessRequest(Integer.valueOf(tid),(String)transModel.get(1),cpuUsage,false); // CPU
+				}
+				else if (((String)transModel.get(0)).equalsIgnoreCase("Thinker")) {
+					req = new ProcessRequest(Integer.valueOf(tid),(String)transModel.get(1),qttUsage,false); // QTT
+				
+				}
+				else if (((String)transModel.get(0)).equalsIgnoreCase("DDbProxyProcess")) {
+					req = new NetRequest (Integer.valueOf(tid),(String)transModel.get(1),closeTransactionTrace);  // DDB
+				
+				}
+				else if (((String)transModel.get(0)).equalsIgnoreCase("LockManager")) {
+				 	info = (String)transModel.get(2);
+					if (info.equalsIgnoreCase("L")) {
+						req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_LOCK,masterRS,masterWS,false); 
+					}
+					else {
+						req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_UNLOCK,masterRS,masterWS,false); 
+					}	
+				}
+				closeTransactionTrace.payload().push(req);
+			}
+		}
+	}
+	catch (Exception ex) {
+		ex.printStackTrace(System.err);
+	}
+/*
     try {
       BagTransaction bagtrans = (BagTransaction) outPutBag.get(tid);
       closeTransactionTrace = bagtrans.trans;
@@ -389,6 +624,8 @@ public class dbTrace {
     catch (Exception ex) {
       ex.printStackTrace(System.err);
     }
+
+*/
    
     if (closeTransactionTrace != null) closeTransactionTrace.setInducedAbort(); 
     return (closeTransactionTrace);
@@ -706,4 +943,3 @@ public class dbTrace {
   }
 }
 // arch-tag: cd27b7fe-ae93-483e-af78-79491b558ac0
-// arch-tag: e932c514-e0b2-4b45-9a47-902984767993
