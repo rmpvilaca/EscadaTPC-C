@@ -7,7 +7,6 @@ import escada.tpc.common.util.*;
 import escada.tpc.common.args.*;
 import escada.tpc.common.database.*;
 
-// TODO -- MAKE IT GENERIC //
 import escada.tpc.tpcc.trace.*;
 
 public class ClientStartup {
@@ -103,7 +102,7 @@ public class ClientStartup {
 	            "% It defines the usage of trace file or not (NOTRACE,TRACE,TRACESTRING,TRACETIME)",db);
 
     IntArg fragArg = new IntArg("-FRAG", "Shift the clients...",
-          "% It shift the clients in order to access different warehouses...",0,db);
+          "% It shift the clients in order to access different warehouses...",1,db);
 
 
     if (args.length==0) {
@@ -196,7 +195,7 @@ public class ClientStartup {
          try {
 	     waitForStart(start);
 	     if (term < 0) return;
-	     Thread.currentThread().sleep(term * 60 * 1000);
+	     Thread.sleep(term * 60 * 1000);  // ...PORRA...
 	 }
 	 catch (InterruptedException ie) {
 	     System.out.println("In waitforrampdown, caught interrupted exception");
@@ -208,7 +207,7 @@ public class ClientStartup {
   {
      if (start < 0) return;
 
-     Thread.currentThread().sleep(start * 60 * 1000);
+     Thread.sleep(start * 60 * 1000);  // PORRA
   }
  
 }

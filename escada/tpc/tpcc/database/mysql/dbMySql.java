@@ -4,14 +4,13 @@ import escada.tpc.tpcc.database.*;
 import escada.tpc.tpcc.trace.*;
 import escada.tpc.common.*;
 
-import java.io.*;
 import java.sql.*;
 import java.util.*;
 
 /** It is an interface to a postgreSQL, which based is based on the
  * the distributions of the TPC-C.
  **/
-public class dbMySql
+public class dbMySql	
 extends dbTPCCDatabase {
 
     public static int NewOrderTransNum = 0;

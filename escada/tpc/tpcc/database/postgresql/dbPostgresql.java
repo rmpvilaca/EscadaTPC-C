@@ -1,7 +1,5 @@
 package escada.tpc.tpcc.database.postgresql;
 
-
-import java.io.*;
 import java.sql.*;
 import java.util.*;
 

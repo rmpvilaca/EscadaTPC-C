@@ -16,13 +16,10 @@ clean:
 	rm -rf $(GARBAGE)
 	echo $(GARBAGE)
 	
-docs:
-	$(JAVADOC) -d $(docsdir)/tpc -classpath $(classpath) `find tpc -name \*.java`
-
 ORACLE_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY false \
-             -cli 50 \
-             -Stclass escada.tpc.tpcc.TPCCStateTransition \
+             -CLI 50 \
+             -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.oracle.dbOracle \
              -TRACEflaf TRACE \
              -PREFIX Client \
@@ -31,12 +28,13 @@ ORACLE_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -DBusr tpcc \
              -DBpasswd tpcc \
              -POOL 50 \
-             -MI 50
+             -MI 45 \
+	     -FRAG 1
 
 MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY false \
-             -cli 50 \
-             -Stclass escada.tpc.tpcc.TPCCStateTransition \
+             -CLI 50 \
+             -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.mysql.dbMySql \
              -TRACEflag TRACE \
              -PREFIX Client \
@@ -45,13 +43,14 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -DBusr root \
              -DBpasswd 123456 \
              -POOL 50 \
-             -mi 50
+             -MI 45 \
+	     -FRAG 1
 
-PGSQL_FLAGS=-EBclass Escada.tpc.tpcc.TPCCEmulation \
+PGSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY false \
              -CLI 1 \
-             -Stclass Escada.tpc.tpcc.TPCCStateTransition \
-             -DBclass Escada.tpc.tpcc.database.postgresql.dbPostgresql \
+             -STclass escada.tpc.tpcc.TPCCStateTransition \
+             -DBclass escada.tpc.tpcc.database.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
              -DBpath jdbc:postgresql://localhost:5432/tpcc \
@@ -59,7 +58,8 @@ PGSQL_FLAGS=-EBclass Escada.tpc.tpcc.TPCCEmulation \
              -DBusr tpcc \
              -DBpasswd tpcc \
              -POOL 1 \
-             -MI 4
+             -MI 45 \
+	     -FRAG 1
 
 real-oracle:
 	$(JVM) -cp $(classpath) -Xmx1024 escada.tpc.common.clients.ClientStartup $(ORACLE_FLAGS)

@@ -2,7 +2,6 @@ package escada.tpc.common.database;
 
 import java.sql.*;
 import java.util.*;
-import oracle.jdbc.*;
 import oracle.jdbc.pool.OracleDataSource;
 	
 

@@ -1,16 +1,12 @@
 package escada.tpc.tpcc.database.oracle;
 
-import java.io.*;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
 
 import escada.tpc.common.*;
-import escada.tpc.common.clients.*;
 import escada.tpc.tpcc.database.*;
 import escada.tpc.tpcc.trace.*;
-
-import oracle.jdbc.oracore.OracleType;
 
 /** It is an interface to a postgreSQL, which based is based on the
  * the distributions of the TPC-C.
