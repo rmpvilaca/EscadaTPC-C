@@ -28,10 +28,10 @@ class BagTransaction
   	TreeSet slaveWS = new TreeSet(); 
    	TreeSet slaveRS = new TreeSet();
 
-	int tableSlaveWS = 0;
-	int tableSlaveRS = 0;
-	int tableMasterWS = 0;
-	int tableMasterRS = 0;
+	HashSet tableSlaveWS = new HashSet();
+	HashSet tableSlaveRS = new HashSet();
+	HashSet tableMasterWS = new HashSet();
+	HashSet tableMasterRS = new HashSet();
 
 	int masterws = 0;
 	int masterrs = 0;
@@ -69,7 +69,6 @@ public class dbTrace {
 		String name = tran.header().name();
 
 		String tableId = getTableIdentification(table, index); 
-		long of = dmlinfo.tablename_idx(tableId); 
 		long offset = dmlinfo.tablename_offset(tableId); 
 
 		if (tran != null) {
@@ -77,27 +76,27 @@ public class dbTrace {
 			TreeSet items = null; 
       	
 			if(type.equalsIgnoreCase("r")) {
-				if (DistributedDb.isPossibleExecution(of,hid))	{
+				if (DistributedDb.isPossibleExecution(offset,hid))	{
 					items = bagtrans.masterRS;
 					bagtrans.masterrs = bagtrans.masterrs + (int)(v.size() * dmlinfo.tuplesize(offset));
-					bagtrans.tableMasterRS++;
+					bagtrans.tableMasterRS.add(new Long(offset));
 				}
 				else {
 					items = bagtrans.slaveRS;
 					bagtrans.slavers = bagtrans.slavers + (int)(v.size() * dmlinfo.tuplesize(offset));
-					bagtrans.tableSlaveRS++;
+					bagtrans.tableSlaveRS.add(new Long(offset));
 				}
 			}		
 			else {
-				if (DistributedDb.isPossibleExecution(of,hid))	{
+				if (DistributedDb.isPossibleExecution(offset,hid))	{
 					items = bagtrans.masterWS;
 					bagtrans.masterws = bagtrans.masterws + (int)(v.size() * dmlinfo.tuplesize(offset));
-					bagtrans.tableMasterWS++;
+					bagtrans.tableMasterWS.add(new Long(offset));
 				}
 				else	{
 					items = bagtrans.slaveWS;
 					bagtrans.slavews = bagtrans.slavews + (int)(v.size() * dmlinfo.tuplesize(offset));
-					bagtrans.tableSlaveWS++;
+					bagtrans.tableSlaveWS.add(new Long(offset));
 				}
 			}
 	      		Iterator it = v.iterator();
@@ -227,7 +226,7 @@ public class dbTrace {
 			if (bagtrans.masterWS.size() != 0)
 			{
 				masterWS = new long[bagtrans.masterWS.size()];
-				tableMasterWS = new int[bagtrans.tableMasterWS];			
+				tableMasterWS = new int[bagtrans.tableMasterWS.size()];			
 		
 				it = bagtrans.masterWS.iterator();
 				i = 0; j = 0; lastTable = -1;
@@ -235,8 +234,11 @@ public class dbTrace {
 				while(it.hasNext()) {
 				      	masterWS[i] = ((Long)it.next()).longValue();
 
+					System.out.println("WS Offset " + masterWS[i] + " Valor de j " + j + " valor de i " + i + " dmlinfo " + dmlinfo.table_of(masterWS[i]));
+
 					if (lastTable != dmlinfo.table_of(masterWS[i])) { 
 						tableMasterWS[j] = i;
+						System.out.println("WS Offset " + masterWS[i] + " Valor de j " + j + " valor de i " + i + " dmlinfo " + dmlinfo.table_of(masterWS[i]));
 						lastTable = dmlinfo.table_of(masterWS[i]);
 						j++;
 					}
@@ -248,7 +250,7 @@ public class dbTrace {
 			if (bagtrans.masterRS.size() != 0)
 			{
 				masterRS = new long[bagtrans.masterRS.size()];
-				tableMasterRS = new int[bagtrans.tableMasterRS];		
+				tableMasterRS = new int[bagtrans.tableMasterRS.size()];		
 	
 				it = bagtrans.masterRS.iterator();
 				i = 0; j = 0; lastTable = -1;
@@ -256,8 +258,13 @@ public class dbTrace {
 				while(it.hasNext()) {
 				      	masterRS[i] = ((Long)it.next()).longValue();
 
+					System.out.println("RS Offset " + masterRS[i] + " Valor de j " + j + " valor de i " + i + " dmlinfo " + dmlinfo.table_of(masterRS[i]));
+
                                         if (lastTable != dmlinfo.table_of(masterRS[i])) {
                                                 tableMasterRS[j] = i;
+
+						System.out.println("RS Offset " + masterRS[i] + " Valor de j " + j + " valor de i " + i + " dmlinfo " + dmlinfo.table_of(masterRS[i]));
+
                                                 lastTable = dmlinfo.table_of(masterRS[i]);
                                                 j++;
                                         }
@@ -268,7 +275,7 @@ public class dbTrace {
 			if (bagtrans.slaveRS.size() != 0)
 			{
 				slaveRS = new long[bagtrans.slaveRS.size()];
-				tableSlaveRS = new int[bagtrans.tableSlaveRS];	
+				tableSlaveRS = new int[bagtrans.tableSlaveRS.size()];	
 	
 				it = bagtrans.slaveRS.iterator();
 				i = 0; j = 0; lastTable = -1;
@@ -288,7 +295,7 @@ public class dbTrace {
 			if (bagtrans.slaveWS.size() != 0)
 			{
 				slaveWS = new long[bagtrans.slaveWS.size()];
-				tableSlaveWS = new int[bagtrans.tableSlaveWS];
+				tableSlaveWS = new int[bagtrans.tableSlaveWS.size()];
 
 				it = bagtrans.slaveWS.iterator();
 				i = 0; j = 0; lastTable = -1;
