@@ -366,11 +366,11 @@ public class dbTrace {
 				 	info = (String)transModel.get(2);
 					
 					if (info.equalsIgnoreCase("R")) {
-						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true); 
+						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true,masterRS); 
 					}
 					else {
 						if ((masterWS != null) && (slaveWS == null)) {
-							req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false);
+							req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false,masterWS);
 						}
 					}
 				}
@@ -563,7 +563,7 @@ public class dbTrace {
 				 	info = (String)transModel.get(2);
 					
 					if (info.equalsIgnoreCase("R")) {
-						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true); 
+						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true,masterRS); 
 					}
 				}
 
