@@ -208,6 +208,7 @@ public class dbTrace {
 	try {
 		BagTransaction bagtrans = (BagTransaction) outPutBag.get(tid);
 		closeTransactionTrace = bagtrans.trans;
+		boolean readOnly = true;
 		Iterator it = null;
 		int i = 0;
 
@@ -222,6 +223,8 @@ public class dbTrace {
 
 		if (closeTransactionTrace != null) {
 			outPutBag.remove(tid);
+
+			if (bagtrans.masterws != 0 || bagtrans.slavews != 0) readOnly = false;
 
 			if (bagtrans.masterWS.size() != 0)
 			{
@@ -329,7 +332,7 @@ public class dbTrace {
 			Request req = null;
 			String info = null;
 
-			for (i = tmpModel.length - 1; i != 0; i--) { 
+			for (i = tmpModel.length - 1; i >= 0; i--) { 
                                 transModel = tmpModel[i];
 
 				if (((String)transModel.get(0)).equals("DBSMAdapter")) {
@@ -339,9 +342,9 @@ public class dbTrace {
 				else if (((String)transModel.get(0)).equals("Storage")) {
 				 	info = (String)transModel.get(2);
 					if (info.equals("read"))
-						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs); 
+						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true); 
 					else
-						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws); 
+						if (!readOnly) req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false); 
 				
 				}
 				else if (((String)transModel.get(0)).equals("CPU")) {
@@ -367,6 +370,7 @@ public class dbTrace {
 				closeTransactionTrace.payload().push(req);
 			}
 		}
+		System.out.println(closeTransactionTrace.payload()); // porra
 	}
 	catch (Exception ex) {
 		ex.printStackTrace(System.err);
