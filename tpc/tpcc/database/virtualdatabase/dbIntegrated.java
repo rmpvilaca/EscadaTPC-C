@@ -6,9 +6,11 @@ import Escada.tpc.common.trace.*;
 
 import java.util.*;
 
-/** It is an interface to the a virtual database, which based on the
-* the distributions of the TPC-C emulates information been retrieved
+/** It is an interface to the virtual database, which is based on the
+* the distributions of the TPC-C. Basically this class emulates information been retrieved
 * and stored.
+*
+* TODO: I think that is better to change the name of the base class to dbTPCCDatabaseAccess instead of dbTPCCDatabase.
 **/
 public class dbIntegrated
     extends dbTPCCDatabase {
@@ -18,11 +20,16 @@ public class dbIntegrated
   /**
   * It instantiates this class, building a virtual database.
   *
-  * @param int the total number of clients, which is used in the
-  * distributions of the TPC-C.
+  * @param totcli the total number of clients, which is used in the distributions of the TPC-C.
   **/
   public dbIntegrated(int totcli) {
-    dbVirtual = new dbVirtualDatabase(totcli);
+	try {
+		dbVirtual = new dbVirtualDatabase(totcli);
+	}
+	catch (Exception ex) {
+		System.out.println("The virtual database cannot be created. Exiting the application.");
+		System.exit(-1);
+	}
   }
 
   public Object TraceNewOrderDB(OutInfo obj,String hid) throws java.sql.
@@ -204,7 +211,7 @@ public class dbIntegrated
         }
         it = customertrace.iterator();
         
-        tmptrace.add(wid + did + (String) it.next());
+        tmptrace.add(it.next());
         dbTrace.TransactionTrace(tmptrace, "r", tid, "customer", iwid,hid);
         tmptrace.clear();
 
@@ -234,6 +241,7 @@ public class dbIntegrated
       dbTrace.TransactionTrace(dbVirtual.getCustomerOrders(wid, did, cid), "r",
                                tid, "orders", iwid,hid);
       dbTrace.TransactionTrace(dbtrace, "r", tid, "orders", iwid,hid);
+      System.out.println("Vazio ou Nao " + dbtrace.size());
       dbTrace.TransactionTrace(dbVirtual.getCustomerOrders(wid, did, cid), "r",
                                tid, "orderline", iwid,hid);
 
@@ -281,7 +289,7 @@ public class dbIntegrated
         }
         it = customertrace.iterator();
         
-        tmptrace.add(wid + did + (String) it.next());
+        tmptrace.add(it.next());
         dbTrace.TransactionTrace(tmptrace, "r", tid, "customer", iwid,hid);
         tmptrace.clear();
 
