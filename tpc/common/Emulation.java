@@ -32,7 +32,7 @@ public abstract class Emulation {
   * @see getMaxTransactions
   **/
   public void setMaxTransactions(long maxTrans) {
-    if (maxTrans) this.maxTrans = maxTrans;
+    if (maxTrans > 0) this.maxTrans = maxTrans;
   }
 
   /**
