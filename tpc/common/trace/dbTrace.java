@@ -100,15 +100,15 @@ public class dbTrace {
 					bagtrans.tableSlaveWS.add(new Long(offset));
 				}
 			}
-	      		Iterator it = v.iterator();
+
       			int i=0;
+	      		Iterator it = v.iterator();
       			while(it.hasNext()) {
       				long l = Long.parseLong((String)it.next());
 	      			items.add(new Long(l + offset));
     				i++;
     			}
 			if (bagtrans.maxLength < items.size()) bagtrans.maxLength = items.size();
-			
 		}
 	}
     	catch (Exception ex) {
@@ -185,15 +185,15 @@ public class dbTrace {
    * its resource usage defined during the creation with the information stored in the BagTransaction.
    * The resource usage extends a stack and for that reason the order in which the requests for resource
    * usage are inserted is extremelly important. For the current version of the simulation the order
-   * must be as follows:
+   * must be as follows:<p>
    *
-   * 1 - push unlock request
-   * 2 - push write request
-   * 3 - push certification request
-   * 4 - push cpu request
-   * 5 - push read request
-   * 6 - push thinktime request
-   * 7 - push lock request
+   * 1 - push unlock request<p>
+   * 2 - push write request<p>
+   * 3 - push certification request<p>
+   * 4 - push cpu request<p>
+   * 5 - push read request<p>
+   * 6 - push thinktime request<p>
+   * 7 - push lock request<p>
    * 8 - push distributed request
    *
    * @param tid the transaction unique identifier.
@@ -225,7 +225,7 @@ public class dbTrace {
 			if (bagtrans.masterWS.size() != 0)
 			{
 				masterWS = new long[bagtrans.masterWS.size()];
-				tableMasterWS = new int[bagtrans.tableMasterWS.size()];		
+				tableMasterWS = new int[bagtrans.tableMasterWS.size()];	
 
 				it = bagtrans.masterWS.iterator();
 				i = 0; j = 0; lastTable = -1;
@@ -240,7 +240,6 @@ public class dbTrace {
 					}
 					
                 		        i++;
-			
 				}
 			}
 			if (bagtrans.masterRS.size() != 0)
@@ -250,38 +249,19 @@ public class dbTrace {
 
 				it = bagtrans.masterRS.iterator();
 				i = 0; j = 0; lastTable = -1;
-				
-				while(it.hasNext()) {
-				      	masterRS[i] = ((Long)it.next()).longValue();
-					
-					long nextTable = dmlinfo.table_of(masterRS[i]);
-                                        if (lastTable != nextTable) {
-						if(tableMasterRS == null) {
-							tableMasterRS = new int[1];
-							tableMasterRS[0] = i;
-						}
-						else {
-							int[] aux = new int[tableMasterRS.length+1];
-							System.arraycopy(tableMasterRS, 0, aux, 0, tableMasterRS.length);
-							aux[tableMasterRS.length] = i;
-							tableMasterRS = aux;
-						}
-/*
-						try { tableMasterRS[j] = i; }
-						catch(Exception exc) { 	
-							System.out.println("dbTrace:i:" + i);
-							System.out.println("dbTrace:nextTable:" + nextTable);
-							System.out.println("dbTrace:lastTable:" + lastTable);
-							System.out.println("dbTrace:bagtrans.masterRS:" + bagtrans.masterRS);
-							System.out.println("dbTrace:bagtrans.tableMasterRS:" + bagtrans.tableMasterRS);
-							System.exit(0);
-						}*/
-                                                lastTable = nextTable;
-//                                                j++;
-                                        }
 
-                		        i++;
-				}
+                                while(it.hasNext()) {
+                                        masterRS[i] = ((Long)it.next()).longValue();
+                                                                                                                             
+                                        if (lastTable != dmlinfo.table_of(masterRS[i])) {
+                                                tableMasterRS[j] = i;
+                                                lastTable = dmlinfo.table_of(masterRS[i]);
+                                                j++;
+                                        }
+                                                                                                                             
+                                        i++;
+                                }
+           	
 			}
 			if (bagtrans.slaveRS.size() != 0)
 			{
