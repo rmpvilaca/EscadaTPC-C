@@ -99,6 +99,10 @@ public class ClientStartup {
       new StringArg("-TRACEflag", "trace files",
 	            "% It defines the usage of trace file or not (NOTRACE,TRACE)",db);
 
+    IntArg fragArg = new IntArg("-FRAG", "Shift the clients...",
+          "% It shift the clients in order to access different warehouses...",0,db);
+
+
     if (args.length==0) {
       Usage(args, db);
       return;
@@ -118,9 +122,11 @@ public class ClientStartup {
     Emulation.setTraceInformation(prefix.s);
     Emulation.setNumberConcurrentEmulators(cli.num);
 
+    System.out.println("\nThe simulation will be started shifting the clients by " + fragArg.num + "\n");
+
     int i=0;
     for (i=0; i < cli.num; i++) {
-	e = new ClientEmulation(ebArg.s,stArg.s,dbArg.s,cli.num,i,prefix.s,null,0);
+	e = new ClientEmulation(ebArg.s,stArg.s,dbArg.s,cli.num,i,prefix.s,null,fragArg.num);
 	e.setName(prefix.s + "-" + i);
 	ebs.add(e);
 	e.start();
