@@ -19,4 +19,39 @@ clean:
 docs:
 	$(JAVADOC) -d $(docsdir)/tpc -classpath $(classpath) `find tpc -name \*.java`
 
+ORACLE_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
+             -KEY false \
+             -cli 50 \
+             -Stclass escada.tpc.tpcc.TPCCStateTransition \
+             -DBclass escada.tpc.tpcc.database.oracle.dbOracle \
+             -TRACEflaf TRACE \
+             -PREFIX Client \
+             -DBpath jdbc:oracle:thin:@192.168.2.32:1521:tpccdb \
+             -DBdriver oracle.jdbc.driver.OracleDriver \
+             -DBusr tpcc \
+             -DBpasswd tpcc \
+             -POOL 50 \
+             -MI 50
+
+MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
+             -KEY false \
+             -cli 50 \
+             -Stclass escada.tpc.tpcc.TPCCStateTransition \
+             -DBclass escada.tpc.tpcc.database.mysql.dbMySql \
+             -TRACEflag TRACE \
+             -PREFIX Client \
+             -DBpath jdbc:mysql://192.168.2.144/tpcc \
+             -DBdriver com.mysql.jdbc.Driver \
+             -DBusr root \
+             -DBpasswd 123456 \
+             -POOL 50 \
+             -mi 50
+
+real-oracle:
+	$(JVM) -cp $(classpath) -Xmx1024 escada.tpc.common.clients.ClientStartup $(ORACLE_FLAGS)
+
+real-mysql:
+	$(JVM) -cp $(classpath) -Xmx1024 escada.tpc.common.clients.ClientStartup $(MYSQL_FLAGS)
+
+
 # arch-tag: 35a104c6-523c-493b-9afe-e85f72d9d865
