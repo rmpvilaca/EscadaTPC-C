@@ -76,7 +76,7 @@ public class dbTrace {
 
 			HashSet items = null; 
       	
-			if(type.equals("r")) {
+			if(type.equalsIgnoreCase("r")) {
 				if (DistributedDb.isPossibleExecution(of,hid))	{
 					items = bagtrans.masterRS;
 					bagtrans.masterrs = bagtrans.masterrs + (int)(v.size() * dmlinfo.tuplesize(offset));
@@ -335,33 +335,37 @@ public class dbTrace {
 			for (i = tmpModel.length - 1; i >= 0; i--) { 
                                 transModel = tmpModel[i];
 
-				if (((String)transModel.get(0)).equals("DBSMAdapter")) {
+				if (((String)transModel.get(0)).equalsIgnoreCase("DBSMAdapter")) {
 					req = new NetRequest (Integer.valueOf(tid),(String)transModel.get(1),closeTransactionTrace);  // DBSM
 				
 				}
-				else if (((String)transModel.get(0)).equals("Storage")) {
+				else if (((String)transModel.get(0)).equalsIgnoreCase("Storage")) {
 				 	info = (String)transModel.get(2);
-					if (info.equals("read"))
+	
+					if (info.equalsIgnoreCase("R")) {
 						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true); 
+					}
 					else
-						if (!readOnly) req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false); 
+						if (!readOnly) req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false); {
+						}
+		 
 				
 				}
-				else if (((String)transModel.get(0)).equals("CPU")) {
+				else if (((String)transModel.get(0)).equalsIgnoreCase("CPU")) {
 				
 					req = new ProcessRequest(Integer.valueOf(tid),(String)transModel.get(1),cpuUsage,false); // CPU
 				}
-				else if (((String)transModel.get(0)).equals("Thinker")) {
+				else if (((String)transModel.get(0)).equalsIgnoreCase("Thinker")) {
 					req = new ProcessRequest(Integer.valueOf(tid),(String)transModel.get(1),qttUsage,false); // QTT
 				
 				}
-				else if (((String)transModel.get(0)).equals("DDbProxyProcess")) {
+				else if (((String)transModel.get(0)).equalsIgnoreCase("DDbProxyProcess")) {
 					req = new NetRequest (Integer.valueOf(tid),(String)transModel.get(1),closeTransactionTrace);  // DDB
 				
 				}
-				else if (((String)transModel.get(0)).equals("LockManager")) {
+				else if (((String)transModel.get(0)).equalsIgnoreCase("LockManager")) {
 				 	info = (String)transModel.get(2);
-					if (info.equals("lock"))
+					if (info.equalsIgnoreCase("L"))
 						req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_LOCK,masterRS,masterWS,false); 
 					else
 						req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_UNLOCK,masterRS,masterWS,false); 
@@ -370,7 +374,6 @@ public class dbTrace {
 				closeTransactionTrace.payload().push(req);
 			}
 		}
-		System.out.println(closeTransactionTrace.payload()); // porra
 	}
 	catch (Exception ex) {
 		ex.printStackTrace(System.err);
@@ -506,7 +509,7 @@ public class dbTrace {
 
         param = getStringParam(stm);
         if (param != null) {
-          if (param.equals("repeat")) {
+          if (param.equalsIgnoreCase("repeat")) {
             stm = replaceStringParam(stm, param, "");
             param = getStringParam(stm);
             value = (String) obj.getInfo(param);
@@ -536,7 +539,7 @@ public class dbTrace {
                 value = Integer.toString(loop + 1);
                 stm = replaceStringParam(stm, param, value);
               }
-              else if (param.equals("if")) {
+              else if (param.equalsIgnoreCase("if")) {
                 stm = replaceOneStringParam(stm, param, "");
                 param = getStringParam(stm);
                 stm = replaceOneStringParam(stm, param, "");
@@ -544,7 +547,7 @@ public class dbTrace {
                 String lstr = param.substring(param.indexOf("=") + 1);
                 value = (String) obj.getInfo(rstr);
                 if (value != null) {
-                  if (!value.equals(lstr)) {
+                  if (!value.equalsIgnoreCase(lstr)) {
                     noOutput = true;
                     break;
                   }
@@ -554,7 +557,7 @@ public class dbTrace {
                   break;
                 }
               }
-              else if (param.equals("like"))
+              else if (param.equalsIgnoreCase("like"))
               {
                 stm = replaceOneStringParam(stm, param, "");
                 String rstr = getStringParam(stm);
@@ -582,7 +585,7 @@ public class dbTrace {
         else {
           if (stm.indexOf("committran") != -1) {
             value = (String) obj.getInfo("abort");
-            if (value.equals("0")) {
+            if (value.equalsIgnoreCase("0")) {
               pts.println(stm);
             }
             else {
