@@ -1,581 +1,624 @@
-package Escada.tpc.tpcc.database.postgresql;
+package Escada.tpc.tpcc.database.oracle;
 
 import Escada.tpc.tpcc.database.*;
 import Escada.tpc.common.*;
+import Escada.tpc.tpcc.trace.*;
 
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
+import Escada.tpc.common.clients.*;
+
+import oracle.jdbc.oracore.OracleType;
 
 /** It is an interface to a postgreSQL, which based is based on the
-* the distributions of the TPC-C.
-**/
+ * the distributions of the TPC-C.
+ **/
 public class dbOracle
-    extends dbTPCCDatabase {
-
-  public Object TraceNewOrderDB(OutInfo obj,String hid) throws java.sql.
-      SQLException {
-
-    Connection con = null;
-    HashSet dbtrace = null;
-
-    try {
-        con = getConnection();
-
-	System.out.println("Beginning transaction new order (thread(" + Thread.currentThread().getName() + "))");
-
-        dbtrace = NewOrderDB(obj, con);
-
-	System.out.println("Finishing transaction new order (thread(" + Thread.currentThread().getName() + "))");
+extends dbTPCCDatabase {
+    
+    public static int NewOrderTransNum = 0;
+    public static int PaymentTransNum = 0;
+    public static int OrderStatusTransNum = 0;
+    public static int StockLevelTransNum = 0;
+    public static int DeliveryTransNum = 0;
+    
+    
+    public Object TraceNewOrderDB(OutInfo obj,String hid) throws java.sql.
+    SQLException {
+        
+        Connection con = null;
+        HashSet dbtrace = null;
+        
+        try {
+            StringBuffer lErro = new StringBuffer("0");
+            dbLog.log("Beginning transaction new order (thread(" + Thread.currentThread().getName() + "))");
+            
+            Date lDateBegin1 = new Date();
+            
+            con = getConnection();
+            
+            Date lDateBegin2 = new Date();
+            
+            dbtrace = NewOrderDB(lErro,obj, con);
+            
+            Date lDateEnd1 = new Date();
+            
+            Date lDateEnd2 = new Date();
+            
+            dbLog.log("\tFinishing transaction new order (thread(" + Thread.currentThread().getName() + ")) "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +"\tB1 = "+lDateBegin1.getTime()+"\tB2 = "+lDateBegin2.getTime()+"\tE1 = "+lDateEnd1.getTime()+"\tE2 = "+lDateEnd2.getTime());
+            dbLog.logToFile(dbLog.NO,"NEW_ORDER = "+dbOracle.NewOrderTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime() +" Client= "+Thread.currentThread().getName());
+        }
+        catch (java.lang.Exception ex) {
+            dbLog.logException(ex);
+            if (con != null) {
+                RollbackTransaction(con, ex);
+            }
+        }
+        finally {
+            returnConnection(con);
+        }
+        return (dbtrace);
     }
-    catch (java.lang.Exception ex) {
-      ex.printStackTrace();
-      if (con != null) {
-        RollbackTransaction(con, ex);
-      }
+    
+    public HashSet NewOrderDB(StringBuffer pErro, OutInfo obj, Connection con) throws java.sql.
+    SQLException {
+        while (true) {
+            CallableStatement statement = null;
+            
+            ResultSet rs = null;
+            String cursor = null;
+            String query = "begin ? := PKG_TPCC.tpcc_neworder(?,?,?,?,?,?,?,?); end;";
+            
+            HashSet dbtrace = new HashSet();
+            
+            try {
+                
+                statement = con.prepareCall(query);
+                
+                statement.registerOutParameter(1, oracle.jdbc.driver.OracleTypes.CURSOR );
+                
+                
+                
+                statement.setInt(2, Integer.parseInt((String) obj.getInfo("wid")));
+                
+                statement.setInt(3, Integer.parseInt( (String) obj.getInfo("did")));
+                statement.setInt(4, Integer.parseInt( (String) obj.getInfo("cid")));
+                statement.setInt(5, Integer.parseInt( (String) obj.getInfo("qtd")));
+                statement.setInt(6, Integer.parseInt( (String) obj.getInfo("localwid")));
+                
+                int icont = 0;
+                int qtd = Integer.parseInt( (String) obj.getInfo("qtd"));
+                StringBuffer iid = new StringBuffer();
+                StringBuffer wid = new StringBuffer();
+                StringBuffer qtdi = new StringBuffer();
+                while (icont < qtd) {
+                    iid.append( (String) obj.getInfo("iid" + icont));
+                    iid.append(",");
+                    wid.append((String) obj.getInfo("supwid" + icont));
+                    wid.append(",");
+                    qtdi.append( (String) obj.getInfo("qtdi" + icont));
+                    qtdi.append(",");
+                    icont++;
+                }
+                
+                
+                statement.setString(7, iid.toString());
+                statement.setString(8, wid.toString());
+                statement.setString(9, qtdi.toString());
+                
+                statement.execute();
+                rs = (ResultSet)statement.getObject(1);
+                if (rs.next()) {
+                    cursor = (String) rs.getString(1);
+                }
+                rs.close();
+                rs = null;
+                statement.close();
+                statement = null;
+                
+            }
+            catch (java.sql.SQLException sqlex) {
+                pErro.append("1");
+                
+                
+                if(sqlex.getErrorCode()==1){
+                    dbLog.log(Thread.currentThread().getName() + " NewOrder - SQL Exception " + "UNIQUE CONSTRAINT");
+                }else{
+                    dbLog.logException(sqlex);
+                   
+                    dbLog.log(Thread.currentThread().getName() + " NewOrder - SQL Exception " + sqlex.getMessage());
+                    if ((sqlex.getMessage().indexOf("serialize") != -1) || (sqlex.getMessage().indexOf("deadlock") != -1)) {
+                        RollbackTransaction(con, sqlex);
+                        InitTransaction(obj, con, "tx neworder");
+                        continue;
+                    }
+                }
+            }
+            catch (java.lang.Exception ex) {
+                pErro.append("2");
+                dbLog.log(Thread.currentThread().getName() + " NewOrder - General Exception " + ex.getMessage());
+                throw new java.sql.SQLException(ex.getMessage());
+            }
+            finally {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (statement != null) {
+                    statement.close();
+                }
+            }
+            return (dbtrace);
+        }
     }
-    finally {
-      returnConnection(con);
+    
+    public Object TraceDeliveryDB(OutInfo obj,String hid) throws java.sql.
+    SQLException {
+        
+        Connection con = null;
+        HashSet dbtrace = null;
+        
+        try {
+            StringBuffer lErro = new StringBuffer("0");
+            con = getConnection();
+            
+            dbLog.log("Beginning trasaction delivery (thread(" + Thread.currentThread().getName() + "))");
+            
+            Date lDateBegin1 = new Date();
+            
+            InitTransaction(obj, con, "tx delivery");
+            
+            Date lDateBegin2 = new Date();
+            
+            dbtrace = DeliveryDB(lErro, obj, con);
+                        
+            Date lDateEnd1 = new Date();
+            
+            CommitTransaction(con);
+            
+            Date lDateEnd2 = new Date();
+
+            dbLog.log("\tFinishing trasaction delivery (thread(" + Thread.currentThread().getName() + "))\tB1 = "+lDateBegin1.getTime()+"\tB2 = "+lDateBegin2.getTime()+"\tE1 = "+lDateEnd1.getTime()+"\tE2 = "+lDateEnd2.getTime());
+            dbLog.logToFile(dbLog.DL,"DELIVERY = "+dbOracle.DeliveryTransNum++ +"T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime()+" Client= "+Thread.currentThread().getName());
+        }
+        catch (java.lang.Exception ex) {
+            dbLog.logException(ex);
+            if (con != null) {
+                RollbackTransaction(con, ex);
+            }
+        }
+        finally {
+            returnConnection(con);
+        }
+        return (dbtrace);
     }
-    return (dbtrace);
-  }
-
-  public HashSet NewOrderDB(OutInfo obj, Connection con) throws java.sql.
-      SQLException {
-    while (true) {
-      PreparedStatement statement = null;
-      ResultSet rs = null;
-      String cursor = null;
-
-      HashSet dbtrace = new HashSet();
-
-      try {
-        statement = con.prepareCall("select tpcc_neworder (?,?,?,?,?,?,?,?)");
-
-        statement.setInt(1, Integer.parseInt( (String) obj.getInfo("wid")));
-        statement.setInt(2, Integer.parseInt( (String) obj.getInfo("did")));
-        statement.setInt(3, Integer.parseInt( (String) obj.getInfo("cid")));
-        statement.setInt(4, Integer.parseInt( (String) obj.getInfo("qtd")));
-        statement.setInt(5, Integer.parseInt( (String) obj.getInfo("localwid")));
-
-        int icont = 0;
-        int qtd = Integer.parseInt( (String) obj.getInfo("qtd"));
-        StringBuffer iid = new StringBuffer();
-        StringBuffer wid = new StringBuffer();
-        StringBuffer qtdi = new StringBuffer();
-        while (icont < qtd) {
-          iid.append( (String) obj.getInfo("iid" + icont));
-          iid.append(",");
-          wid.append( (String) obj.getInfo("supwid" + icont));
-          wid.append(",");
-          qtdi.append( (String) obj.getInfo("qtdi" + icont));
-          qtdi.append(",");
-          icont++;
+    
+    public HashSet DeliveryDB(StringBuffer pErro,OutInfo obj, Connection con) throws java.sql.
+    SQLException {
+        while (true) {
+            CallableStatement statement = null;
+            ResultSet rs = null;
+            String cursor = null;
+            String query = "begin ? := PKG_TPCC.tpcc_delivery(?,?); end;";
+            
+            HashSet dbtrace = new HashSet();
+            
+            try {
+                
+                statement = con.prepareCall(query);
+                statement.registerOutParameter(1, oracle.jdbc.driver.OracleTypes.CURSOR );
+                statement.setInt(2, Integer.parseInt((String) obj.getInfo("wid")));
+                statement.setInt(3, Integer.parseInt( (String) obj.getInfo("crid")));
+                statement.execute();
+                rs = (ResultSet)statement.getObject(1);
+                
+                if (rs.next()) {
+                    cursor = (String) rs.getString(1);
+                }
+                rs.close();
+                rs = null;
+                statement.close();
+                statement = null;                
+            }
+            catch (java.sql.SQLException sqlex) {
+                pErro.append("1");
+                dbLog.log(Thread.currentThread().getName() + " Delivery - SQL Exception " + sqlex.getMessage());
+                if ((sqlex.getMessage().indexOf("serialize") != -1) || (sqlex.getMessage().indexOf("deadlock") != -1)){
+                    RollbackTransaction(con, sqlex);
+                    InitTransaction(obj, con, "tx delivery");
+                    continue;
+                }
+            }
+            catch (java.lang.Exception ex) {
+                pErro.append("2");
+                dbLog.log(Thread.currentThread().getName() + " Delivery - General Exception " + ex.getMessage());
+                throw new java.sql.SQLException(ex.getMessage());
+            }
+            finally {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (statement != null) {
+                    statement.close();
+                }
+            }
+            return (dbtrace);
         }
-        statement.setString(6, iid.toString());
-        statement.setString(7, wid.toString());
-        statement.setString(8, qtdi.toString());
-
-        rs = statement.executeQuery();
-
-        if (rs.next()) {
-          cursor = (String) rs.getString(1);
-        }
-        rs.close();
-        rs = null;
-        statement.close();
-        statement = null;
-        statement = con.prepareStatement("fetch all in \"" + cursor + "\"");
-        rs = statement.executeQuery();
-
-        while (rs.next()) {
-          dbtrace.add(rs.getString(1));
-        }
-        rs.close();
-        rs = null;
-        statement.close();
-        statement = null;
-      }
-      catch (java.sql.SQLException sqlex) {
-        System.err.println(Thread.currentThread().getName() + " NewOrder - SQL Exception " + sqlex.getMessage());
-        if ((sqlex.getMessage().indexOf("serialize") != -1) || (sqlex.getMessage().indexOf("deadlock") != -1)) {
-          RollbackTransaction(con, sqlex);
-          InitTransaction(obj, con, "tx neworder");
-          continue;
-        }
-      }
-      catch (java.lang.Exception ex) {
-        System.err.println(Thread.currentThread().getName() + " NewOrder - General Exception " + ex.getMessage());
-        throw new java.sql.SQLException(ex.getMessage());
-      }
-      finally {
-        if (rs != null) {
-          rs.close();
-        }
-        if (statement != null) {
-          statement.close();
-        }
-      }
-      return (dbtrace);
     }
-  }
+    
+    public Object TraceOrderStatusDB(OutInfo obj,String hid) throws java.sql.
+    SQLException {
+        
+        Connection con = null;
+        HashSet dbtrace = null;
+        StringBuffer lErro = new StringBuffer("0");
+        try {
+            con = getConnection();
+            
+            dbLog.log("Beginning transaction order status (thread(" + Thread.currentThread().getName() + "))");
+            boolean lautocommit = con.getAutoCommit();
+            
+            con.setAutoCommit(false);
+            
+            Date lDateBegin1 = new Date();
+            
+            InitTransaction(obj, con, "tx orderstatus");
+            
+            Date lDateBegin2 = new Date();
+            
+            dbtrace = OrderStatusDB(lErro, obj, con);
 
-  public Object TraceDeliveryDB(OutInfo obj,String hid) throws java.sql.
-      SQLException {
-                                                                                                                             
-    Connection con = null;
-    HashSet dbtrace = null;
-                                                                                                                             
-    try {
-        con = getConnection();
+            Date lDateEnd1 = new Date();
 
-	System.out.println("Beginning trasaction delivery (thread(" + Thread.currentThread().getName() + "))");
+            CommitTransaction(con);
+            
+            Date lDateEnd2 = new Date();
 
-        InitTransaction(obj, con, "tx delivery");
-                                                                                                                             
-        dbtrace = DeliveryDB(obj, con);
-                                                                                                                             
-        CommitTransaction(con);
-
-	System.out.println("Finishing trasaction delivery (thread(" + Thread.currentThread().getName() + "))");
-
-    }
-    catch (java.lang.Exception ex) {
-      ex.printStackTrace();
-      if (con != null) {
-        RollbackTransaction(con, ex);
-      }
-    }
-    finally {
-      returnConnection(con);
-    }
-    return (dbtrace);
-  }
-
-  public HashSet DeliveryDB(OutInfo obj, Connection con) throws java.sql.
-      SQLException {
-    while (true) {
-      PreparedStatement statement = null;
-      ResultSet rs = null;
-      String cursor = null;
-
-      HashSet dbtrace = new HashSet();
-
-      try {
-        statement = con.prepareStatement("select tpcc_delivery(?,?)");
-
-        statement.setInt(1, Integer.parseInt( (String) obj.getInfo("wid")));
-        statement.setInt(2, Integer.parseInt( (String) obj.getInfo("crid")));
-        rs = statement.executeQuery();
-
-        if (rs.next()) {
-          cursor = (String) rs.getString(1);
+            con.setAutoCommit(lautocommit);
+            
+            dbLog.log("tFinishing transaction order status (thread(" + Thread.currentThread().getName() + "))\tB1 = "+lDateBegin1.getTime()+"\tB2 = "+lDateBegin2.getTime()+"\tE1 = "+lDateEnd1.getTime()+"\tE2 = "+lDateEnd2.getTime());
+            dbLog.logToFile(dbLog.OS,"ORDER_STATUS = "+dbOracle.OrderStatusTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime()+" Client= "+Thread.currentThread().getName());
         }
-        rs.close();
-        rs = null;
-        statement.close();
-        statement = null;
-        statement = con.prepareStatement("fetch all in \"" + cursor + "\"");
-        rs = statement.executeQuery();
-
-        while (rs.next()) {
-          dbtrace.add(rs.getString(1));
+        catch (java.lang.Exception ex) {
+            dbLog.logException(ex);
+            if (con != null) {
+                RollbackTransaction(con, ex);
+            }
         }
-        rs.close();
-        rs = null;
-        statement.close();
-        statement = null;
-      }
-      catch (java.sql.SQLException sqlex) {
-        System.err.println(Thread.currentThread().getName() + " Delivery - SQL Exception " + sqlex.getMessage());
-        if ((sqlex.getMessage().indexOf("serialize") != -1) || (sqlex.getMessage().indexOf("deadlock") != -1)){
-          RollbackTransaction(con, sqlex);
-          InitTransaction(obj, con, "tx delivery");
-          continue;
+        finally {
+            returnConnection(con);
         }
-      }
-      catch (java.lang.Exception ex) {
-        System.err.println(Thread.currentThread().getName() + " Delivery - General Exception " + ex.getMessage());
-        throw new java.sql.SQLException(ex.getMessage());
-      }
-      finally {
-        if (rs != null) {
-          rs.close();
-        }
-        if (statement != null) {
-          statement.close();
-        }
-      }
-      return (dbtrace);
+        return (dbtrace);
     }
-  }
-
-  public Object TraceOrderStatusDB(OutInfo obj,String hid) throws java.sql.
-      SQLException {
-                                                                                                                             
-    Connection con = null;
-    HashSet dbtrace = null;
-                                                                                                                             
-    try {
-        con = getConnection();
-
-	System.out.println("Beginning transaction order status (thread(" + Thread.currentThread().getName() + "))");
-
-        InitTransaction(obj, con, "tx orderstatus");
-                                                                                                                             
-        dbtrace = OrderStatusDB(obj, con);
-                                                                                                                             
-        CommitTransaction(con);
-
-	System.out.println("Finishing transaction order status (thread(" + Thread.currentThread().getName() + "))");
-    }
-    catch (java.lang.Exception ex) {
-      ex.printStackTrace();
-      if (con != null) {
-        RollbackTransaction(con, ex);
-      }
-    }
-    finally {
-      returnConnection(con);
-    }
-    return (dbtrace);
-  }
-
-
-  public HashSet OrderStatusDB(OutInfo obj, Connection con) throws java.
-      sql.SQLException {
-    while (true) {
-      PreparedStatement statement = null;
-      ResultSet rs = null;
-      String cursor = null;
-
-      HashSet dbtrace = new HashSet();
-
-      try {
-        statement = con.prepareStatement("select tpcc_orderstatus(?,?,?,?)");
-
-        statement.setInt(1, Integer.parseInt( (String) obj.getInfo("wid")));
-        statement.setInt(2, Integer.parseInt( (String) obj.getInfo("did")));
-        statement.setInt(3, Integer.parseInt( (String) obj.getInfo("cid")));
-        statement.setString(4, (String) obj.getInfo("lastname"));
-        rs = statement.executeQuery();
-
-        if (rs.next()) {
-          cursor = (String) rs.getString(1);
+    
+    
+    public HashSet OrderStatusDB(StringBuffer pErro,OutInfo obj, Connection con) throws java.
+    sql.SQLException {
+        while (true) {
+            CallableStatement statement = null;
+            ResultSet rs = null;
+            String cursor = null;
+            String query = "begin ? := PKG_TPCC.tpcc_orderstatus(?,?,?,?); end;";
+            HashSet dbtrace = new HashSet();
+            
+            try {
+                statement = con.prepareCall(query);
+                statement.registerOutParameter(1, oracle.jdbc.driver.OracleTypes.CURSOR );
+                statement.setInt(2, Integer.parseInt((String) obj.getInfo("wid")));
+                statement.setInt(3, Integer.parseInt( (String) obj.getInfo("did")));
+                statement.setInt(4, Integer.parseInt( (String) obj.getInfo("cid")));
+                statement.setString(5, (String) obj.getInfo("lastname"));
+                statement.execute();
+                rs = (ResultSet)statement.getObject(1);
+                if (rs.next()) {
+                    cursor = (String) rs.getString(1);
+                }
+                rs.close();
+                rs = null;
+                statement.close();
+                statement = null;
+                
+            }
+            catch (java.sql.SQLException sqlex) {
+                pErro.append("1");
+                dbLog.log(Thread.currentThread().getName() + " OrderStatus - SQL Exception " + sqlex.getMessage());
+                if ((sqlex.getMessage().indexOf("serialize") != -1) || (sqlex.getMessage().indexOf("deadlock") != -1)){
+                    RollbackTransaction(con, sqlex);
+                    
+                    String str = (String) (obj).getInfo("cid");
+                    if (str.equals("0")) {
+                        InitTransaction(obj, con, "tx orderstatus 01");
+                    }
+                    else {
+                        InitTransaction(obj, con, "tx orderstatus 02");
+                    }
+                    
+                    continue;
+                }
+            }
+            catch (java.lang.Exception ex) {
+                pErro.append("2");
+                dbLog.log(Thread.currentThread().getName() + " OrderStatus - General Exception " + ex.getMessage());
+                throw new java.sql.SQLException(ex.getMessage());
+            }
+            finally {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (statement != null) {
+                    statement.close();
+                }
+            }
+            return (dbtrace);
         }
-        rs.close();
-        rs = null;
-        statement.close();
-        statement = null;
-        statement = con.prepareStatement("fetch all in \"" + cursor + "\"");
-        rs = statement.executeQuery();
-
-        while (rs.next()) {
-          dbtrace.add(rs.getString(1));
-        }
-        rs.close();
-        rs = null;
-        statement.close();
-        statement = null;
-      }
-      catch (java.sql.SQLException sqlex) {
-        System.err.println(Thread.currentThread().getName() + " OrderStatus - SQL Exception " + sqlex.getMessage());
-        if ((sqlex.getMessage().indexOf("serialize") != -1) || (sqlex.getMessage().indexOf("deadlock") != -1)){
-          RollbackTransaction(con, sqlex);
-
-          String str = (String) (obj).getInfo("cid");
-          if (str.equals("0")) {
-            InitTransaction(obj, con, "tx orderstatus 01");
-          }
-          else {
-            InitTransaction(obj, con, "tx orderstatus 02");
-          }
-
-          continue;
-        }
-      }
-      catch (java.lang.Exception ex) {
-        System.err.println(Thread.currentThread().getName() + " OrderStatus - General Exception " + ex.getMessage());
-        throw new java.sql.SQLException(ex.getMessage());
-      }
-      finally {
-        if (rs != null) {
-          rs.close();
-        }
-        if (statement != null) {
-          statement.close();
-        }
-      }
-      return (dbtrace);
     }
-  }
+    
+    public Object TracePaymentDB(OutInfo obj,String hid) throws java.sql.SQLException {
+        
+        Connection con = null;
+        HashSet dbtrace = null;
+        StringBuffer lErro = new StringBuffer("0");
+        try {
+            con = getConnection();
+            
+            dbLog.log("Beginning transaction payment (thread(" + Thread.currentThread().getName() + "))");
 
-  public Object TracePaymentDB(OutInfo obj,String hid) throws java.sql.SQLException {
-                                                                                                                             
-    Connection con = null;
-    HashSet dbtrace = null;
-                                                                                                                             
-    try {
-        con = getConnection();
+            Date lDateBegin1 = new Date();
+            
+            InitTransaction(obj, con, "tx payment");
+            Date lDateBegin2 = new Date();
+            
+            dbtrace = PaymentDB(lErro, obj, con);
+            Date lDateEnd1 = new Date();
+            
 
-	System.out.println("Beginning transaction payment (thread(" + Thread.currentThread().getName() + "))");
-
-        InitTransaction(obj, con, "tx payment");
-                                                                                                                             
-        dbtrace = PaymentDB(obj, con);
-                                                                                                                             
-        CommitTransaction(con);
-
-	System.out.println("Finishing transaction payment (thread(" + Thread.currentThread().getName() + "))");
-
-    }
-    catch (java.lang.Exception ex) {
-      ex.printStackTrace();
-      if (con != null) {
-        RollbackTransaction(con, ex);
-      }
-    }
-    finally {
-      returnConnection(con);
-    }
-    return (dbtrace);
-  }
-
-  public HashSet PaymentDB(OutInfo obj, Connection con) throws java.sql.
-      SQLException {
-    while (true) {
-      PreparedStatement statement = null;
-      ResultSet rs = null;
-      String cursor = null;
-
-      HashSet dbtrace = new HashSet();
-
-      try {
-        statement = con.prepareStatement(
-            "select tpcc_payment(?,?,cast(? as numeric(6,2)),?,?,?,cast(? as char(16)))");
-
-        statement.setInt(1, Integer.parseInt( (String) obj.getInfo("wid")));
-        statement.setInt(2, Integer.parseInt( (String) obj.getInfo("cwid")));
-        statement.setFloat(3, Float.parseFloat( (String) obj.getInfo("hamount")));
-        statement.setInt(4, Integer.parseInt( (String) obj.getInfo("did")));
-        statement.setInt(5, Integer.parseInt( (String) obj.getInfo("cdid")));
-        statement.setInt(6, Integer.parseInt( (String) obj.getInfo("cid")));
-        statement.setString(7, (String) obj.getInfo("lastname"));
-
-        rs = statement.executeQuery();
-
-        if (rs.next()) {
-          cursor = (String) rs.getString(1);
+            CommitTransaction(con);
+            Date lDateEnd2 = new Date();
+            
+            dbLog.log("tFinishing transaction payment (thread(" + Thread.currentThread().getName() + "))\tB1 = "+lDateBegin1.getTime()+"\tB2 = "+lDateBegin2.getTime()+"\tE1 = "+lDateEnd1.getTime()+"\tE2 = "+lDateEnd2.getTime());
+            dbLog.logToFile(dbLog.PA,"PAYMENT = "+dbOracle.PaymentTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime()+" Client= "+Thread.currentThread().getName());
         }
-        rs.close();
-        rs = null;
-        statement.close();
-        statement = null;
-        statement = con.prepareStatement("fetch all in \"" + cursor + "\"");
-        rs = statement.executeQuery();
-
-        while (rs.next()) {
-          dbtrace.add(rs.getString(1));
+        catch (java.lang.Exception ex) {
+            dbLog.logException(ex);
+            if (con != null) {
+                RollbackTransaction(con, ex);
+            }
         }
-        rs.close();
-        rs = null;
-        statement.close();
-        statement = null;
-      }
-      catch (java.sql.SQLException sqlex) {
-        System.err.println(Thread.currentThread().getName() + " Payment - SQL Exception " + sqlex.getMessage());
-        if ((sqlex.getMessage().indexOf("serialize") != -1) || (sqlex.getMessage().indexOf("deadlock") != -1)) {
-          RollbackTransaction(con, sqlex);
-          String str = (String) (obj).getInfo("cid");
-          if (str.equals("0")) {
-            InitTransaction(obj, con, "tx payment 01");
-          }
-          else {
-            InitTransaction(obj, con, "tx payment 02");
-          }
-          continue;
+        finally {
+            returnConnection(con);
         }
-      }
-      catch (java.lang.Exception ex) {
-        System.err.println(Thread.currentThread().getName() + " Payment - General Exception " + ex.getMessage());
-        throw new java.sql.SQLException(ex.getMessage());
-      }
-      finally {
-        if (rs != null) {
-          rs.close();
+        return (dbtrace);
+    }
+    
+    public HashSet PaymentDB(StringBuffer  pErro,OutInfo obj, Connection con) throws java.sql.
+    SQLException {
+        while (true) {
+            CallableStatement statement = null;
+            ResultSet rs = null;
+            String cursor = null;
+            String query = "begin ? := PKG_TPCC.tpcc_payment(?,?,?,?,?,?,?); end;";
+            HashSet dbtrace = new HashSet();
+            
+            try {
+                       
+                statement = con.prepareCall(query);
+                statement.registerOutParameter(1, oracle.jdbc.driver.OracleTypes.CURSOR );
+                statement.setInt(2, Integer.parseInt( (String) obj.getInfo("wid")));
+                statement.setInt(3, Integer.parseInt( (String) obj.getInfo("cwid")));
+                statement.setFloat(4, Float.parseFloat( (String) obj.getInfo("hamount")));
+                statement.setInt(5, Integer.parseInt( (String) obj.getInfo("did")));
+                statement.setInt(6, Integer.parseInt( (String) obj.getInfo("cdid")));
+                statement.setInt(7, Integer.parseInt( (String) obj.getInfo("cid")));
+                statement.setString(8, ((String) obj.getInfo("lastname"))+"%");
+                
+                statement.execute();
+                rs = (ResultSet)statement.getObject(1);
+                
+                if (rs.next()) {
+                    cursor = (String) rs.getString(1);
+                }
+                rs.close();
+                rs = null;
+                statement.close();
+                statement = null;
+            }
+            catch (java.sql.SQLException sqlex) {
+                
+                pErro.append("1");
+                dbLog.log(Thread.currentThread().getName() + " Payment - SQL Exception " + sqlex.getMessage());
+                dbLog.logException(sqlex);
+                if ((sqlex.getMessage().indexOf("serialize") != -1) || (sqlex.getMessage().indexOf("deadlock") != -1)) {
+                    RollbackTransaction(con, sqlex);
+                    String str = (String) (obj).getInfo("cid");
+                    if (str.equals("0")) {
+                        InitTransaction(obj, con, "tx payment 01");
+                    }
+                    else {
+                        InitTransaction(obj, con, "tx payment 02");
+                    }
+                    continue;
+                }
+            }
+            catch (java.lang.Exception ex) {
+                pErro.append("2");
+                dbLog.log(Thread.currentThread().getName() + " Payment - General Exception " + ex.getMessage());
+                throw new java.sql.SQLException(ex.getMessage());
+            }
+            finally {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (statement != null) {
+                    statement.close();
+                }
+            }
+            return (dbtrace);
         }
-        if (statement != null) {
-          statement.close();
+    }
+    
+    public Object TraceStockLevelDB(OutInfo obj,String hid) throws java.sql.SQLException {
+        
+        Connection con = null;
+        HashSet dbtrace = null;
+        StringBuffer lErro = new StringBuffer("0");
+        try {
+            con = getConnection();
+            
+            dbLog.log("Beginning transaction stock level (thread(" + Thread.currentThread().getName() + "))");
+            
+            Date lDateBegin1 = new Date();
+            
+            InitTransaction(obj, con, "tx stocklevel");
+            
+            Date lDateBegin2 = new Date();
+            
+            dbtrace = StockLevelDB(lErro, obj, con);
+            
+            Date lDateEnd1 = new Date();
+            
+            CommitTransaction(con);
+            
+            Date lDateEnd2 = new Date();
+            
+            dbLog.log("\tFinishing transaction stock level (thread(" + Thread.currentThread().getName() + "))\tB1 = "+lDateBegin1.getTime()+"\tB2 = "+lDateBegin2.getTime()+"\tE1 = "+lDateEnd1.getTime()+"\tE2 = "+lDateEnd2.getTime());
+            dbLog.logToFile(dbLog.SL,"STOCK_LEVEL = "+dbOracle.StockLevelTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime()+" Client= "+Thread.currentThread().getName());
         }
-      }
-      return (dbtrace);
-    }
-  }
-
-  public Object TraceStockLevelDB(OutInfo obj,String hid) throws java.sql.SQLException {
-                                                                                                                             
-    Connection con = null;
-    HashSet dbtrace = null;
-                                                                                                                             
-    try {
-        con = getConnection();
-
-	System.out.println("Beginning transaction stock level (thread(" + Thread.currentThread().getName() + "))");
-
-        InitTransaction(obj, con, "tx stocklevel");
-                                                                                                                             
-        dbtrace = StockLevelDB(obj, con);
-                                                                                                                             
-        CommitTransaction(con);
-
-	System.out.println("Finishing transaction stock level (thread(" + Thread.currentThread().getName() + "))");
-    }
-    catch (java.lang.Exception ex) {
-      ex.printStackTrace();
-      if (con != null) {
-        RollbackTransaction(con, ex);
-      }
-    }
-    finally {
-      returnConnection(con);
-    }
-    return (dbtrace);
-  }
-
-
-  public HashSet StockLevelDB(OutInfo obj, Connection con) throws java.
-      sql.SQLException {
-    while (true) {
-      PreparedStatement statement = null;
-      ResultSet rs = null;
-      String cursor = null;
-
-      HashSet dbtrace = new HashSet();
-
-      try {
-        statement = con.prepareStatement("select tpcc_stocklevel(?,?,?)");
-
-        statement.setInt(1, Integer.parseInt( (String) obj.getInfo("wid")));
-        statement.setInt(2, Integer.parseInt( (String) obj.getInfo("did")));
-        statement.setInt(3, Integer.parseInt( (String) obj.getInfo("threshhold")));
-        rs = statement.executeQuery();
-
-        if (rs.next()) {
-          cursor = (String) rs.getString(1);
+        catch (java.lang.Exception ex) {
+            dbLog.logException(ex);
+            if (con != null) {
+                RollbackTransaction(con, ex);
+            }
         }
-        rs.close();
-        rs = null;
-        statement.close();
-        statement = null;
-        statement = con.prepareStatement("fetch all in \"" + cursor + "\"");
-        rs = statement.executeQuery();
-
-        while (rs.next()) {
-          dbtrace.add(rs.getString(1));
+        finally {
+            returnConnection(con);
         }
-        rs.close();
-        rs = null;
-        statement.close();
-        statement = null;
-      }
-      catch (java.sql.SQLException sqlex) {
-        System.err.println(Thread.currentThread().getName() + " StockLevel - SQL Exception " + sqlex.getMessage());
-        if ((sqlex.getMessage().indexOf("serialize") != -1) || (sqlex.getMessage().indexOf("deadlock") != -1)) {
-          RollbackTransaction(con, sqlex);
-          InitTransaction(obj, con, "tx stocklevel");
-          continue;
+        return (dbtrace);
+    }
+    
+    
+    public HashSet StockLevelDB(StringBuffer  pErro,OutInfo obj, Connection con) throws java.
+    sql.SQLException {
+        while (true) {
+            CallableStatement statement = null;
+            ResultSet rs = null;
+            String cursor = null;
+            String query = "begin ? := PKG_TPCC.tpcc_stocklevel(?,?,?); end;";
+            HashSet dbtrace = new HashSet();
+            
+            try {
+                statement = con.prepareCall(query);
+                
+                statement.registerOutParameter(1, oracle.jdbc.driver.OracleTypes.CURSOR );
+                
+                statement.setInt(2, Integer.parseInt( (String) obj.getInfo("wid")));
+                statement.setInt(3, Integer.parseInt( (String) obj.getInfo("did")));
+                statement.setInt(4, Integer.parseInt( (String) obj.getInfo("threshhold")));
+                
+                rs = statement.executeQuery();
+                rs = (ResultSet)statement.getObject(1);
+                if (rs.next()) {
+                    cursor = (String) rs.getString(1);
+                }
+                rs.close();
+                rs = null;
+                statement.close();
+                statement = null;
+            }
+            catch (java.sql.SQLException sqlex) {
+                pErro.append("1");
+                dbLog.log(Thread.currentThread().getName() + " StockLevel - SQL Exception " + sqlex.getMessage());
+                if ((sqlex.getMessage().indexOf("serialize") != -1) || (sqlex.getMessage().indexOf("deadlock") != -1)) {
+                    RollbackTransaction(con, sqlex);
+                    InitTransaction(obj, con, "tx stocklevel");
+                    continue;
+                }
+            }
+            catch (java.lang.Exception ex) {
+                pErro.append("2");
+                dbLog.log(Thread.currentThread().getName() + " StockLevel - General Exception " + ex.getMessage());
+                throw new java.sql.SQLException(ex.getMessage());
+            }
+            finally {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (statement != null) {
+                    statement.close();
+                }
+            }
+            return (dbtrace);
         }
-      }
-      catch (java.lang.Exception ex) {
-        System.err.println(Thread.currentThread().getName() + " StockLevel - General Exception " + ex.getMessage());
-        throw new java.sql.SQLException(ex.getMessage());
-      }
-      finally {
-        if (rs != null) {
-          rs.close();
+    }
+    
+    public static void InitTransaction(OutInfo obj, Connection con,
+    String transaction) throws
+    java.sql.SQLException {
+        Statement statement = null;
+        try {
+            statement = con.createStatement();
+            if (trace(obj) || traceString(obj)) {
+                statement.execute("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+            }
+            else {
+                statement.execute("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+            }
+        }catch (java.sql.SQLException ex) {
+            if (con != null) {
+                RollbackTransaction(con, ex);
+            }
+            throw ex;
+        }catch (java.lang.Exception ex) {
+            dbLog.logException(ex);
+        }finally {
+            if (statement != null) {
+                statement.close();
+            }
         }
-        if (statement != null) {
-          statement.close();
+    }
+    
+    public static void CommitTransaction(Connection con) throws java.sql.
+    SQLException {
+        {
+            try {
+                if(con!=null)  {
+                    con.commit();
+                }
+            }
+            catch (java.lang.Exception ex) {
+                if (con != null) {
+                    RollbackTransaction(con, ex);
+                }
+                throw new java.sql.SQLException();
+            }
+            
         }
-      }
-      return (dbtrace);
     }
-  }
-
-  public static void InitTransaction(OutInfo obj, Connection con,
-                                     String transaction) throws
-      java.sql.SQLException {
-    Statement statement = null;
-    try {
-      statement = con.createStatement();
-      statement.execute("begin transaction");
-      if (trace(obj) || traceString(obj)) {
-        statement.execute("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
-      }
-      else {
-        statement.execute("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
-      }
-      statement.execute("select '" + transaction + "'");
-    }
-    catch (java.lang.Exception ex) {
-      if (con != null) {
-        RollbackTransaction(con, ex);
-      }
-      throw new java.sql.SQLException();
-    }
-    finally {
-      if (statement != null) {
-        statement.close();
-      }
-    }
-  }
-
-  public static void CommitTransaction(Connection con) throws java.sql.
-      SQLException {
-    {
-      Statement statement = null;
-      try {
-        statement = con.createStatement();
-        statement.execute("commit transaction");
-      }
-      catch (java.lang.Exception ex) {
-        if (con != null) {
-          RollbackTransaction(con, ex);
+    
+    public static void RollbackTransaction(Connection con, Exception dump) throws
+    java.sql.SQLException {
+        Statement statement = null;
+        try {
+            statement = con.createStatement();
+            statement.execute("rollback");
         }
-        throw new java.sql.SQLException();
-      }
-      finally {
-        if (statement != null) {
-          statement.close();
+        catch (java.lang.Exception ex) {
+            dbLog.logException(ex);
         }
-      }
+        finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
     }
-  }
-
-  public static void RollbackTransaction(Connection con, Exception dump) throws
-      java.sql.SQLException {
-    Statement statement = null;
-    try {
-      statement = con.createStatement();
-      statement.execute("rollback transaction");
+    
+    public static boolean trace(OutInfo obj) {
+        return ( ( (String) obj.getInfo("trace")).equalsIgnoreCase("TRACE"));
     }
-    catch (java.lang.Exception ex) {
-      ex.printStackTrace();
-    }
-    finally {
-      if (statement != null) {
-        statement.close();
-      }
-    }
-  }
-
-  public static boolean trace(OutInfo obj) {
-    return ( ( (String) obj.getInfo("trace")).equalsIgnoreCase("TRACE"));
-  }
-
-  public static boolean traceString(OutInfo obj) {
-    return ( ( (String) obj.getInfo("trace")).equalsIgnoreCase(
+    
+    public static boolean traceString(OutInfo obj) {
+        return ( ( (String) obj.getInfo("trace")).equalsIgnoreCase(
         "TRACESTRING"));
-  }
+    }
 }
 // arch-tag: 5fdbe754-a4ea-4fa6-b768-7ce766ea5c82
