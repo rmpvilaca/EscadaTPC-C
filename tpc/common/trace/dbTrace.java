@@ -22,16 +22,16 @@ import java.io.*;
 class BagTransaction
 {
 	Transaction trans = null;
-  	HashSet masterWS = new HashSet(); 
-   	HashSet masterRS = new HashSet();
+  	TreeSet masterWS = new TreeSet(); 
+   	TreeSet masterRS = new TreeSet();
 
-  	HashSet slaveWS = new HashSet(); 
-   	HashSet slaveRS = new HashSet();
+  	TreeSet slaveWS = new TreeSet(); 
+   	TreeSet slaveRS = new TreeSet();
 
-	HashSet tableSlaveWS = new HashSet();
-	HashSet tableSlaveRS = new HashSet();
-	HashSet tableMasterWS = new HashSet();
-	HashSet tableMasterRS = new HashSet();
+	int tableSlaveWS = 0;
+	int tableSlaveRS = 0;
+	int tableMasterWS = 0;
+	int tableMasterRS = 0;
 
 	int masterws = 0;
 	int masterrs = 0;
@@ -74,30 +74,30 @@ public class dbTrace {
 
 		if (tran != null) {
 
-			HashSet items = null; 
+			TreeSet items = null; 
       	
 			if(type.equalsIgnoreCase("r")) {
 				if (DistributedDb.isPossibleExecution(of,hid))	{
 					items = bagtrans.masterRS;
 					bagtrans.masterrs = bagtrans.masterrs + (int)(v.size() * dmlinfo.tuplesize(offset));
-					bagtrans.tableMasterRS.add(new Long(offset));
+					bagtrans.tableMasterRS++;
 				}
 				else {
 					items = bagtrans.slaveRS;
 					bagtrans.slavers = bagtrans.slavers + (int)(v.size() * dmlinfo.tuplesize(offset));
-					bagtrans.tableSlaveRS.add(new Long(offset));
+					bagtrans.tableSlaveRS++;
 				}
 			}		
 			else {
 				if (DistributedDb.isPossibleExecution(of,hid))	{
 					items = bagtrans.masterWS;
 					bagtrans.masterws = bagtrans.masterws + (int)(v.size() * dmlinfo.tuplesize(offset));
-					bagtrans.tableMasterWS.add(new Long(offset));
+					bagtrans.tableMasterWS++;
 				}
 				else	{
 					items = bagtrans.slaveWS;
 					bagtrans.slavews = bagtrans.slavews + (int)(v.size() * dmlinfo.tuplesize(offset));
-					bagtrans.tableSlaveWS.add(new Long(offset));
+					bagtrans.tableSlaveWS++;
 				}
 			}
 	      		Iterator it = v.iterator();
@@ -208,9 +208,9 @@ public class dbTrace {
 	try {
 		BagTransaction bagtrans = (BagTransaction) outPutBag.get(tid);
 		closeTransactionTrace = bagtrans.trans;
-		boolean readOnly = true;
 		Iterator it = null;
-		int i = 0;
+		int i = 0, j = 0; 
+		long lastTable = -1;
 
 		long[] masterWS = null;
 		long[] masterRS = null;
@@ -224,98 +224,93 @@ public class dbTrace {
 		if (closeTransactionTrace != null) {
 			outPutBag.remove(tid);
 
-			if (bagtrans.masterws != 0 || bagtrans.slavews != 0) readOnly = false;
-
 			if (bagtrans.masterWS.size() != 0)
 			{
 				masterWS = new long[bagtrans.masterWS.size()];
+				tableMasterWS = new int[bagtrans.tableMasterWS];			
+		
 				it = bagtrans.masterWS.iterator();
-				i = 0;
+				i = 0; j = 0; lastTable = -1;
+				
 				while(it.hasNext()) {
 				      	masterWS[i] = ((Long)it.next()).longValue();
+
+					if (lastTable != dmlinfo.table_of(masterWS[i])) { 
+						tableMasterWS[j] = i;
+						lastTable = dmlinfo.table_of(masterWS[i]);
+						j++;
+					}
+					
                 		        i++;
+			
 				}
 			}
 			if (bagtrans.masterRS.size() != 0)
 			{
 				masterRS = new long[bagtrans.masterRS.size()];
+				tableMasterRS = new int[bagtrans.tableMasterRS];		
+	
 				it = bagtrans.masterRS.iterator();
-				i = 0;
+				i = 0; j = 0; lastTable = -1;
+
 				while(it.hasNext()) {
 				      	masterRS[i] = ((Long)it.next()).longValue();
+
+                                        if (lastTable != dmlinfo.table_of(masterRS[i])) {
+                                                tableMasterRS[j] = i;
+                                                lastTable = dmlinfo.table_of(masterRS[i]);
+                                                j++;
+                                        }
+
                 		        i++;
 				}
 			}
 			if (bagtrans.slaveRS.size() != 0)
 			{
 				slaveRS = new long[bagtrans.slaveRS.size()];
+				tableSlaveRS = new int[bagtrans.tableSlaveRS];	
+	
 				it = bagtrans.slaveRS.iterator();
-				i = 0;
+				i = 0; j = 0; lastTable = -1;
+
 				while(it.hasNext()) {
 				      	slaveRS[i] = ((Long)it.next()).longValue();
+
+                                        if (lastTable != dmlinfo.table_of(slaveRS[i])) {
+                                                tableSlaveRS[j] = i;
+                                                lastTable = dmlinfo.table_of(slaveRS[i]);
+                                                j++;
+                                        }
+
                 		        i++;
 				}
 			}
 			if (bagtrans.slaveWS.size() != 0)
 			{
 				slaveWS = new long[bagtrans.slaveWS.size()];
+				tableSlaveWS = new int[bagtrans.tableSlaveWS];
 
 				it = bagtrans.slaveWS.iterator();
-				i = 0;
+				i = 0; j = 0; lastTable = -1;
+
 				while(it.hasNext()) {
 				      	slaveWS[i] = ((Long)it.next()).longValue();
-                		        i++;
-				}
-			}
 
-			if (bagtrans.tableMasterWS.size() != 0)
-			{
-				tableMasterWS = new int[bagtrans.tableMasterWS.size()];
-				it = bagtrans.tableMasterWS.iterator();
-				i = 0;
-				while(it.hasNext()) {
-				      	tableMasterWS[i] = ((Long)it.next()).intValue();
-                		        i++;
-				}
-			}
-			if (bagtrans.tableMasterRS.size() != 0)
-			{
-				tableMasterRS = new int[bagtrans.tableMasterRS.size()];
-				it = bagtrans.tableMasterRS.iterator();
-				i = 0;
-				while(it.hasNext()) {
-				      	tableMasterRS[i] = ((Long)it.next()).intValue();
-                		        i++;
-				}
-			}
-			if (bagtrans.tableSlaveRS.size() != 0)
-			{
-				tableSlaveRS = new int[bagtrans.tableSlaveRS.size()];
-				it = bagtrans.tableSlaveRS.iterator();
-				i = 0;
-				while(it.hasNext()) {
-				      	tableSlaveRS[i] = ((Long)it.next()).intValue();
-                		        i++;
-				}
-			}
-			if (bagtrans.tableSlaveWS.size() != 0)
-			{
-				tableSlaveWS = new int[bagtrans.tableSlaveWS.size()];
+                                        if (lastTable != dmlinfo.table_of(slaveWS[i])) {
+                                                tableSlaveWS[j] = i;
+                                                lastTable = dmlinfo.table_of(slaveWS[i]);
+                                                j++;
+                                        }
 
-				it = bagtrans.tableSlaveWS.iterator();
-				i = 0;
-				while(it.hasNext()) {
-				      	tableSlaveWS[i] = ((Long)it.next()).intValue();
                 		        i++;
 				}
 			}
 
 			closeTransactionTrace.payload().WS(masterWS);
 			closeTransactionTrace.payload().RS(masterRS);
-			closeTransactionTrace.payload().indexOfWrittenTables(tableMasterRS);
+			closeTransactionTrace.payload().indexOfWrittenTables(tableMasterWS);
 			closeTransactionTrace.payload().indexOfReadTables(tableMasterRS);
 
-			
 			Simulation em = Simulation.self();
 			Tuple transModel = null;
 			Tuple []tmpModel = null;
@@ -345,11 +340,11 @@ public class dbTrace {
 					if (info.equalsIgnoreCase("R")) {
 						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true); 
 					}
-					else
-						if (!readOnly) req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false); {
+					else {
+						if ((masterWS == null) && (slaveWS == null)) {
+							req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false);
 						}
-		 
-				
+					}
 				}
 				else if (((String)transModel.get(0)).equalsIgnoreCase("CPU")) {
 				
