@@ -51,7 +51,6 @@ public class ClientSimulation extends Resource implements Notifiable {
     */
     public ClientSimulation(Resource parent, Configuration dml)throws configException  {
 	    super(parent,dml);
-	    trans2stream = new HashMap();    	
     }
 
     public void consume(Object obj) {
@@ -71,8 +70,9 @@ public class ClientSimulation extends Resource implements Notifiable {
                                                                                 
     public void notify(int action, Object data) {
 	hid = (String) data;
-	System.out.println(getClass().getName() + " : " + hid + " : start : client initiates the activities!"); //DEBUG
 	int ncli = Integer.parseInt(attributeValue("-CLI"));
+
+	System.out.println(getClass().getName() + " : " + hid + " : start : client initiates the activities!"); 
 	System.out.println("Starting " + ncli + " clients for host " + hid);
 
 	createClients();
@@ -89,7 +89,7 @@ public class ClientSimulation extends Resource implements Notifiable {
     	int slot = -1;
     	
         if(config.nsamples() != -1) {
-    	    ClientSimulation.tx_counter ++;
+    	    ClientSimulation.tx_counter++;
 	    if(ClientSimulation.tx_counter > config.nsamples()) System.exit(0); 
         }
 
@@ -136,11 +136,15 @@ public class ClientSimulation extends Resource implements Notifiable {
 	     long tt = t.userThinkTime() * 1000000;
 
 	     CommandController.write(exec, rightOutc(),tt);
+
+	     trans2stream.put(new Integer(slot),t);
 	}
     }
 
 
    private void createClients() {    	  
+
+       trans2stream = new HashMap();
 
        Emulation.setFinished(false);
        Emulation.setTraceInformation(attributeValue("-TRACEflag"));
