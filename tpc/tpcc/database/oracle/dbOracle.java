@@ -17,38 +17,42 @@ import oracle.jdbc.oracore.OracleType;
  **/
 public class dbOracle
 extends dbTPCCDatabase {
-    
+
     public static int NewOrderTransNum = 0;
     public static int PaymentTransNum = 0;
     public static int OrderStatusTransNum = 0;
     public static int StockLevelTransNum = 0;
     public static int DeliveryTransNum = 0;
-    
-    
+
+
     public Object TraceNewOrderDB(OutInfo obj,String hid) throws java.sql.
-    SQLException {
-        
+	    SQLException {
+
         Connection con = null;
         HashSet dbtrace = null;
-        
+
         try {
             StringBuffer lErro = new StringBuffer("0");
+
+	    con = getConnection();
+
             dbLog.log("Beginning transaction new order (thread(" + Thread.currentThread().getName() + "))");
-            
+
             Date lDateBegin1 = new Date();
-            
-            con = getConnection();
-            
-            Date lDateBegin2 = new Date();
-            
+
+            InitTransaction(obj, con, "tx neworder");
+
             dbtrace = NewOrderDB(lErro,obj, con);
-            
-            Date lDateEnd1 = new Date();
-            
-            Date lDateEnd2 = new Date();
-            
-            dbLog.log("\tFinishing transaction new order (thread(" + Thread.currentThread().getName() + ")) "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +"\tB1 = "+lDateBegin1.getTime()+"\tB2 = "+lDateBegin2.getTime()+"\tE1 = "+lDateEnd1.getTime()+"\tE2 = "+lDateEnd2.getTime());
-            dbLog.logToFile(dbLog.NO,"NEW_ORDER = "+dbOracle.NewOrderTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime() +" Client= "+Thread.currentThread().getName());
+
+	    CommitTransaction(con);
+
+	    Date lDateEnd1 = new Date();
+
+            dbLog.log("\tFinishing transaction new order (thread(" + Thread.currentThread().getName() + ")) T= "
+		+(lDateEnd1.getTime()-lDateBegin1.getTime()) 
+		+"\tB1 = "+lDateBegin1.getTime()
+		+"\tE1 = "+lDateEnd1.getTime());
+            //dbLog.logToFile(dbLog.NO,"NEW_ORDER = "+dbOracle.NewOrderTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime() +" Client= "+Thread.currentThread().getName());
         }
         catch (java.lang.Exception ex) {
             dbLog.logException(ex);
@@ -61,38 +65,38 @@ extends dbTPCCDatabase {
         }
         return (dbtrace);
     }
-    
+
     public HashSet NewOrderDB(StringBuffer pErro, OutInfo obj, Connection con) throws java.sql.
     SQLException {
         while (true) {
             CallableStatement statement = null;
-            
+
             ResultSet rs = null;
             String cursor = null;
             String query = "begin ? := PKG_TPCC.tpcc_neworder(?,?,?,?,?,?,?,?); end;";
-            
+
             HashSet dbtrace = new HashSet();
-            
+            StringBuffer iid = new StringBuffer();
+            StringBuffer wid = new StringBuffer();
+            StringBuffer qtdi = new StringBuffer();
+
             try {
-                
+
                 statement = con.prepareCall(query);
-                
+
                 statement.registerOutParameter(1, oracle.jdbc.driver.OracleTypes.CURSOR );
-                
-                
-                
+
+
+
                 statement.setInt(2, Integer.parseInt((String) obj.getInfo("wid")));
-                
+
                 statement.setInt(3, Integer.parseInt( (String) obj.getInfo("did")));
                 statement.setInt(4, Integer.parseInt( (String) obj.getInfo("cid")));
                 statement.setInt(5, Integer.parseInt( (String) obj.getInfo("qtd")));
                 statement.setInt(6, Integer.parseInt( (String) obj.getInfo("localwid")));
-                
+
                 int icont = 0;
                 int qtd = Integer.parseInt( (String) obj.getInfo("qtd"));
-                StringBuffer iid = new StringBuffer();
-                StringBuffer wid = new StringBuffer();
-                StringBuffer qtdi = new StringBuffer();
                 while (icont < qtd) {
                     iid.append( (String) obj.getInfo("iid" + icont));
                     iid.append(",");
@@ -102,13 +106,27 @@ extends dbTPCCDatabase {
                     qtdi.append(",");
                     icont++;
                 }
-                
-                
+
                 statement.setString(7, iid.toString());
                 statement.setString(8, wid.toString());
                 statement.setString(9, qtdi.toString());
-                
+
+                /*
+                    Count the time dispended in the database execution
+                 */
+                Date startTime = new Date();
+                Date endTime   = new Date();
+                startTime = new Date();
                 statement.execute();
+                endTime   = new Date();
+                dbLog.logToFile(dbLog.NO,"NEW_ORDER_EXECUTION_TIME = " +dbOracle.NewOrderTransNum++ 
+					+" T= "+(endTime.getTime()-startTime.getTime()) 
+					+" E= "+pErro+" T1= "+startTime.getTime()
+					+" T2= "+endTime.getTime() 
+					+" Client= "+Thread.currentThread().getName());
+
+
+
                 rs = (ResultSet)statement.getObject(1);
                 if (rs.next()) {
                     cursor = (String) rs.getString(1);
@@ -117,17 +135,19 @@ extends dbTPCCDatabase {
                 rs = null;
                 statement.close();
                 statement = null;
-                
+
             }
             catch (java.sql.SQLException sqlex) {
                 pErro.append("1");
-                
-                
+
+
                 if(sqlex.getErrorCode()==1){
                     dbLog.log(Thread.currentThread().getName() + " NewOrder - SQL Exception " + "UNIQUE CONSTRAINT");
-                }else{
+                }if(sqlex.getErrorCode()==1403){
+        	    dbLog.log("ITEM : "+iid +" "+wid+" "+qtdi);
+		}else{
                     dbLog.logException(sqlex);
-                   
+
                     dbLog.log(Thread.currentThread().getName() + " NewOrder - SQL Exception " + sqlex.getMessage());
                     if ((sqlex.getMessage().indexOf("serialize") != -1) || (sqlex.getMessage().indexOf("deadlock") != -1)) {
                         RollbackTransaction(con, sqlex);
@@ -152,35 +172,34 @@ extends dbTPCCDatabase {
             return (dbtrace);
         }
     }
-    
+
     public Object TraceDeliveryDB(OutInfo obj,String hid) throws java.sql.
     SQLException {
-        
+
         Connection con = null;
         HashSet dbtrace = null;
-        
+
         try {
             StringBuffer lErro = new StringBuffer("0");
-            con = getConnection();
-            
-            dbLog.log("Beginning trasaction delivery (thread(" + Thread.currentThread().getName() + "))");
-            
-            Date lDateBegin1 = new Date();
-            
-            InitTransaction(obj, con, "tx delivery");
-            
-            Date lDateBegin2 = new Date();
-            
-            dbtrace = DeliveryDB(lErro, obj, con);
-                        
-            Date lDateEnd1 = new Date();
-            
-            CommitTransaction(con);
-            
-            Date lDateEnd2 = new Date();
 
-            dbLog.log("\tFinishing trasaction delivery (thread(" + Thread.currentThread().getName() + "))\tB1 = "+lDateBegin1.getTime()+"\tB2 = "+lDateBegin2.getTime()+"\tE1 = "+lDateEnd1.getTime()+"\tE2 = "+lDateEnd2.getTime());
-            dbLog.logToFile(dbLog.DL,"DELIVERY = "+dbOracle.DeliveryTransNum++ +"T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime()+" Client= "+Thread.currentThread().getName());
+            con = getConnection();
+
+            dbLog.log("Beginning trasaction delivery (thread(" + Thread.currentThread().getName() + "))");
+
+            Date lDateBegin1 = new Date();
+
+            InitTransaction(obj, con, "tx delivery");
+
+            dbtrace = DeliveryDB(lErro, obj, con);
+
+            CommitTransaction(con);
+
+            Date lDateEnd1 = new Date();
+
+            dbLog.log("\tFinishing trasaction delivery (thread(" + Thread.currentThread().getName() 
+		    + "))\tB1 = "+lDateBegin1.getTime()
+                    +"\tE1 = "+lDateEnd1.getTime());
+            //dbLog.logToFile(dbLog.DL,"DELIVERY = "+dbOracle.DeliveryTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime()+" Client= "+Thread.currentThread().getName());
         }
         catch (java.lang.Exception ex) {
             dbLog.logException(ex);
@@ -193,7 +212,7 @@ extends dbTPCCDatabase {
         }
         return (dbtrace);
     }
-    
+
     public HashSet DeliveryDB(StringBuffer pErro,OutInfo obj, Connection con) throws java.sql.
     SQLException {
         while (true) {
@@ -201,25 +220,42 @@ extends dbTPCCDatabase {
             ResultSet rs = null;
             String cursor = null;
             String query = "begin ? := PKG_TPCC.tpcc_delivery(?,?); end;";
-            
+
             HashSet dbtrace = new HashSet();
-            
+
+
             try {
-                
+
                 statement = con.prepareCall(query);
                 statement.registerOutParameter(1, oracle.jdbc.driver.OracleTypes.CURSOR );
                 statement.setInt(2, Integer.parseInt((String) obj.getInfo("wid")));
                 statement.setInt(3, Integer.parseInt( (String) obj.getInfo("crid")));
+                /*
+                     Count the time dispended in the database execution
+                 */
+
+                Date startTime = new Date();
+                Date endTime   = new Date();
+                startTime = new Date();
                 statement.execute();
+                endTime   = new Date();
+                dbLog.logToFile(dbLog.DL,"DELIVERY_EXECUTION_TIME = "+dbOracle.DeliveryTransNum++ 
+				        +" T= "+(endTime.getTime()-startTime.getTime()) 
+ 					+" E= "+pErro+" T1= "+startTime.getTime()
+					+" T2= "+endTime.getTime() 
+					+" Client= "+Thread.currentThread().getName());
+
+
+
                 rs = (ResultSet)statement.getObject(1);
-                
+
                 if (rs.next()) {
                     cursor = (String) rs.getString(1);
                 }
                 rs.close();
                 rs = null;
                 statement.close();
-                statement = null;                
+                statement = null;
             }
             catch (java.sql.SQLException sqlex) {
                 pErro.append("1");
@@ -246,39 +282,37 @@ extends dbTPCCDatabase {
             return (dbtrace);
         }
     }
-    
+
     public Object TraceOrderStatusDB(OutInfo obj,String hid) throws java.sql.
     SQLException {
-        
+
         Connection con = null;
         HashSet dbtrace = null;
         StringBuffer lErro = new StringBuffer("0");
         try {
+
             con = getConnection();
-            
+
             dbLog.log("Beginning transaction order status (thread(" + Thread.currentThread().getName() + "))");
-            boolean lautocommit = con.getAutoCommit();
-            
-            con.setAutoCommit(false);
-            
+            //boolean lautocommit = con.getAutoCommit();
+            //con.setAutoCommit(false);
+
             Date lDateBegin1 = new Date();
-            
+
             InitTransaction(obj, con, "tx orderstatus");
-            
-            Date lDateBegin2 = new Date();
-            
+
             dbtrace = OrderStatusDB(lErro, obj, con);
+
+            CommitTransaction(con);
 
             Date lDateEnd1 = new Date();
 
-            CommitTransaction(con);
-            
-            Date lDateEnd2 = new Date();
+            //con.setAutoCommit(lautocommit);
 
-            con.setAutoCommit(lautocommit);
-            
-            dbLog.log("tFinishing transaction order status (thread(" + Thread.currentThread().getName() + "))\tB1 = "+lDateBegin1.getTime()+"\tB2 = "+lDateBegin2.getTime()+"\tE1 = "+lDateEnd1.getTime()+"\tE2 = "+lDateEnd2.getTime());
-            dbLog.logToFile(dbLog.OS,"ORDER_STATUS = "+dbOracle.OrderStatusTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime()+" Client= "+Thread.currentThread().getName());
+            dbLog.log("\tFinishing transaction order status (thread(" + Thread.currentThread().getName() 
+		    + "))\tB1 = "+lDateBegin1.getTime()
+                    + "\tE1 = "+lDateEnd1.getTime());
+            //dbLog.logToFile(dbLog.OS,"ORDER_STATUS = "+dbOracle.OrderStatusTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime()+" Client= "+Thread.currentThread().getName());
         }
         catch (java.lang.Exception ex) {
             dbLog.logException(ex);
@@ -291,8 +325,8 @@ extends dbTPCCDatabase {
         }
         return (dbtrace);
     }
-    
-    
+
+
     public HashSet OrderStatusDB(StringBuffer pErro,OutInfo obj, Connection con) throws java.
     sql.SQLException {
         while (true) {
@@ -301,15 +335,31 @@ extends dbTPCCDatabase {
             String cursor = null;
             String query = "begin ? := PKG_TPCC.tpcc_orderstatus(?,?,?,?); end;";
             HashSet dbtrace = new HashSet();
-            
+
             try {
                 statement = con.prepareCall(query);
                 statement.registerOutParameter(1, oracle.jdbc.driver.OracleTypes.CURSOR );
                 statement.setInt(2, Integer.parseInt((String) obj.getInfo("wid")));
                 statement.setInt(3, Integer.parseInt( (String) obj.getInfo("did")));
                 statement.setInt(4, Integer.parseInt( (String) obj.getInfo("cid")));
-                statement.setString(5, (String) obj.getInfo("lastname"));
+                statement.setString(5, (String) obj.getInfo("lastname")+"%");
+
+                /*
+                     Count the time dispended in the database execution
+                 */
+
+                Date startTime = new Date();
+                Date endTime   = new Date();
+                startTime = new Date();
                 statement.execute();
+                endTime   = new Date();
+                dbLog.logToFile(dbLog.OS,"ORDER_STATUS_EXECUTION_TIME = "+dbOracle.OrderStatusTransNum++ 
+					+" T= "+(endTime.getTime()-startTime.getTime()) 
+					+" E= "+pErro+" T1= "+startTime.getTime()
+					+" T2= "+endTime.getTime() 
+					+" Client= "+Thread.currentThread().getName());
+
+
                 rs = (ResultSet)statement.getObject(1);
                 if (rs.next()) {
                     cursor = (String) rs.getString(1);
@@ -318,14 +368,14 @@ extends dbTPCCDatabase {
                 rs = null;
                 statement.close();
                 statement = null;
-                
+
             }
             catch (java.sql.SQLException sqlex) {
                 pErro.append("1");
                 dbLog.log(Thread.currentThread().getName() + " OrderStatus - SQL Exception " + sqlex.getMessage());
                 if ((sqlex.getMessage().indexOf("serialize") != -1) || (sqlex.getMessage().indexOf("deadlock") != -1)){
                     RollbackTransaction(con, sqlex);
-                    
+
                     String str = (String) (obj).getInfo("cid");
                     if (str.equals("0")) {
                         InitTransaction(obj, con, "tx orderstatus 01");
@@ -333,7 +383,7 @@ extends dbTPCCDatabase {
                     else {
                         InitTransaction(obj, con, "tx orderstatus 02");
                     }
-                    
+
                     continue;
                 }
             }
@@ -353,31 +403,31 @@ extends dbTPCCDatabase {
             return (dbtrace);
         }
     }
-    
+
     public Object TracePaymentDB(OutInfo obj,String hid) throws java.sql.SQLException {
-        
+
         Connection con = null;
         HashSet dbtrace = null;
         StringBuffer lErro = new StringBuffer("0");
         try {
             con = getConnection();
-            
+
             dbLog.log("Beginning transaction payment (thread(" + Thread.currentThread().getName() + "))");
 
             Date lDateBegin1 = new Date();
-            
+
             InitTransaction(obj, con, "tx payment");
-            Date lDateBegin2 = new Date();
-            
+
             dbtrace = PaymentDB(lErro, obj, con);
-            Date lDateEnd1 = new Date();
-            
 
             CommitTransaction(con);
-            Date lDateEnd2 = new Date();
-            
-            dbLog.log("tFinishing transaction payment (thread(" + Thread.currentThread().getName() + "))\tB1 = "+lDateBegin1.getTime()+"\tB2 = "+lDateBegin2.getTime()+"\tE1 = "+lDateEnd1.getTime()+"\tE2 = "+lDateEnd2.getTime());
-            dbLog.logToFile(dbLog.PA,"PAYMENT = "+dbOracle.PaymentTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime()+" Client= "+Thread.currentThread().getName());
+
+            Date lDateEnd1 = new Date();
+
+            dbLog.log("\tFinishing transaction payment (thread(" + Thread.currentThread().getName() 
+		    + "))\tB1 = "+lDateBegin1.getTime()
+		    + "\tE1 = "+lDateEnd1.getTime());
+            //dbLog.logToFile(dbLog.PA,"PAYMENT = "+dbOracle.PaymentTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime()+" Client= "+Thread.currentThread().getName());
         }
         catch (java.lang.Exception ex) {
             dbLog.logException(ex);
@@ -390,7 +440,7 @@ extends dbTPCCDatabase {
         }
         return (dbtrace);
     }
-    
+
     public HashSet PaymentDB(StringBuffer  pErro,OutInfo obj, Connection con) throws java.sql.
     SQLException {
         while (true) {
@@ -399,9 +449,9 @@ extends dbTPCCDatabase {
             String cursor = null;
             String query = "begin ? := PKG_TPCC.tpcc_payment(?,?,?,?,?,?,?); end;";
             HashSet dbtrace = new HashSet();
-            
+
             try {
-                       
+
                 statement = con.prepareCall(query);
                 statement.registerOutParameter(1, oracle.jdbc.driver.OracleTypes.CURSOR );
                 statement.setInt(2, Integer.parseInt( (String) obj.getInfo("wid")));
@@ -411,10 +461,25 @@ extends dbTPCCDatabase {
                 statement.setInt(6, Integer.parseInt( (String) obj.getInfo("cdid")));
                 statement.setInt(7, Integer.parseInt( (String) obj.getInfo("cid")));
                 statement.setString(8, ((String) obj.getInfo("lastname"))+"%");
-                
+
+                /*
+                     Count the time dispended in the database execution
+                 */
+
+                Date startTime = new Date();
+                Date endTime   = new Date();
+                startTime = new Date();
                 statement.execute();
+                endTime   = new Date();
+                dbLog.logToFile(dbLog.PA,"PAYMENT_EXECUTION_TIME = "+dbOracle.PaymentTransNum++ 
+					+" T= "+(endTime.getTime()-startTime.getTime()) 
+					+" E= "+pErro+" T1= "+startTime.getTime()
+					+" T2= "+endTime.getTime() +" Client= "
+					+Thread.currentThread().getName());
+
+
                 rs = (ResultSet)statement.getObject(1);
-                
+
                 if (rs.next()) {
                     cursor = (String) rs.getString(1);
                 }
@@ -424,7 +489,7 @@ extends dbTPCCDatabase {
                 statement = null;
             }
             catch (java.sql.SQLException sqlex) {
-                
+
                 pErro.append("1");
                 dbLog.log(Thread.currentThread().getName() + " Payment - SQL Exception " + sqlex.getMessage());
                 dbLog.logException(sqlex);
@@ -456,33 +521,31 @@ extends dbTPCCDatabase {
             return (dbtrace);
         }
     }
-    
+
     public Object TraceStockLevelDB(OutInfo obj,String hid) throws java.sql.SQLException {
-        
+
         Connection con = null;
         HashSet dbtrace = null;
         StringBuffer lErro = new StringBuffer("0");
         try {
             con = getConnection();
-            
+
             dbLog.log("Beginning transaction stock level (thread(" + Thread.currentThread().getName() + "))");
-            
+
             Date lDateBegin1 = new Date();
-            
+
             InitTransaction(obj, con, "tx stocklevel");
-            
-            Date lDateBegin2 = new Date();
-            
+
             dbtrace = StockLevelDB(lErro, obj, con);
-            
-            Date lDateEnd1 = new Date();
-            
+
             CommitTransaction(con);
-            
-            Date lDateEnd2 = new Date();
-            
-            dbLog.log("\tFinishing transaction stock level (thread(" + Thread.currentThread().getName() + "))\tB1 = "+lDateBegin1.getTime()+"\tB2 = "+lDateBegin2.getTime()+"\tE1 = "+lDateEnd1.getTime()+"\tE2 = "+lDateEnd2.getTime());
-            dbLog.logToFile(dbLog.SL,"STOCK_LEVEL = "+dbOracle.StockLevelTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime()+" Client= "+Thread.currentThread().getName());
+
+            Date lDateEnd1 = new Date();
+
+            dbLog.log("\tFinishing transaction stock level (thread(" + Thread.currentThread().getName() 
+		    + "))\tB1 = "+lDateBegin1.getTime()
+                    + "\tE1 = "+lDateEnd1.getTime());
+            //dbLog.logToFile(dbLog.SL,"STOCK_LEVEL = "+dbOracle.StockLevelTransNum++ +" T= "+(lDateEnd1.getTime()-lDateBegin2.getTime()) +" E= "+lErro+" T1= "+lDateBegin2.getTime()+" T2= "+lDateEnd1.getTime()+" Client= "+Thread.currentThread().getName());
         }
         catch (java.lang.Exception ex) {
             dbLog.logException(ex);
@@ -495,8 +558,8 @@ extends dbTPCCDatabase {
         }
         return (dbtrace);
     }
-    
-    
+
+
     public HashSet StockLevelDB(StringBuffer  pErro,OutInfo obj, Connection con) throws java.
     sql.SQLException {
         while (true) {
@@ -505,17 +568,34 @@ extends dbTPCCDatabase {
             String cursor = null;
             String query = "begin ? := PKG_TPCC.tpcc_stocklevel(?,?,?); end;";
             HashSet dbtrace = new HashSet();
-            
+
             try {
                 statement = con.prepareCall(query);
-                
+
                 statement.registerOutParameter(1, oracle.jdbc.driver.OracleTypes.CURSOR );
-                
+
                 statement.setInt(2, Integer.parseInt( (String) obj.getInfo("wid")));
                 statement.setInt(3, Integer.parseInt( (String) obj.getInfo("did")));
                 statement.setInt(4, Integer.parseInt( (String) obj.getInfo("threshhold")));
-                
+
+                /*
+                     Count the time dispended in the database execution
+                 */
+
+                Date startTime = new Date();
+                Date endTime   = new Date();
+                startTime = new Date();
                 rs = statement.executeQuery();
+                endTime   = new Date();
+                dbLog.logToFile(dbLog.SL,"STOCK_LEVEL_EXECUTION_TIME = "+dbOracle.StockLevelTransNum++ 
+					+" T= "+(endTime.getTime()-startTime.getTime()) 
+					+" E= "+pErro+" T1= "+startTime.getTime()
+					+" T2= "+endTime.getTime() 
+					+" Client= "+Thread.currentThread().getName());
+
+                //rs = statement.executeQuery();
+
+
                 rs = (ResultSet)statement.getObject(1);
                 if (rs.next()) {
                     cursor = (String) rs.getString(1);
@@ -550,7 +630,7 @@ extends dbTPCCDatabase {
             return (dbtrace);
         }
     }
-    
+
     public static void InitTransaction(OutInfo obj, Connection con,
     String transaction) throws
     java.sql.SQLException {
@@ -576,7 +656,7 @@ extends dbTPCCDatabase {
             }
         }
     }
-    
+
     public static void CommitTransaction(Connection con) throws java.sql.
     SQLException {
         {
@@ -591,10 +671,10 @@ extends dbTPCCDatabase {
                 }
                 throw new java.sql.SQLException();
             }
-            
+
         }
     }
-    
+
     public static void RollbackTransaction(Connection con, Exception dump) throws
     java.sql.SQLException {
         Statement statement = null;
@@ -611,11 +691,11 @@ extends dbTPCCDatabase {
             }
         }
     }
-    
+
     public static boolean trace(OutInfo obj) {
         return ( ( (String) obj.getInfo("trace")).equalsIgnoreCase("TRACE"));
     }
-    
+
     public static boolean traceString(OutInfo obj) {
         return ( ( (String) obj.getInfo("trace")).equalsIgnoreCase(
         "TRACESTRING"));

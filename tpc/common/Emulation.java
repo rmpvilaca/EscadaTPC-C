@@ -9,7 +9,7 @@ public abstract class Emulation {
   private static Random rand = new Random();
 
   private static String traceInformation = null;
-  private static int numberConcurrentEmulators = 0;
+  private static int numberConcurrentEmulators = 1;
 
   private CommonDatabase db = null;
 
@@ -20,18 +20,19 @@ public abstract class Emulation {
   private long usmd = 0;
   private long thinkTime = 0;
   private long keyTime = 0;
-  private long maxTrans = -1;
+  private long maxTrans = 1;
   
   private String hid = null;
 
   /**
-  * It defines the maximum number of transactions that can be executed.
+  * It defines the maximum number of transactions that can be executed. 
   *
-  * @param long the number of transactions
+  * @param long the number of transactions. If a negative number is passed as parameter the last value is not changed.
+  * A default value of 1 it is assumed.
   * @see getMaxTransactions
   **/
   public void setMaxTransactions(long maxTrans) {
-    this.maxTrans = maxTrans;
+    if (maxTrans) this.maxTrans = maxTrans;
   }
 
   /**
@@ -335,5 +336,4 @@ public abstract class Emulation {
     this.db=db;
   }
 }
-// arch-tag: 6784a2d8-6129-4c7b-98ef-b725a66f72da
 // arch-tag: 001ca60a-aae1-48e1-8c23-681cc4dde63f
