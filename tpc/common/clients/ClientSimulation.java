@@ -152,7 +152,7 @@ public class ClientSimulation extends Resource implements Notifiable {
   	
        generators = new ClientEmulation[Integer.parseInt(attributeValue("-CLI"))];
        for(int i=0;i < generators.length;i++) {
-	   generators[i] = new ClientEmulation(attributeValue("-EBclass"),attributeValue("-STclass"),attributeValue("-DBclass"),Integer.parseInt(attributeValue("-CLI")),i,attributeValue("-TRACEflag"),hid,Integer.parseInt(attributeValue("-WAREHOUSE")));
+	   generators[i] = new ClientEmulation(attributeValue("-EBclass"),attributeValue("-STclass"),attributeValue("-DBclass"),Integer.parseInt(attributeValue("-TOTCLI")),i,attributeValue("-TRACEflag"),hid,Integer.parseInt(attributeValue("-WAREHOUSE")));
 	   generators[i].setName(attributeValue("-TRACEflag") + "-" + i);
        }
    }
@@ -169,15 +169,8 @@ public class ClientSimulation extends Resource implements Notifiable {
     	
     	return res; 
     }
-
-    private Config config = new Config();
-
-    private class Config
-    {
-	public int nsamples() { return 5000; }
-    };
-
-    
+   
+    private Escada.Util.Simulation config = Escada.Util.Simulation.self();
 }
 
 // arch-tag: 3f404089-0727-44c4-a4f0-b37ce95af5ea
