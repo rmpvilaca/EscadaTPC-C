@@ -190,10 +190,13 @@ public class dbTrace {
    * must be as follows:
    *
    * 1 - push unlock request
-   * 2 - push read request
-   * 3 - push dbsm request
-   * 4 - push lock request
-   * 5 - push distributed execution request
+   * 2 - push write request
+   * 3 - push certification request
+   * 4 - push cpu request
+   * 5 - push read request
+   * 6 - push thinktime request
+   * 7 - push lock request
+   * 8 - push distributed request
    *
    * @param tid the transaction unique identifier.
    * @param hid the host id in which the transaction was processsed.
@@ -308,27 +311,61 @@ public class dbTrace {
 			closeTransactionTrace.payload().RS(masterRS);
 			closeTransactionTrace.payload().indexOfWrittenTables(tableMasterRS);
 			closeTransactionTrace.payload().indexOfReadTables(tableMasterRS);
-		
+
+			
+			Simulation em = Simulation.self();
+			Tuple transModel = null;
+			Tuple []tmpModel = null;
+
+			if ((masterWS == null) && (slaveWS == null)) {
+				tmpModel = em.getTemplate(hid,true); 
+			}
+			else {
+				tmpModel = em.getTemplate(hid,false); 
+			}
+
 			long qttUsage = TransactionTimers.calculateQueryThinkTime(closeTransactionTrace.header().name()); 
 			long cpuUsage = TransactionTimers.calculateCPUTime(closeTransactionTrace.header().name()); 
+			Request req = null;
+			String info = null;
 
-			LockRequest lock = new LockRequest(Integer.valueOf(tid),"virtuahost.core.LockManager",LockRequest.ORDER_LOCK,masterRS,masterWS,false); 
-			ProcessRequest cpu = new ProcessRequest(Integer.valueOf(tid),"virtuahost.core.CPU",cpuUsage,false); // CPU
-			StorageRequest read = new StorageRequest(Integer.valueOf(tid),"virtuahost.core.Storage",bagtrans.masterrs); // read
-			StorageRequest write = new StorageRequest(Integer.valueOf(tid),"virtuahost.core.Storage",bagtrans.masterws); // write
-			ProcessRequest qtt = new ProcessRequest(Integer.valueOf(tid),"virtuahost.core.Thinker",qttUsage,false); // QTT
-			NetRequest nrddb = new NetRequest (Integer.valueOf(tid),"DDb.DDbProxies.DDbProxyProcess",closeTransactionTrace);  // DDB
+			for (i = tmpModel.length - 1; i != 0; i--) { 
+                                transModel = tmpModel[i];
 
-			NetRequest nrdbsm = new NetRequest (Integer.valueOf(tid),"virtuahost.core.DBSMAdapter",closeTransactionTrace);  // DBSM
-
-			LockRequest unlock = new LockRequest(Integer.valueOf(tid),"virtuahost.core.LockManager",LockRequest.ORDER_UNLOCK,masterRS,masterWS,false); 
-
-			closeTransactionTrace.payload().push(unlock);
-			closeTransactionTrace.payload().push(read);
-			closeTransactionTrace.payload().push(write);
-			closeTransactionTrace.payload().push(nrdbsm);
-			closeTransactionTrace.payload().push(lock);
-		        closeTransactionTrace.payload().push(nrddb); // porra // transacao remota
+				if (((String)transModel.get(0)).equals("DBSMAdapter")) {
+					req = new NetRequest (Integer.valueOf(tid),(String)transModel.get(1),closeTransactionTrace);  // DBSM
+				
+				}
+				else if (((String)transModel.get(0)).equals("Storage")) {
+				 	info = (String)transModel.get(2);
+					if (info.equals("read"))
+						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs); 
+					else
+						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws); 
+				
+				}
+				else if (((String)transModel.get(0)).equals("CPU")) {
+				
+					req = new ProcessRequest(Integer.valueOf(tid),(String)transModel.get(1),cpuUsage,false); // CPU
+				}
+				else if (((String)transModel.get(0)).equals("Thinker")) {
+					req = new ProcessRequest(Integer.valueOf(tid),(String)transModel.get(1),qttUsage,false); // QTT
+				
+				}
+				else if (((String)transModel.get(0)).equals("DDbProxyProcess")) {
+					req = new NetRequest (Integer.valueOf(tid),(String)transModel.get(1),closeTransactionTrace);  // DDB
+				
+				}
+				else if (((String)transModel.get(0)).equals("LockManager")) {
+				 	info = (String)transModel.get(2);
+					if (info.equals("lock"))
+						req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_LOCK,masterRS,masterWS,false); 
+					else
+						req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_UNLOCK,masterRS,masterWS,false); 
+						
+				}
+				closeTransactionTrace.payload().push(req);
+			}
 		}
 	}
 	catch (Exception ex) {
