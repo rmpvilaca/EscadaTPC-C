@@ -30,3 +30,5 @@ A. CLIENT INITIALIZATION
 
                 $(JVM) -cp $(classpath) -Xmx1024 Escada.tpc.common.clients.ClientStartup $(PG_FLAGS)
 
+// arch-tag: f6bdac98-f80b-4c38-8487-7fed864e2ea6
+
