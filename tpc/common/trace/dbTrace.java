@@ -226,19 +226,16 @@ public class dbTrace {
 			if (bagtrans.masterWS.size() != 0)
 			{
 				masterWS = new long[bagtrans.masterWS.size()];
-				tableMasterWS = new int[bagtrans.tableMasterWS.size()];			
-		
+				tableMasterWS = new int[bagtrans.tableMasterWS.size() + 1];		
+
 				it = bagtrans.masterWS.iterator();
 				i = 0; j = 0; lastTable = -1;
 				
 				while(it.hasNext()) {
 				      	masterWS[i] = ((Long)it.next()).longValue();
 
-					System.out.println("WS Offset " + masterWS[i] + " Valor de j " + j + " valor de i " + i + " dmlinfo " + dmlinfo.table_of(masterWS[i]));
-
 					if (lastTable != dmlinfo.table_of(masterWS[i])) { 
 						tableMasterWS[j] = i;
-						System.out.println("WS Offset " + masterWS[i] + " Valor de j " + j + " valor de i " + i + " dmlinfo " + dmlinfo.table_of(masterWS[i]));
 						lastTable = dmlinfo.table_of(masterWS[i]);
 						j++;
 					}
@@ -250,7 +247,7 @@ public class dbTrace {
 			if (bagtrans.masterRS.size() != 0)
 			{
 				masterRS = new long[bagtrans.masterRS.size()];
-				tableMasterRS = new int[bagtrans.tableMasterRS.size()];		
+				tableMasterRS = new int[bagtrans.tableMasterRS.size()];
 	
 				it = bagtrans.masterRS.iterator();
 				i = 0; j = 0; lastTable = -1;
@@ -258,13 +255,8 @@ public class dbTrace {
 				while(it.hasNext()) {
 				      	masterRS[i] = ((Long)it.next()).longValue();
 
-					System.out.println("RS Offset " + masterRS[i] + " Valor de j " + j + " valor de i " + i + " dmlinfo " + dmlinfo.table_of(masterRS[i]));
-
                                         if (lastTable != dmlinfo.table_of(masterRS[i])) {
                                                 tableMasterRS[j] = i;
-
-						System.out.println("RS Offset " + masterRS[i] + " Valor de j " + j + " valor de i " + i + " dmlinfo " + dmlinfo.table_of(masterRS[i]));
-
                                                 lastTable = dmlinfo.table_of(masterRS[i]);
                                                 j++;
                                         }
