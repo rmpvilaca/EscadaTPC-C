@@ -143,7 +143,7 @@ public class ClientSimulation extends Resource implements Notifiable {
   	
        generators = new ClientEmulation[Integer.parseInt(attributeValue("-CLI"))];
        for(int i=0;i < generators.length;i++) {
-	   generators[i] = new ClientEmulation(attributeValue("-EBclass"),attributeValue("-STclass"),attributeValue("DBclass"),Integer.parseInt(attributeValue("-CLI")),i,attributeValue("-TRACEflag"),null,Integer.parseInt(attributeValue("-WAREHOUSE")));
+	   generators[i] = new ClientEmulation(attributeValue("-EBclass"),attributeValue("-STclass"),attributeValue("-DBclass"),Integer.parseInt(attributeValue("-CLI")),i,attributeValue("-TRACEflag"),null,Integer.parseInt(attributeValue("-WAREHOUSE")));
 	   generators[i].setName(attributeValue("-TRACEflag") + "-" + i);
        }
    }
