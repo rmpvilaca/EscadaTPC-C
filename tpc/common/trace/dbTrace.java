@@ -44,10 +44,10 @@ class BagTransaction
 }
 
 /**
- * Basically, this class is responsible to capture the execution of transactions and translate it to 
+ * Basically, this class is responsible to capture the execution of transactions, translating the exectuion into
  * read and written items. From the perspective of the data, it is the main point in order to integrate 
  * the benchmarks into a simulated environment.
- **/
+ **/	
 public class dbTrace {
   private static Hashtable outPutBag = new Hashtable();
   private static long tid = 0;
@@ -201,8 +201,37 @@ public class dbTrace {
    *
    * @return Transaction the transaction executed and translated according the simulator specifications.
    **/
+
+  public static synchronized void test(BagTransaction bagtrans) {
+	System.out.println("TRANSACTION NAME:---- " + bagtrans.trans);
+	System.out.println("ALFRANIO - DEBUG - TAMANHO ESCRITA MASTER " + bagtrans.masterWS.size());
+	System.out.println("ALFRANIO - DEBUG - TAMANHO LEITURA MASTER " + bagtrans.masterRS.size());
+	System.out.println("ALFRANIO - DEBUG - TAMANHO ESCRITA SLAVE " + bagtrans.slaveWS.size());
+	System.out.println("ALFRANIO - DEBUG - TAMANHO LEITURA SLAVE " + bagtrans.slaveRS.size());
+
+	System.out.println("ALFRANIO - DEBUG - BYTE ESCRITA MASTER " + bagtrans.masterws);
+	System.out.println("ALFRANIO - DEBUG - BYTE LEITURA MASTER " + bagtrans.masterrs);
+	System.out.println("ALFRANIO - DEBUG - BYTE ESCRITA SLAVE " + bagtrans.slavews);
+	System.out.println("ALFRANIO - DEBUG - BYTE LEITURA SLAVE " + bagtrans.slavers);
+
+	if (bagtrans.trans.payload().WS() != null)
+		System.out.println("ALFRANIO - DEBUG - ESCRITA PAYLOAD " + bagtrans.trans.payload().WS().length);
+	else 
+		System.out.println("ALFRANIO - DEBUG - ESCRITA PAYLOAD 0");
+	if (bagtrans.trans.payload().RS() != null)
+		System.out.println("ALFRANIO - DEBUG - LEITURA PAYLOAD " + bagtrans.trans.payload().RS().length);
+	else 
+		System.out.println("ALFRANIO - DEBUG - LEITURA PAYLOAD 0");
+  }
+
   public static Transaction closeTransactionTrace(String tid,String hid) {
 	Transaction closeTransactionTrace = null;
+
+        //TODO: We must talk with als to define parameters in the DML file.
+        boolean flagEpsilon = true;
+        //TODO: We must talk with als to define parameters in the DML file.
+        ESRSpecification ESRes = null;
+
 	try {
 		BagTransaction bagtrans = (BagTransaction) outPutBag.get(tid);
 		closeTransactionTrace = bagtrans.trans;
@@ -221,6 +250,9 @@ public class dbTrace {
 
 		if (closeTransactionTrace != null) {
 			outPutBag.remove(tid);
+
+			// TODO: In case of distributed execution, how to evaluate the epsilon ?
+			if (flagEpsilon) ESRes=defineESRSpecification((bagtrans.masterWS.size() != 0));
 
 			if (bagtrans.masterWS.size() != 0)
 			{
@@ -327,13 +359,8 @@ public class dbTrace {
 
 			for (i = tmpModel.length - 1; i >= 0; i--) { 
                                 transModel = tmpModel[i];
-
-//				System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]:" + transModel.get(0) ); //DEBUG
-
 				if (((String)transModel.get(0)).equalsIgnoreCase("DBSMAdapter")) {
-//					System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]: DBSMAdapter"); //DEBUG
 					req = new NetRequest (Integer.valueOf(tid),(String)transModel.get(1),closeTransactionTrace);  // DBSM
-				
 				}
 				else if (((String)transModel.get(0)).equalsIgnoreCase("Storage")) {
 				 	info = (String)transModel.get(2);
@@ -346,7 +373,6 @@ public class dbTrace {
 							req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false);
 						}
 					}
-
 				}
 
 				else if (((String)transModel.get(0)).equalsIgnoreCase("SANDevice")) {
@@ -361,32 +387,28 @@ public class dbTrace {
 					}
 
 				}
-
-
 				else if (((String)transModel.get(0)).equalsIgnoreCase("CPU")) {
-//					System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]: CPU"); //DEBUG
-				
 					req = new ProcessRequest(Integer.valueOf(tid),(String)transModel.get(1),cpuUsage,false); // CPU
 				}
 				else if (((String)transModel.get(0)).equalsIgnoreCase("Thinker")) {
-//					System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]: Thinker"); //DEBUG
 					req = new ProcessRequest(Integer.valueOf(tid),(String)transModel.get(1),qttUsage,false); // QTT
-				
 				}
 				else if (((String)transModel.get(0)).equalsIgnoreCase("DDbProxyProcess")) {
-//					System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]: DDbProxyProcess"); //DEBUG
 					req = new NetRequest (Integer.valueOf(tid),(String)transModel.get(1),closeTransactionTrace);  // DDB
-				
 				}
 				else if (((String)transModel.get(0)).equalsIgnoreCase("LockManager")) {
 				 	info = (String)transModel.get(2);
 					if (info.equalsIgnoreCase("L")) {
-//						System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]: LockManager:L"); //DEBUG
-						req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_LOCK,masterRS,masterWS,false); 
+						if (!flagEpsilon)
+							req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_LOCK,masterRS,masterWS,false); 
+						else
+							req = new ESRLockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_LOCK,masterRS,masterWS,false,ESRes); 
 					}
 					else {
-//						System.out.println(":-:-:-:-:-:-: dbTrace: transModel[" + i + "]: LockManager:U"); //DEBUG
-						req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_UNLOCK,masterRS,masterWS,false); 
+						if (!flagEpsilon)
+							req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_UNLOCK,masterRS,masterWS,false); 
+						else
+							req = new ESRLockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_UNLOCK,masterRS,masterWS,false,ESRes); 
 					}	
 				}
 				closeTransactionTrace.payload().push(req);
@@ -401,7 +423,11 @@ public class dbTrace {
 }
 
   public static Transaction closeErrorTransactionTrace(String tid, String hid) {
-    Transaction closeTransactionTrace = null;
+	Transaction closeTransactionTrace = null;
+	//TODO: We must talk with als to define parameters in the DML file.
+	boolean flagEpsilon = true;
+	//TODO: We must talk with als to define parameters in the DML file.
+	ESRSpecification ESRes = null;
 	try {
 		BagTransaction bagtrans = (BagTransaction) outPutBag.get(tid);
 		closeTransactionTrace = bagtrans.trans;
@@ -420,6 +446,9 @@ public class dbTrace {
 
 		if (closeTransactionTrace != null) {
 			outPutBag.remove(tid);
+		
+			// TODO: In case of distributed execution, how to evaluate the epsilon ?
+			if (flagEpsilon) ESRes=defineESRSpecification((bagtrans.masterWS.size() != 0));
 
 			if (bagtrans.masterWS.size() != 0)
 			{
@@ -530,26 +559,12 @@ public class dbTrace {
 
 			for (i = tmpModel.length - 1; i >= 0; i--) { 
                                 transModel = tmpModel[i];
-/*
-				if (((String)transModel.get(0)).equalsIgnoreCase("DBSMAdapter")) {
-					req = new NetRequest (Integer.valueOf(tid),(String)transModel.get(1),closeTransactionTrace);  // DBSM
-				
-				}*/
 				if (((String)transModel.get(0)).equalsIgnoreCase("Storage")) {
 				 	info = (String)transModel.get(2);
 					
 					if (info.equalsIgnoreCase("R")) {
 						req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true); 
 					}
-/*
-					else {
-
-						if ((masterWS != null) && (slaveWS == null)) {
-						//if ((masterWS == null) && (slaveWS == null)) {
-							req = new StorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false);
-						}
-					}
-*/
 				}
 
 				else if (((String)transModel.get(0)).equalsIgnoreCase("SANDevice")) {
@@ -557,12 +572,6 @@ public class dbTrace {
 					if (info.equalsIgnoreCase("R")) {
 						req = new SANStorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterrs,true, masterRS); 
 					}
-/*					else {
-						if ((masterWS != null) && (slaveWS == null)) {
-							req = new SANStorageRequest(Integer.valueOf(tid),(String)transModel.get(1),bagtrans.masterws,false, masterWS);
-						}
-					}*/
-
 				}
 
 				else if (((String)transModel.get(0)).equalsIgnoreCase("CPU")) {
@@ -579,10 +588,16 @@ public class dbTrace {
 				else if (((String)transModel.get(0)).equalsIgnoreCase("LockManager")) {
 				 	info = (String)transModel.get(2);
 					if (info.equalsIgnoreCase("L")) {
-						req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_LOCK,masterRS,masterWS,false); 
+						if (!flagEpsilon)
+							req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_LOCK,masterRS,masterWS,false); 
+						else 
+							req = new ESRLockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_LOCK,masterRS,masterWS,false,ESRes); 
 					}
 					else {
-						req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_UNLOCK,masterRS,masterWS,false); 
+						if (!flagEpsilon)
+							req = new LockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_UNLOCK,masterRS,masterWS,false); 
+						else
+							req = new ESRLockRequest(Integer.valueOf(tid),transModel.get(1),LockRequest.ORDER_UNLOCK,masterRS,masterWS,false,ESRes); 
 					}	
 				}
 				closeTransactionTrace.payload().push(req);
@@ -592,23 +607,44 @@ public class dbTrace {
 	catch (Exception ex) {
 		ex.printStackTrace(System.err);
 	}
-/*
-    try {
-      BagTransaction bagtrans = (BagTransaction) outPutBag.get(tid);
-      closeTransactionTrace = bagtrans.trans;
 
-      if (closeTransactionTrace != null) {
-        outPutBag.remove(tid);
-      }
-    }
-    catch (Exception ex) {
-      ex.printStackTrace(System.err);
-    }
+    	if (closeTransactionTrace != null) closeTransactionTrace.setInducedAbort(); 
+	return (closeTransactionTrace);
+  }
 
-*/
-   
-    if (closeTransactionTrace != null) closeTransactionTrace.setInducedAbort(); 
-    return (closeTransactionTrace);
+  private static ESRSpecification defineESRSpecification(boolean writeTransaction) {
+        //TODO: We must talk with als to define parameters in the DML file.
+	boolean flagEpsilon = true;
+	int flagTypeEpsilon = ESRSpecification.EpsilonConflicts ;
+        int writeToExport = 200;
+        int readToImport = 200;
+        //TODO: We must talk with als to define parameters in the DML file.
+        ESRSpecification ESRes = null;
+
+  	// Defining epsilon information to process transction
+  	// TODO: We must analyze how the epsilon operates in distributed transaction execution
+       	if (flagEpsilon) {
+		System.out.println("Enabling epsilon transactions.");	
+		switch (flagTypeEpsilon) {
+			case ESRSpecification.EpsilonConflicts:
+				if (writeTransaction) {
+					ESRes = new ESRSpecification(writeToExport,0);
+				}
+                                       else {
+					ESRes = new ESRSpecification(readToImport,0);
+				}
+			break;
+			case ESRSpecification.EpsilonAge:
+				if (writeTransaction) {
+					ESRes = new ESRSpecification(0,writeToExport);
+				}
+				else {
+					ESRes = new ESRSpecification(0,readToImport);
+				}
+			break;
+		}
+	}
+	return(ESRes);
   }
 
   public static synchronized void generateOtherInformation(String transaction) {
