@@ -2,7 +2,7 @@ export projdir=$(shell pwd)/..
 include ./Makefile.vars
 GARBAGE=`find . -name \*.class`
 
-export SRCS=$(shell find tpc -name \*.java)
+export SRCS=$(shell find Escada/tpc -name \*.java)
 
 all: jar
 
