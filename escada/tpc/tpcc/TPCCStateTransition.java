@@ -20,11 +20,11 @@ public class TPCCStateTransition extends StateTransition {
   private final PaymentTrans payment = new PaymentTrans();
   private final StockLevelTrans stocklevel = new StockLevelTrans();
   private final StateObject[] trans = {
-      neworder,
-      payment,
-      orderstatus,
-      delivery,
-      stocklevel
+  	  neworder,
+  	  payment,
+  	  orderstatus,
+  	  delivery,
+  	  stocklevel
   };
   private Random objRand = new Random();
 

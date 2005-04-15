@@ -20,7 +20,7 @@ ORACLE_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY false \
              -CLI 10 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
-             -DBclass escada.tpc.tpcc.database.oracle.dbOracle \
+             -DBclass escada.tpc.tpcc.database.transaction.oracle.dbOracle \
              -TRACEflaf TRACE \
              -PREFIX Client \
              -DBpath jdbc:oracle:thin:@192.168.2.32:1521:tpccdb \
@@ -35,7 +35,7 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY false \
              -CLI 10 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
-             -DBclass escada.tpc.tpcc.database.mysql.dbMySql \
+             -DBclass escada.tpc.tpcc.database.transaction.mysql.dbMySql \
              -TRACEflag TRACE \
              -PREFIX Client \
              -DBpath jdbc:mysql://localhost/tpcc \
@@ -50,7 +50,7 @@ PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY false \
              -CLI 1 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
-             -DBclass escada.tpc.tpcc.database.postgresql.dbPostgresql \
+             -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
              -DBpath jdbc:postgresql://lhona:5432/tpcc \
@@ -66,7 +66,7 @@ PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY false \
              -CLI 10 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
-             -DBclass escada.tpc.tpcc.database.postgresql.dbPostgresql \
+             -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
              -DBpath jdbc:postgresql://localhost:5432/tpcc \
@@ -76,6 +76,24 @@ PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
              -POOL 10 \
              -MI 45 \
 	     -FRAG 1
+
+DBMSEMU_FLAGS =-EBclass escada.tpc.tpcc.TPCCEmulation \
+             -KEY false \
+             -CLI 1 \
+             -STclass escada.tpc.tpcc.TPCCStateTransition \
+             -DBclass escada.tpc.tpcc.database.transaction.dbmsemu.dbDBMSEmu \
+             -TRACEFLAG TRACE \
+             -PREFIX TPC-C \
+             -DBpath jdbc:postgresql://localhost:5432/tpcc \
+             -DBdriver escada.dbmsemu.jdbcdriver.DBMSEmuJDBCDriver \
+             -DBusr tpcc \
+             -DBpasswd tpcc \
+             -POOL 10 \
+             -MI 45 \
+	     -FRAG 1
+
+run-dbmsemu:
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientStartup $(DBMSEMU_FLAGS)
 
 real-oracle:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientStartup $(ORACLE_FLAGS)

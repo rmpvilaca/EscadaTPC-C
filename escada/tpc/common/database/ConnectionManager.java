@@ -166,10 +166,7 @@ public class ConnectionManager {
 					System.exit(-1);
 				}
 			}
-			con.setAutoCommit(true);
-
 			totalConnections++;
-
 			return con;
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend.");

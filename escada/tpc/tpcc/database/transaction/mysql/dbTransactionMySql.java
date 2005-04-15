@@ -504,10 +504,10 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 
 				if (__c_id == 0) {
 					statement = con
-							.prepareStatement("select c_id, c_last, c_balance, c_first, c_middle "
-									+ " from customer where c_last = ? and "
-									+ " c_w_id = ? and c_d_id = ? "
-									+ " order by c_w_id, c_d_id, c_last, c_first limit 1 ");
+								.prepareStatement("select c_id, c_last, c_balance, c_first, c_middle "
+										+ " from customer where c_last = ? and "
+										+ " c_w_id = ? and c_d_id = ? "
+										+ " order by c_w_id, c_d_id, c_last, c_first limit 1 ");
 					statement.setString(1, __c_last);
 					statement.setInt(2, __w_id);
 					statement.setInt(3, __d_id);

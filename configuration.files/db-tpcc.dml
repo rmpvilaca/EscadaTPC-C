@@ -1,0 +1,627 @@
+database [ 
+	name "tpc-c"
+
+	table [
+		name "customer"		
+		
+		at [
+			name "c_id"
+			min 1 
+			max 3000
+			dist 3000
+		]
+
+		at [
+			name "c_d_id" 
+			min 1
+			max 10
+			dist 10
+		]
+		at [
+			name "c_w_id"
+			min 1
+			max 2
+			dist 2 
+		]
+
+		at [
+
+			name "c_first"
+			min "001ElPRMbQ8kN2"
+			max "zZZxHxsZJOW1R9G"
+			dist 60000 # I am not sure if it increases with the number of clients.
+				  # It seems strange.
+		]
+
+		at [
+			name "c_last"
+			min ABLEABLEABLE
+			max PRIPRIPRI
+			dist 1000
+		]
+
+		primaryKey [ 
+			key "c_w_id" 
+			key "c_d_id" 
+			key "c_id" 
+		]
+
+		occur	30000
+
+	]
+
+
+	table [
+		name "district"
+		
+		at [
+			name "d_id"
+			min 1
+			max 10
+			dist 10
+		]
+
+		at [
+			name "d_w_id"
+			min 1
+			max 2 # It increases with the number of warehouses.
+			dist 2
+		]
+
+		at [
+			name "d_name"
+			min "0GF0i9"  
+			max "XxaOTTCPa3"
+			dist 20 # It increases with the number of warehouses.
+		]
+
+		at [
+			name "d_street_1"
+			min "2NgaEwCpY4zI8CZS" 
+			max "zAMOiIW0CFy"
+			dist 20
+		]
+
+		at [
+			name "d_streate_2"
+			min "0diaSOc6ZE8qzkW" 
+			max "zKIvWpVrtPI36i"
+			dist 20
+		]
+
+		at [
+			name "d_city"
+			min "65mW2N3E5p61hx"  
+			max "ZvTd9s2uXmFc"
+			dist 20
+		]
+
+		at [
+			name "d_zip"
+			min 210311111 
+			max 906311111
+			dist 20
+		]
+
+		at [
+			name "d_tax"
+			min 0.0179 
+			max 0.1977
+			dist 20
+		]
+
+		at [
+			name "d_ytd"
+			min 37679.62 
+			max 1140793.45
+			dist 20
+		]
+
+		at [
+			name "d_next_o_id"
+			min 3002  
+			max 3139
+			dist 12
+		]
+
+		primaryKey [
+			key "d_w_id"
+			key "d_id"
+		]
+
+		occur 20 # It increases with the number of warehouses.
+	]
+
+
+	table [
+		name "history"
+
+		at [ 
+			name "h_c_id"
+			min 1
+			max 3000
+			dist 3000
+		]
+
+		at [
+			name "h_c_d_id"
+			min 1
+			max 10
+			dist 10
+		]
+
+		at [
+			name "h_c_w_id"
+			min 1
+			max 2
+			dist 2
+		]
+
+		at [
+			name "h_d_id"
+			min 1
+			max 10
+			dist 10
+		]
+
+		at [
+			name "h_w_id"
+			min 1
+			max 10
+			dist 10
+		]
+
+		at [
+			name "h_date"
+			min "2003-03-13 17:57:13"
+			max "2005-03-31 18:39:24.938796"
+			dist 4051
+		]
+
+		at [	
+			name "h_amount"
+			min 4.49 
+			max 4999.74
+			dist 4028
+		]
+		
+		at [
+			name "h_data"
+			min "003vvEdtQ3901Ab4OEVQV3"
+			max "zzZfTq1YT7Qm6ezt9bxbYQ"
+			dist 60020
+		]
+
+		primaryKey [
+			key h_data # We must verify this information
+		]
+
+		occur 1000 # VERIFICAR ISSO
+	]
+
+	table [
+		name "stock"
+
+		at [
+			name "s_i_id"
+			min 1
+			max 100000
+			dist 100000
+		]
+
+		at [
+			name "s_w_id"
+			min 1	
+			max 2
+			dist 2
+		]
+
+		at [
+			name "s_quantity"
+			min 10
+			max 100
+			dist 91
+		]
+
+		primaryKey [ key "s_i_id"
+			     key "s_w_id"	 
+		]
+
+		occur 200000
+	]
+
+	table [
+		name "warehouse"
+
+		at [
+			name "w_id"
+			min 1
+			max 2
+			dist 2
+		]
+
+		at [
+			name "w_name" 
+			min "FkieCCinN0"
+			max "oj4fY2fLVq"
+			dist 2
+		]
+
+		at [
+			name "w_street_1"
+			min "rqSHHakqyV"
+			max "V3Q9uiG7o3s"
+			dist 2
+		]
+
+		at [
+			name "w_street_2"
+			min "H1y3AfXBAqbpT7VJ"
+			max "zZ98nW3BR2s"
+			dist 2
+		]
+
+		at [
+			name "w_city"
+			min "8E41t3gzms9WuoMRLk"
+			max "ArNr4GNFV9"
+			dist 2
+		]
+
+		at [
+			name "w_state" 
+			min "aV"
+			max "nI"
+			dist 2
+		]
+
+		at [
+			name "w_zip" 
+			min 453511111
+			max 957111111
+			dist 2
+		]
+
+		at [
+			name "w_tax"
+			min 0.1041
+			max 0.1878
+			dist 2
+		]
+
+		at [
+			name "w_ytd" 
+			min 489402.69
+			max 10267845.88
+			dist 2
+		]
+		
+		primaryKey [ key "w_id" ]
+
+		occur 2
+	]
+
+	table [
+		name "item"
+
+		at [
+			name "i_id"
+			min 1
+			max 100000
+			dist 100000
+		]
+		
+		at [
+			name "i_im_id"
+			min 1
+			max 10000
+			dist 10000
+		]
+
+		at [
+			name "i_name"
+			min 001yrdeRVBGbiLX0RmyYVdTN
+			max zZztJwK28AonLDddIso
+			dist 100000
+		]
+
+		at [
+			name "i_price"
+			min 1.0
+			max 100.0
+			dist 9901
+		]
+
+		at [
+			name "i_data"
+			min 001Fp7wBSCY7mMC1IAubpX8XfH3HCy2eTOjzKD2
+			max ZZZRLhSENbpXCrcEfj5dA3VhenpasOlNGsrodg8or
+			dist 100000
+		]
+
+		primaryKey [
+			key "i_id"
+		]
+
+		occur 100000
+	]
+
+
+	table [
+		name "new_order"
+
+		at [
+			name "no_o_id"
+			min 2106
+			max 3139
+			dist 1033
+		]
+	
+		at [
+			name "no_d_id"
+			min 1
+			max 10
+			dist 10
+		]
+
+		at [
+			name "no_w_id"
+			min 1
+			max 2
+			dist 2
+		]
+
+		primaryKey [
+			key "no_w_id"
+			key "no_d_id"
+			key "no_o_id"
+		]
+
+		occur 15612
+	]
+
+	table [
+		name "order_line"
+
+		at [
+			name "ol_o_id"
+			min 1
+			max 3139
+			dist 3138
+		]
+
+		at [
+			name "ol_d_id"
+			min 1
+			max 10
+			dist 10
+		]
+
+		at [
+			name "ol_w_id" 
+			min 1
+			max 2
+			dist 2 
+		]
+
+		at [
+			name "ol_number" 
+			min 1
+			max 15
+			dist 15
+		]
+
+		at [
+			name "ol_i_id"
+			min 1
+			max 100000
+			dist 100000
+		]
+
+		at [
+			name "ol_supply_w_id"
+			min 1
+			max 2
+			dist 2
+		]
+
+		at [
+			name "ol_quantity" 
+			min 1
+			max 10
+			dist 10
+		]
+
+		at [
+			name "ol_amount" 
+			min  0.00 
+			max  9999.99 
+			dist 172677
+		]
+
+		at [
+			name "ol_dist_info"  
+			min 00015PdKPITWetszgbZtjdYD
+			max ZzzzXkaJssFJGAKfeffspHwz
+			dist 611239
+		]
+
+		primaryKey [
+			key "ol_w_id"
+			key "ol_d_id"
+			key "ol_o_id"
+			key "ol_number"
+		]
+
+		occur 612119
+
+	]
+
+
+
+	table [ 
+		name "orders"
+	
+		at [
+			name "o_id"
+			min 1
+			max 3139
+			dist 3138
+		]
+				
+		at [
+			name "o_d_id"
+			min 1
+			max 10
+			dist 10
+		]
+	
+		at [
+			name "o_w_id"
+			min 1
+			max 2
+			dist 2
+		]
+	
+		at [
+			name "o_c_id"
+                        min 1
+                        max 3000
+                        dist 3000
+		]
+		
+		at [
+			name "o_carrier_id" 
+			min 0
+			max 10
+			dist 11 # estranho...
+		]
+		
+		at [
+			name "o_ol_cnt" 
+			min 5
+			max 15
+			dist 11
+		]
+
+		at [	
+			name "o_all_local" 
+			min 0
+			max 1
+			dist 2
+		]
+		
+		primaryKey [ 
+			key "o_w_id"
+			key "o_d_id"
+			key "o_id"
+		]
+		
+		occur 61202
+	
+	]
+ 
+	table [
+		name "stock"
+
+		at [
+			name "s_i_id"
+			min 1
+			max 100000
+			dist 100000
+		]
+
+		at [
+			name "s_w_id"
+			min 1	
+			max 2
+			dist 2
+		]
+
+		at [
+			name "s_quantity"
+			min 10
+			max 100
+			dist 91
+		]
+
+		primaryKey [ key "s_i_id"
+			     key "s_w_id"	 
+		]
+
+		occur 200000
+	]
+
+	table [
+		name "warehouse"
+
+		at [
+			name "w_id"
+			min 1
+			max 2
+			dist 2
+		]
+
+		at [
+			name "w_name" 
+			min "FkieCCinN0"
+			max "oj4fY2fLVq"
+			dist 2
+		]
+
+		at [
+			name "w_street_1"
+			min "rqSHHakqyV"
+			max "V3Q9uiG7o3s"
+			dist 2
+		]
+
+		at [
+			name "w_street_2"
+			min "H1y3AfXBAqbpT7VJ"
+			max "zZ98nW3BR2s"
+			dist 2
+		]
+
+		at [
+			name "w_city"
+			min "8E41t3gzms9WuoMRLk"
+			max "ArNr4GNFV9"
+			dist 2
+		]
+
+		at [
+			name "w_state" 
+			min "aV"
+			max "nI"
+			dist 2
+		]
+
+		at [
+			name "w_zip" 
+			min 453511111
+			max 957111111
+			dist 2
+		]
+
+		at [
+			name "w_tax"
+			min 0.1041
+			max 0.1878
+			dist 2
+		]
+
+		at [
+			name "w_ytd" 
+			min 489402.69
+			max 10267845.88
+			dist 2
+		]
+		
+		primaryKey [ key "w_id" ]
+
+		occur 2
+	]
+]
+
+# arch-tag: 82016def-231c-4693-a20d-10e5f4658176
