@@ -20,6 +20,8 @@ public class OrderStatusTrans
     outInfo.putInfo("resubmit",Boolean.toString(Emulation.getStatusReSubmit()));
     outInfo.putInfo("trace", Emulation.getTraceInformation());
     outInfo.putInfo("abort", "0");
+    outInfo.putInfo("hid", hid);    
+    
     outInfo.putInfo("wid", Integer.toString(wid));
     did = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
     outInfo.putInfo("did", Integer.toString(did));

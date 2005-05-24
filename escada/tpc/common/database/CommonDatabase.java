@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.util.Date;
 import org.apache.log4j.Logger;
 
+import escada.tpc.logger.PerformanceLogger;
+
 /**
  * It implements a generic database interface with connection control
  * (connection pool).
@@ -19,8 +21,6 @@ public class CommonDatabase {
 	private static Logger logger = Logger.getLogger(CommonDatabase.class);
 
 	private static Date baseTime = new java.util.Date();
-
-	private static Long trans = new Long(0);
 
 	/**
 	 * It instanciates the CommonDatabase class.
@@ -139,33 +139,12 @@ public class CommonDatabase {
 				cn.returnConnection(con);
 	}
 
-	public void transactionLog(Date startTime, Date finishTime,
-			String transResult, String transAccess, String transName) {
-		long transNumber;
-
-		if (logger.isDebugEnabled()) {
-
-			synchronized (this) {
-				transNumber = trans.longValue();
-				transNumber++;
-				trans = new Long(transNumber);
-			}
-
-			logger.debug((startTime.getTime() - baseTime.getTime()) + ":"
-					+ transNumber + ":"
-					+ (finishTime.getTime() - baseTime.getTime()) + ":"
-					+ (finishTime.getTime() - startTime.getTime()) + ":"
-					+ transResult + ":" + transAccess + ":" + transName);
-		}
-	}
-
 	public void processLog(Date startTime, Date finishTime, String transResult,
 			String transAccess, String transName) {
 
-		if (logger.isDebugEnabled()) {
-			logger.debug((startTime.getTime() - baseTime.getTime())
-					+ ":processing:"
-					+ (finishTime.getTime() - baseTime.getTime()) + ":"
+		if (PerformanceLogger.isPerformanceLoggerEnabled()) {
+			PerformanceLogger.info((startTime.getTime() - baseTime.getTime())
+					+ ":0:" + (finishTime.getTime() - baseTime.getTime()) + ":"
 					+ (finishTime.getTime() - startTime.getTime()) + ":"
 					+ transResult + ":" + transAccess + ":" + transName);
 		}

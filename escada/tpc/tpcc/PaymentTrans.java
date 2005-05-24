@@ -23,6 +23,9 @@ public class PaymentTrans
     outInfo.putInfo("trace", Emulation.getTraceInformation());
     outInfo.putInfo("resubmit",Boolean.toString(Emulation.getStatusReSubmit()));
     outInfo.putInfo("abort", "0");
+    outInfo.putInfo("hid",hid);
+    
+    
     outInfo.putInfo("wid", Integer.toString(wid));
     did = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
     outInfo.putInfo("did", Integer.toString(did));

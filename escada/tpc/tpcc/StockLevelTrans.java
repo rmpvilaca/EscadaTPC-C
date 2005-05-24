@@ -18,6 +18,8 @@ public class StockLevelTrans
     outInfo.putInfo("resubmit",Boolean.toString(Emulation.getStatusReSubmit()));
     outInfo.putInfo("trace", Emulation.getTraceInformation());
     outInfo.putInfo("abort", "0");
+    outInfo.putInfo("hid", hid);
+    
     outInfo.putInfo("wid", Integer.toString(wid));
     if ( ( (em.getEmulationId() + 1) % 10) == 0) {
       outInfo.putInfo("did", Integer.toString(10));

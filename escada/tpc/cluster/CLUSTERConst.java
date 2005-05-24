@@ -1,10 +1,10 @@
-package escada.tpc.tpcc;
+package escada.tpc.cluster;
 
 
 /**
 * It defines important constants used in the simulation of the TPC-C.
 **/
-public class TPCCConst {
+public class CLUSTERConst {
   public final static int CustomerA = 1023;
   public final static int numINICustomer = 1;
   public final static int numENDCustomer = 3000;
@@ -47,4 +47,4 @@ public class TPCCConst {
 
   public final static int numState = 5;
 }
-// arch-tag: fe63e7a2-dd6e-4431-ad74-35de8fdb5bf1
+// arch-tag: af7f4762-49ef-4e6f-9a08-20e1d8878ed9

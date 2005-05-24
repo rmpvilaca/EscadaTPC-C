@@ -17,23 +17,23 @@ import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
 public class dbMSSql extends dbTPCCDatabase {
 
 	private Logger logger = Logger.getLogger(dbMSSql.class);
-	
+
 	protected HashSet NewOrderDB(OutInfo obj, Connection con)
 			throws java.sql.SQLException {
 
 		boolean resubmit = Boolean.parseBoolean((String) obj
 				.getInfo("resubmit"));
-		HashSet dbtrace = new HashSet();		
-		
+		HashSet dbtrace = new HashSet();
+
 		while (true) {
-			
+
 			CallableStatement statement = null;
 			ResultSet rs = null;
 			String cursor = null;
 
 			java.util.Date NetStartTime = null;
 			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();			
+			NetStartTime = new java.util.Date();
 
 			try {
 				statement = con
@@ -81,7 +81,7 @@ public class dbMSSql extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
-				
+
 				NetFinishTime = new java.util.Date();
 
 				processLog(NetStartTime, NetFinishTime, "processing", "w",
@@ -91,15 +91,15 @@ public class dbMSSql extends dbTPCCDatabase {
 				logger.warn("NewOrder - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex);
+					RollbackTransaction(con, sqlex, "tx neworder","w");
 					if (resubmit) {
-						InitTransaction(obj, con, "tx neworder");
+						InitTransaction(con, "tx neworder","w");
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex);
+					RollbackTransaction(con, sqlex, "tx neworder","w");
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -123,8 +123,8 @@ public class dbMSSql extends dbTPCCDatabase {
 			throws java.sql.SQLException {
 		boolean resubmit = Boolean.parseBoolean((String) obj
 				.getInfo("resubmit"));
-		HashSet dbtrace = new HashSet();		
-		
+		HashSet dbtrace = new HashSet();
+
 		while (true) {
 			CallableStatement statement = null;
 			ResultSet rs = null;
@@ -132,7 +132,7 @@ public class dbMSSql extends dbTPCCDatabase {
 
 			java.util.Date NetStartTime = null;
 			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();			
+			NetStartTime = new java.util.Date();
 
 			try {
 				statement = con.prepareCall("{call tpcc_delivery(?,?)}");
@@ -150,7 +150,7 @@ public class dbMSSql extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
-				
+
 				NetFinishTime = new java.util.Date();
 				processLog(NetStartTime, NetFinishTime, "processing", "w",
 						"tx delivery");
@@ -159,15 +159,15 @@ public class dbMSSql extends dbTPCCDatabase {
 				logger.warn("Delivery - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex);
+					RollbackTransaction(con, sqlex, "tx delivery","w");
 					if (resubmit) {
-						InitTransaction(obj, con, "tx delivery");
+						InitTransaction(con, "tx delivery","w");
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex);
+					RollbackTransaction(con, sqlex, "tx delivery","w");
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -187,13 +187,12 @@ public class dbMSSql extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-
 	protected HashSet OrderStatusDB(OutInfo obj, Connection con)
 			throws java.sql.SQLException {
 		boolean resubmit = Boolean.parseBoolean((String) obj
 				.getInfo("resubmit"));
-		HashSet dbtrace = new HashSet();		
-		
+		HashSet dbtrace = new HashSet();
+
 		while (true) {
 			CallableStatement statement = null;
 			ResultSet rs = null;
@@ -201,7 +200,7 @@ public class dbMSSql extends dbTPCCDatabase {
 
 			java.util.Date NetStartTime = null;
 			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();			
+			NetStartTime = new java.util.Date();
 
 			try {
 				statement = con.prepareCall("{call tpcc_orderstatus(?,?,?,?)}");
@@ -227,10 +226,10 @@ public class dbMSSql extends dbTPCCDatabase {
 				String str = (String) (obj).getInfo("cid");
 
 				if (str.equals("0")) {
-					processLog(NetStartTime, NetFinishTime, "processing", "w",
+					processLog(NetStartTime, NetFinishTime, "processing", "r",
 							"tx orderstatus 01");
 				} else {
-					processLog(NetStartTime, NetFinishTime, "processing", "w",
+					processLog(NetStartTime, NetFinishTime, "processing", "r",
 							"tx orderstatus 02");
 				}
 
@@ -238,23 +237,33 @@ public class dbMSSql extends dbTPCCDatabase {
 				logger
 						.warn("OrderStatus - SQL Exception "
 								+ sqlex.getMessage());
+				String str = (String) (obj).getInfo("cid");				
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex);
+					if (str.equals("0")) {					
+					RollbackTransaction(con, sqlex,"tx orderstatus 01","r");
+					}
+					else {
+						RollbackTransaction(con, sqlex,"tx orderstatus 02","r");						
+					}
 
 					if (resubmit) {
-						String str = (String) (obj).getInfo("cid");
 						if (str.equals("0")) {
-							InitTransaction(obj, con, "tx orderstatus 01");
+							InitTransaction(con, "tx orderstatus 01","r");
 						} else {
-							InitTransaction(obj, con, "tx orderstatus 02");
+							InitTransaction(con, "tx orderstatus 02","r");
 						}
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex);
+					if (str.equals("0")) {					
+						RollbackTransaction(con, sqlex,"tx orderstatus 01","r");
+						}
+						else {
+							RollbackTransaction(con, sqlex,"tx orderstatus 02","r");						
+						}
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -278,8 +287,8 @@ public class dbMSSql extends dbTPCCDatabase {
 			throws java.sql.SQLException {
 		boolean resubmit = Boolean.parseBoolean((String) obj
 				.getInfo("resubmit"));
-		HashSet dbtrace = new HashSet();		
-		
+		HashSet dbtrace = new HashSet();
+
 		while (true) {
 			CallableStatement statement = null;
 			ResultSet rs = null;
@@ -287,7 +296,7 @@ public class dbMSSql extends dbTPCCDatabase {
 
 			java.util.Date NetStartTime = null;
 			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();			
+			NetStartTime = new java.util.Date();
 
 			try {
 				statement = con
@@ -316,7 +325,7 @@ public class dbMSSql extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
-				
+
 				String str = (String) (obj).getInfo("cid");
 				if (str.equals("0")) {
 					processLog(NetStartTime, NetFinishTime, "processing", "w",
@@ -325,25 +334,38 @@ public class dbMSSql extends dbTPCCDatabase {
 					processLog(NetStartTime, NetFinishTime, "processing", "w",
 							"tx payment 02");
 				}
-				
+
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("Payment - SQL Exception " + sqlex.getMessage());
+				
+				String str = (String) (obj).getInfo("cid");				
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex);
+					
+					if (str.equals("0")) {					
+					RollbackTransaction(con, sqlex, "tx payment 01","w");
+					}
+					else {
+						RollbackTransaction(con, sqlex, "tx payment 02","w");						
+					}
+					
 					if (resubmit) {
-						String str = (String) (obj).getInfo("cid");
 						if (str.equals("0")) {
-							InitTransaction(obj, con, "tx payment 01");
+							InitTransaction(con, "tx payment 01","w");
 						} else {
-							InitTransaction(obj, con, "tx payment 02");
+							InitTransaction(con, "tx payment 02","w");
 						}
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex);
+					if (str.equals("0")) {					
+						RollbackTransaction(con, sqlex, "tx payment 01","w");
+						}
+						else {
+							RollbackTransaction(con, sqlex, "tx payment 02","w");						
+						}
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -367,8 +389,8 @@ public class dbMSSql extends dbTPCCDatabase {
 			throws java.sql.SQLException {
 		boolean resubmit = Boolean.parseBoolean((String) obj
 				.getInfo("resubmit"));
-		HashSet dbtrace = new HashSet();		
-		
+		HashSet dbtrace = new HashSet();
+
 		while (true) {
 			CallableStatement statement = null;
 			ResultSet rs = null;
@@ -376,7 +398,7 @@ public class dbMSSql extends dbTPCCDatabase {
 
 			java.util.Date NetStartTime = null;
 			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();			
+			NetStartTime = new java.util.Date();
 
 			try {
 				statement = con.prepareCall("{call tpcc_stocklevel(?,?,?)}");
@@ -396,24 +418,24 @@ public class dbMSSql extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
-				
+
 				NetFinishTime = new java.util.Date();
-				processLog(NetStartTime, NetFinishTime, "processing", "w",
+				processLog(NetStartTime, NetFinishTime, "processing", "r",
 						"tx stocklevel");
 
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("StockLevel - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex);
+					RollbackTransaction(con, sqlex, "tx stocklevel","r");
 					if (resubmit) {
-						InitTransaction(obj, con, "tx stocklevel");
+						InitTransaction(con, "tx stocklevel","r");
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex);
+					RollbackTransaction(con, sqlex, "tx stocklevel","r");
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -433,17 +455,18 @@ public class dbMSSql extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected void InitTransaction(OutInfo obj, Connection con, String transaction)
-			throws java.sql.SQLException {
+	protected void InitTransaction(Connection con, String strTrans,
+			String strAccess) throws java.sql.SQLException {
 
 	}
 
-	protected void CommitTransaction(Connection con) throws java.sql.SQLException {
+	protected void CommitTransaction(Connection con, String strTrans,
+			String strAccess) throws java.sql.SQLException {
 
 	}
 
-	protected void RollbackTransaction(Connection con, Exception dump)
-			throws java.sql.SQLException {
+	protected void RollbackTransaction(Connection con, Exception dump,
+			String strTrans, String strAccess) throws java.sql.SQLException {
 	}
 }
 // arch-tag: 96ed9699-68a0-4515-bd5f-be5a51f4c369

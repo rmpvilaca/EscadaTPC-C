@@ -1,28 +1,25 @@
-package escada.tpc.tpcc;
+package escada.tpc.cluster;
 
 import escada.tpc.common.Emulation;
 import escada.tpc.common.StateObject;
 import escada.tpc.common.util.RandGen;
-import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
+import escada.tpc.cluster.database.transaction.dbCLUSTERDatabase;
 
 
 /**
 * It implements the states according to the definition  of the TPC-C. Basically, it setups import information used in the execution of the delivery transaction.
  Additionally, it defines the trace flag, which is a boolean value used to log traces or not and the trace file.
 **/
-public class DeliveryTrans
+public class UpdateTrans
     extends StateObject {
-  public void initProcess(Emulation em,String hid) {
-    int wid = (em.getEmulationId() / 10) + 1; //TODO: CHANGE TO CONSTANT
-    int crid = 0;
 
+	public void initProcess(Emulation em,String hid) {
     outInfo.putInfo("resubmit",Boolean.toString(Emulation.getStatusReSubmit()));
     outInfo.putInfo("trace", Emulation.getTraceInformation());
     outInfo.putInfo("abort", "0");
     outInfo.putInfo("hid", hid);    
     
-    outInfo.putInfo("wid", Integer.toString(wid));
-    crid = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngCarrier + 1);
+    int crid = RandGen.nextInt(em.getRandom(), 1, CLUSTERConst.rngCarrier + 1);
     outInfo.putInfo("crid", Integer.toString(crid));
     outInfo.putInfo("thinktime", Long.toString(em.getThinkTime()));
     outInfo.putInfo("file", em.getEmulationName());
@@ -34,10 +31,10 @@ public class DeliveryTrans
 
   public Object requestProcess(Emulation em,String hid) {
     Object requestProcess = null;
-    dbTPCCDatabase db = (dbTPCCDatabase) em.getDatabase();
+    dbCLUSTERDatabase db = (dbCLUSTERDatabase) em.getDatabase();
     try {
       initProcess(em,hid);
-      requestProcess =  db.TraceDeliveryDB(outInfo,hid);
+      requestProcess =  db.TraceUpdateTrans(outInfo,hid);
     }
     catch (Exception ex) {
       ex.printStackTrace(System.err);
@@ -51,7 +48,7 @@ public class DeliveryTrans
   }
 
   public void setProb() {
-    prob = 4;
+    prob = 50;
   }
 
   public void setKeyingTime() {
@@ -63,7 +60,7 @@ public class DeliveryTrans
   }
 
   public String toString() {
-    return ("DeliveryTrans");
+    return ("UpdateTrans");
   }
 }
-// arch-tag: 945bcc5f-b3d7-4f5a-8322-dd470a3fe18f
+// arch-tag: a1847dc2-63ac-4335-9374-35a7ac9d3a2c

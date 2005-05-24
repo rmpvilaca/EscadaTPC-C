@@ -69,55 +69,6 @@ database [
 		]
 
 		at [
-			name "d_name"
-			min "0GF0i9"  
-			max "XxaOTTCPa3"
-			dist 20 # It increases with the number of warehouses.
-		]
-
-		at [
-			name "d_street_1"
-			min "2NgaEwCpY4zI8CZS" 
-			max "zAMOiIW0CFy"
-			dist 20
-		]
-
-		at [
-			name "d_streate_2"
-			min "0diaSOc6ZE8qzkW" 
-			max "zKIvWpVrtPI36i"
-			dist 20
-		]
-
-		at [
-			name "d_city"
-			min "65mW2N3E5p61hx"  
-			max "ZvTd9s2uXmFc"
-			dist 20
-		]
-
-		at [
-			name "d_zip"
-			min 210311111 
-			max 906311111
-			dist 20
-		]
-
-		at [
-			name "d_tax"
-			min 0.0179 
-			max 0.1977
-			dist 20
-		]
-
-		at [
-			name "d_ytd"
-			min 37679.62 
-			max 1140793.45
-			dist 20
-		]
-
-		at [
 			name "d_next_o_id"
 			min 3002  
 			max 3139
@@ -130,6 +81,7 @@ database [
 		]
 
 		occur 20 # It increases with the number of warehouses.
+			 # It is OK.
 	]
 
 
@@ -311,39 +263,12 @@ database [
 			dist 100000
 		]
 		
-		at [
-			name "i_im_id"
-			min 1
-			max 10000
-			dist 10000
-		]
-
-		at [
-			name "i_name"
-			min 001yrdeRVBGbiLX0RmyYVdTN
-			max zZztJwK28AonLDddIso
-			dist 100000
-		]
-
-		at [
-			name "i_price"
-			min 1.0
-			max 100.0
-			dist 9901
-		]
-
-		at [
-			name "i_data"
-			min 001Fp7wBSCY7mMC1IAubpX8XfH3HCy2eTOjzKD2
-			max ZZZRLhSENbpXCrcEfj5dA3VhenpasOlNGsrodg8or
-			dist 100000
-		]
-
 		primaryKey [
 			key "i_id"
 		]
 
-		occur 100000
+		occur 100000	# Defines the items.
+				# It is ok.
 	]
 
 
@@ -437,13 +362,6 @@ database [
 			min  0.00 
 			max  9999.99 
 			dist 172677
-		]
-
-		at [
-			name "ol_dist_info"  
-			min 00015PdKPITWetszgbZtjdYD
-			max ZzzzXkaJssFJGAKfeffspHwz
-			dist 611239
 		]
 
 		primaryKey [
@@ -550,6 +468,7 @@ database [
 		]
 
 		occur 200000
+			
 	]
 
 	table [

@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
 import java.util.HashSet;
 
 import org.apache.log4j.Logger;
@@ -261,15 +262,15 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				logger.warn("NewOrder - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex);
+					RollbackTransaction(con, sqlex, "tx neworder", "w");
 					if (resubmit) {
-						InitTransaction(obj, con, "tx neworder");
+						InitTransaction(con, "tx neworder", "w");
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex);
+					RollbackTransaction(con, sqlex, "tx neworder", "w");
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -442,15 +443,15 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				logger.warn("Delivery - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex);
+					RollbackTransaction(con, sqlex, "tx delivery", "w");
 					if (resubmit) {
-						InitTransaction(obj, con, "tx delivery");
+						InitTransaction(con, "tx delivery", "w");
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex);
+					RollbackTransaction(con, sqlex, "tx delivery", "w");
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -504,10 +505,10 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 
 				if (__c_id == 0) {
 					statement = con
-								.prepareStatement("select c_id, c_last, c_balance, c_first, c_middle "
-										+ " from customer where c_last = ? and "
-										+ " c_w_id = ? and c_d_id = ? "
-										+ " order by c_w_id, c_d_id, c_last, c_first limit 1 ");
+							.prepareStatement("select c_id, c_last, c_balance, c_first, c_middle "
+									+ " from customer where c_last = ? and "
+									+ " c_w_id = ? and c_d_id = ? "
+									+ " order by c_w_id, c_d_id, c_last, c_first limit 1 ");
 					statement.setString(1, __c_last);
 					statement.setInt(2, __w_id);
 					statement.setInt(3, __d_id);
@@ -586,10 +587,10 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				String str = (String) (obj).getInfo("cid");
 
 				if (str.equals("0")) {
-					processLog(NetStartTime, NetFinishTime, "processing", "w",
+					processLog(NetStartTime, NetFinishTime, "processing", "r",
 							"tx orderstatus 01");
 				} else {
-					processLog(NetStartTime, NetFinishTime, "processing", "w",
+					processLog(NetStartTime, NetFinishTime, "processing", "r",
 							"tx orderstatus 02");
 				}
 
@@ -597,23 +598,36 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				logger
 						.warn("OrderStatus - SQL Exception "
 								+ sqlex.getMessage());
+				String str = (String) (obj).getInfo("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex);
+					if (str.equals("0")) {
+						RollbackTransaction(con, sqlex, "tx orderstatus 01",
+								"r");
+					} else {
+						RollbackTransaction(con, sqlex, "tx orderstatus 02",
+								"r");
+					}
 
 					if (resubmit) {
-						String str = (String) (obj).getInfo("cid");
+
 						if (str.equals("0")) {
-							InitTransaction(obj, con, "tx orderstatus 01");
+							InitTransaction(con, "tx orderstatus 01", "r");
 						} else {
-							InitTransaction(obj, con, "tx orderstatus 02");
+							InitTransaction(con, "tx orderstatus 02", "r");
 						}
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex);
+					if (str.equals("0")) {
+						RollbackTransaction(con, sqlex, "tx orderstatus 01",
+								"r");
+					} else {
+						RollbackTransaction(con, sqlex, "tx orderstatus 02",
+								"r");
+					}
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -846,22 +860,30 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				}
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("Payment - SQL Exception " + sqlex.getMessage());
+				String str = (String) (obj).getInfo("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex);
+					if (str.equals("0")) {
+						RollbackTransaction(con, sqlex, "tx payment 01", "w");
+					} else {
+						RollbackTransaction(con, sqlex, "tx payment 02", "w");
+					}
 					if (resubmit) {
-						String str = (String) (obj).getInfo("cid");
 						if (str.equals("0")) {
-							InitTransaction(obj, con, "tx payment 01");
+							InitTransaction(con, "tx payment 01", "w");
 						} else {
-							InitTransaction(obj, con, "tx payment 02");
+							InitTransaction(con, "tx payment 02", "w");
 						}
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex);
+					if (str.equals("0")) {
+						RollbackTransaction(con, sqlex, "tx payment 01", "w");
+					} else {
+						RollbackTransaction(con, sqlex, "tx payment 02", "w");
+					}
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -936,22 +958,22 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				statement = null;
 
 				NetFinishTime = new java.util.Date();
-				processLog(NetStartTime, NetFinishTime, "processing", "w",
+				processLog(NetStartTime, NetFinishTime, "processing", "r",
 						"tx stocklevel");
 
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("StockLevel - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex);
+					RollbackTransaction(con, sqlex,"stocklevel","r");
 					if (resubmit) {
-						InitTransaction(obj, con, "tx stocklevel");
+						InitTransaction(con, "tx stocklevel","r");
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex);
+					RollbackTransaction(con, sqlex, "tx stocklevel","r");
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -971,14 +993,22 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected void InitTransaction(OutInfo obj, Connection con,
-			String transaction) throws java.sql.SQLException {
+	protected void InitTransaction(Connection con, String strTrans,
+			String strAccess) throws java.sql.SQLException {
 		Statement statement = null;
 		try {
+			Date NetStartTime = new java.util.Date();
+
 			statement = con.createStatement();
 			statement.execute("start transaction");
-			statement.execute("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
-			statement.execute("select '" + transaction + "'");
+			statement.execute("set transaction isolation level serializable");
+			statement.execute("select '" + strTrans + "'");
+
+			Date NetFinishTime = new java.util.Date();
+
+			processLog(NetStartTime, NetFinishTime, "beginning", strAccess,
+					strTrans);
+
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend");
 			ex.printStackTrace(System.err);
@@ -990,34 +1020,50 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 		}
 	}
 
-	protected void CommitTransaction(Connection con)
-			throws java.sql.SQLException {
-		Statement statement = null;
-		try {
-			statement = con.createStatement();
-			statement.execute("commit transaction");
-		} catch (java.sql.SQLException sqlex) {
-			if (con != null) {
-				RollbackTransaction(con, sqlex);
-			}
-			throw sqlex;
-		} catch (java.lang.Exception ex) {
-			logger.fatal("Unexpected error. Something bad happend");
-			ex.printStackTrace(System.err);
-			System.exit(-1);
-		} finally {
-			if (statement != null) {
-				statement.close();
+	protected void CommitTransaction(Connection con, String strTrans,
+			String strAccess) throws java.sql.SQLException {
+		{
+			Statement statement = null;
+			try {
+
+				Date NetStartTime = new java.util.Date();
+
+				statement = con.createStatement();
+				statement.execute("commit transaction");
+
+				Date NetFinishTime = new java.util.Date();
+
+				processLog(NetStartTime, NetFinishTime, "committing",
+						strAccess, strTrans);
+
+			} catch (java.sql.SQLException sqlex) {
+				RollbackTransaction(con, sqlex, strTrans, strAccess);
+				throw sqlex;
+			} catch (java.lang.Exception ex) {
+				logger.fatal("Unexpected error. Something bad happend");
+				ex.printStackTrace(System.err);
+				System.exit(-1);
+			} finally {
+				if (statement != null) {
+					statement.close();
+				}
 			}
 		}
 	}
 
-	protected void RollbackTransaction(Connection con, Exception dump)
-			throws java.sql.SQLException {
+	protected void RollbackTransaction(Connection con, Exception dump,
+			String strTrans, String strAccess) throws java.sql.SQLException {
 		Statement statement = null;
 		try {
+			Date NetStartTime = new java.util.Date();
+
 			statement = con.createStatement();
 			statement.execute("rollback transaction");
+
+			Date NetFinishTime = new java.util.Date();
+
+			processLog(NetStartTime, NetFinishTime, "aborting", strAccess,
+					strTrans);
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend");
 			ex.printStackTrace(System.err);

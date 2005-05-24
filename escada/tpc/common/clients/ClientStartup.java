@@ -144,7 +144,11 @@ public class ClientStartup {
 					"-RESUBMIT",
 					"Resubmit Transaction.",
 					"% It enables the transaction resubmition when an error occurs.",
-					true, db);		
+					true, db);
+			
+			IntArg hostArg = new IntArg("-HOST", "Connection Pool",
+					"% The number of entries available for connection pool...",0,
+					db);			
 			
 			if (args.length == 0) {
 				Usage(args, db);
@@ -170,7 +174,7 @@ public class ClientStartup {
 			int i = 0;
 			for (i = 0; i < cli.num; i++) {
 				e = new ClientEmulation(ebArg.s, stArg.s, dbArg.s, cli.num, i,
-						prefix.s, null, fragArg.num);
+						prefix.s, Integer.toString(hostArg.num), fragArg.num);
 				e.setName(prefix.s + "-" + i);
 				ebs.add(e);
 				e.start();
