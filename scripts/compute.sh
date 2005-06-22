@@ -9,19 +9,20 @@ fi
 
 usage $1
 
-lim=100
+lim=0
 list=":beginning:w: :beginning:r: :processing:w: :processing:r: :committing:w: :committing:r: :aborting:w: :aborting:r: :commit:r: :commit:w:"
+ncut=7-8
 
 for filter in $list; do
 
 	echo 
 	echo "Computing $filter for $logfile"
-	grep "$filter" $logfile | cut -d" " -f7-8 > templog
+	grep "$filter" $logfile | cut -d" " -f$ncut > templog
         totline=`wc -l templog | cut -d" " -f1`
 
-	echo "Transactions $totline and limit $lim"
+	echo "Occurrences $totline and discarding $lim "
 
-        awk -v lim=$lim -v totline=$totline -v arq=$logfile.$cont 'BEGIN { FS=":" } ; {  if ( NR >= lim && NR <= (totline - lim) ) dif += $4 } ; END { print dif/(totline - (2*lim)) }' templog
+        awk -v lim=$lim -v totline=$totline -v arq=$logfile.$cont 'BEGIN { FS=":" } ; {  if ( NR >= lim && NR <= (totline - lim) ) dif += $4 } ; END { if ( (totline - (2*lim)) <= 0 ) { print 0 } else { print dif/(totline - (2*lim)) } }' templog
 
 	rm -rf templog
 done

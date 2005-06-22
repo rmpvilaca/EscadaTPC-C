@@ -3,7 +3,7 @@
 usage () {
 	if [ "$1" = "" ]; then
         	echo "You must inform the log file."
-	        echo "Usage: statistics.sh logfile"
+	        echo "Usage: <script>.sh logfile"
         	exit 1
 	else
         	logfile=$1

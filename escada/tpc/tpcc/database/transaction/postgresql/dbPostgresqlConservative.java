@@ -1,7 +1,7 @@
-package escada.tpc.tpcc.database.transaction.oracle;
+package escada.tpc.tpcc.database.transaction.postgresql;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
@@ -16,9 +16,9 @@ import escada.tpc.tpcc.database.transaction.*;
  * It is an interface to a postgreSQL, which based is based on the the
  * distributions of the TPC-C.
  */
-public class dbOracle extends dbTPCCDatabase {
+public class dbPostgresqlConservative extends dbTPCCDatabase {
 
-	private static Logger logger = Logger.getLogger(dbOracle.class);
+	private static Logger logger = Logger.getLogger(dbPostgresqlConservative.class);
 
 	protected HashSet NewOrderDB(OutInfo obj, Connection con)
 			throws java.sql.SQLException {
@@ -28,41 +28,37 @@ public class dbOracle extends dbTPCCDatabase {
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
-			java.util.Date NetStartTime = null;
-			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();
-
-			CallableStatement statement = null;
-
+			PreparedStatement statement = null;
+			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
-			String query = "begin ? := PKG_TPCC.tpcc_neworder(?,?,?,?,?,?,?,?); end;";
-
-			StringBuffer iid = new StringBuffer();
-			StringBuffer wid = new StringBuffer();
-			StringBuffer qtdi = new StringBuffer();
 
 			try {
 
-				statement = con.prepareCall(query);
+				Date NetStartTime = new java.util.Date();
+				
+				controlStatement = con.createStatement();
+				controlStatement.execute("control write for district, stock, orders, new_order, order_line read for item, warehouse, customer");
 
-				statement.registerOutParameter(1,
-						oracle.jdbc.driver.OracleTypes.CURSOR);
+				statement = con
+						.prepareCall("select tpcc_neworder (?,?,?,?,?,?,?,?)");
 
-				statement.setInt(2, Integer.parseInt((String) obj
+				statement.setInt(1, Integer.parseInt((String) obj
 						.getInfo("wid")));
-
-				statement.setInt(3, Integer.parseInt((String) obj
+				statement.setInt(2, Integer.parseInt((String) obj
 						.getInfo("did")));
-				statement.setInt(4, Integer.parseInt((String) obj
+				statement.setInt(3, Integer.parseInt((String) obj
 						.getInfo("cid")));
-				statement.setInt(5, Integer.parseInt((String) obj
+				statement.setInt(4, Integer.parseInt((String) obj
 						.getInfo("qtd")));
-				statement.setInt(6, Integer.parseInt((String) obj
+				statement.setInt(5, Integer.parseInt((String) obj
 						.getInfo("localwid")));
 
 				int icont = 0;
 				int qtd = Integer.parseInt((String) obj.getInfo("qtd"));
+				StringBuffer iid = new StringBuffer();
+				StringBuffer wid = new StringBuffer();
+				StringBuffer qtdi = new StringBuffer();
 				while (icont < qtd) {
 					iid.append((String) obj.getInfo("iid" + icont));
 					iid.append(",");
@@ -72,15 +68,12 @@ public class dbOracle extends dbTPCCDatabase {
 					qtdi.append(",");
 					icont++;
 				}
+				statement.setString(6, iid.toString());
+				statement.setString(7, wid.toString());
+				statement.setString(8, qtdi.toString());
 
-				statement.setString(7, iid.toString());
-				statement.setString(8, wid.toString());
-				statement.setString(9, qtdi.toString());
+				rs = statement.executeQuery();
 
-				statement.execute();
-
-				rs = (ResultSet) statement.getObject(1);
-				
 				if (rs.next()) {
 					cursor = (String) rs.getString(1);
 				}
@@ -88,8 +81,19 @@ public class dbOracle extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
-				
-				NetFinishTime = new java.util.Date();
+				statement = con.prepareStatement("fetch all in \"" + cursor
+						+ "\"");
+				rs = statement.executeQuery();
+
+				while (rs.next()) {
+					dbtrace.add(rs.getString(1));
+				}
+				rs.close();
+				rs = null;
+				statement.close();
+				statement = null;
+
+				Date NetFinishTime = new java.util.Date();
 
 				processLog(NetStartTime, NetFinishTime, "processing", "w",
 						"tx neworder");
@@ -134,28 +138,25 @@ public class dbOracle extends dbTPCCDatabase {
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
-			java.util.Date NetStartTime = null;
-			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();
 
-			CallableStatement statement = null;
+			PreparedStatement statement = null;
+			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
-			String query = "begin ? := PKG_TPCC.tpcc_delivery(?,?); end;";
-
+			
 			try {
+				Date NetStartTime = new java.util.Date();
 
-				statement = con.prepareCall(query);
-				statement.registerOutParameter(1,
-						oracle.jdbc.driver.OracleTypes.CURSOR);
-				statement.setInt(2, Integer.parseInt((String) obj
+				controlStatement = con.createStatement();
+				controlStatement.execute("control write for orders, new_order, order_line, customer");
+
+				statement = con.prepareStatement("select tpcc_delivery(?,?)");
+
+				statement.setInt(1, Integer.parseInt((String) obj
 						.getInfo("wid")));
-				statement.setInt(3, Integer.parseInt((String) obj
+				statement.setInt(2, Integer.parseInt((String) obj
 						.getInfo("crid")));
-
-				statement.execute();
-
-				rs = (ResultSet) statement.getObject(1);
+				rs = statement.executeQuery();
 
 				if (rs.next()) {
 					cursor = (String) rs.getString(1);
@@ -164,8 +165,20 @@ public class dbOracle extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
+				statement = con.prepareStatement("fetch all in \"" + cursor
+						+ "\"");
+				rs = statement.executeQuery();
 
-				NetFinishTime = new java.util.Date();
+				while (rs.next()) {
+					dbtrace.add(rs.getString(1));
+				}
+				rs.close();
+				rs = null;
+				statement.close();
+				statement = null;
+
+				Date NetFinishTime = new java.util.Date();
+
 				processLog(NetStartTime, NetFinishTime, "processing", "w",
 						"tx delivery");
 
@@ -209,30 +222,30 @@ public class dbOracle extends dbTPCCDatabase {
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
-			java.util.Date NetStartTime = null;
-			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();
-
-			CallableStatement statement = null;
+			PreparedStatement statement = null;
+			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
-			String query = "begin ? := PKG_TPCC.tpcc_orderstatus(?,?,?,?); end;";
 
 			try {
-				statement = con.prepareCall(query);
-				statement.registerOutParameter(1,
-						oracle.jdbc.driver.OracleTypes.CURSOR);
-				statement.setInt(2, Integer.parseInt((String) obj
+				Date NetStartTime = new java.util.Date();
+				
+				controlStatement = con.createStatement();
+				controlStatement.execute("control read for orders, order_line, customer");
+				
+
+				statement = con
+						.prepareStatement("select tpcc_orderstatus(?,?,?,?)");
+
+				statement.setInt(1, Integer.parseInt((String) obj
 						.getInfo("wid")));
-				statement.setInt(3, Integer.parseInt((String) obj
+				statement.setInt(2, Integer.parseInt((String) obj
 						.getInfo("did")));
-				statement.setInt(4, Integer.parseInt((String) obj
+				statement.setInt(3, Integer.parseInt((String) obj
 						.getInfo("cid")));
-				statement.setString(5, (String) obj.getInfo("lastname") + "%");
+				statement.setString(4, (String) obj.getInfo("lastname"));
+				rs = statement.executeQuery();
 
-				statement.execute();
-
-				rs = (ResultSet) statement.getObject(1);
 				if (rs.next()) {
 					cursor = (String) rs.getString(1);
 				}
@@ -240,11 +253,21 @@ public class dbOracle extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
+				statement = con.prepareStatement("fetch all in \"" + cursor
+						+ "\"");
+				rs = statement.executeQuery();
 
-				NetFinishTime = new java.util.Date();
+				while (rs.next()) {
+					dbtrace.add(rs.getString(1));
+				}
+				rs.close();
+				rs = null;
+				statement.close();
+				statement = null;
+
+				Date NetFinishTime = new java.util.Date();
 
 				String str = (String) (obj).getInfo("cid");
-
 				if (str.equals("0")) {
 					processLog(NetStartTime, NetFinishTime, "processing", "r",
 							"tx orderstatus 01");
@@ -260,7 +283,6 @@ public class dbOracle extends dbTPCCDatabase {
 				String str = (String) (obj).getInfo("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-
 					if (str.equals("0")) {
 						RollbackTransaction(con, sqlex, "tx orderstatus 01",
 								"r");
@@ -314,38 +336,35 @@ public class dbOracle extends dbTPCCDatabase {
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
-			java.util.Date NetStartTime = null;
-			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();
-
-			CallableStatement statement = null;
+			PreparedStatement statement = null;
+			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
-			String query = "begin ? := PKG_TPCC.tpcc_payment(?,?,?,?,?,?,?); end;";
 
 			try {
+				Date NetStartTime = new java.util.Date();
+				
+				controlStatement = con.createStatement();
+				controlStatement.execute("control write for warehouse, district, customer, history");
 
-				statement = con.prepareCall(query);
-				statement.registerOutParameter(1,
-						oracle.jdbc.driver.OracleTypes.CURSOR);
-				statement.setInt(2, Integer.parseInt((String) obj
+				statement = con
+						.prepareStatement("select tpcc_payment(?,?,cast(? as numeric(6,2)),?,?,?,cast(? as char(16)))");
+
+				statement.setInt(1, Integer.parseInt((String) obj
 						.getInfo("wid")));
-				statement.setInt(3, Integer.parseInt((String) obj
+				statement.setInt(2, Integer.parseInt((String) obj
 						.getInfo("cwid")));
-				statement.setFloat(4, Float.parseFloat((String) obj
+				statement.setFloat(3, Float.parseFloat((String) obj
 						.getInfo("hamount")));
-				statement.setInt(5, Integer.parseInt((String) obj
+				statement.setInt(4, Integer.parseInt((String) obj
 						.getInfo("did")));
-				statement.setInt(6, Integer.parseInt((String) obj
+				statement.setInt(5, Integer.parseInt((String) obj
 						.getInfo("cdid")));
-				statement.setInt(7, Integer.parseInt((String) obj
+				statement.setInt(6, Integer.parseInt((String) obj
 						.getInfo("cid")));
-				statement
-						.setString(8, ((String) obj.getInfo("lastname")) + "%");
+				statement.setString(7, (String) obj.getInfo("lastname"));
 
-				statement.execute();
-
-				rs = (ResultSet) statement.getObject(1);
+				rs = statement.executeQuery();
 
 				if (rs.next()) {
 					cursor = (String) rs.getString(1);
@@ -354,8 +373,19 @@ public class dbOracle extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
+				statement = con.prepareStatement("fetch all in \"" + cursor
+						+ "\"");
+				rs = statement.executeQuery();
 
-				NetFinishTime = new java.util.Date();
+				while (rs.next()) {
+					dbtrace.add(rs.getString(1));
+				}
+				rs.close();
+				rs = null;
+				statement.close();
+				statement = null;
+
+				Date NetFinishTime = new java.util.Date();
 
 				String str = (String) (obj).getInfo("cid");
 				if (str.equals("0")) {
@@ -367,7 +397,6 @@ public class dbOracle extends dbTPCCDatabase {
 				}
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("Payment - SQL Exception " + sqlex.getMessage());
-
 				String str = (String) (obj).getInfo("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
@@ -379,6 +408,7 @@ public class dbOracle extends dbTPCCDatabase {
 					}
 
 					if (resubmit) {
+
 						if (str.equals("0")) {
 							InitTransaction(con, "tx payment 01", "w");
 						} else {
@@ -388,7 +418,6 @@ public class dbOracle extends dbTPCCDatabase {
 					} else {
 						throw sqlex;
 					}
-
 				} else {
 					if (str.equals("0")) {
 						RollbackTransaction(con, sqlex, "tx payment 01", "w");
@@ -422,31 +451,28 @@ public class dbOracle extends dbTPCCDatabase {
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
-			java.util.Date NetStartTime = null;
-			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();
-
-			CallableStatement statement = null;
+			PreparedStatement statement = null;
+			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
-			String query = "begin ? := PKG_TPCC.tpcc_stocklevel(?,?,?); end;";
 
 			try {
-				statement = con.prepareCall(query);
+				Date NetStartTime = new java.util.Date();
+				
+				controlStatement = con.createStatement();
+				controlStatement.execute("control read for district, stock, order_line");
 
-				statement.registerOutParameter(1,
-						oracle.jdbc.driver.OracleTypes.CURSOR);
+				statement = con
+						.prepareStatement("select tpcc_stocklevel(?,?,?)");
 
-				statement.setInt(2, Integer.parseInt((String) obj
+				statement.setInt(1, Integer.parseInt((String) obj
 						.getInfo("wid")));
-				statement.setInt(3, Integer.parseInt((String) obj
+				statement.setInt(2, Integer.parseInt((String) obj
 						.getInfo("did")));
-				statement.setInt(4, Integer.parseInt((String) obj
+				statement.setInt(3, Integer.parseInt((String) obj
 						.getInfo("threshhold")));
-
 				rs = statement.executeQuery();
 
-				rs = (ResultSet) statement.getObject(1);
 				if (rs.next()) {
 					cursor = (String) rs.getString(1);
 				}
@@ -454,9 +480,20 @@ public class dbOracle extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
-				
-				NetFinishTime = new java.util.Date();
-				
+				statement = con.prepareStatement("fetch all in \"" + cursor
+						+ "\"");
+				rs = statement.executeQuery();
+
+				while (rs.next()) {
+					dbtrace.add(rs.getString(1));
+				}
+				rs.close();
+				rs = null;
+				statement.close();
+				statement = null;
+
+				Date NetFinishTime = new java.util.Date();
+
 				processLog(NetStartTime, NetFinishTime, "processing", "r",
 						"tx stocklevel");
 
@@ -492,14 +529,16 @@ public class dbOracle extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected void InitTransaction(Connection con, String strTrans,
-			String strAccess) throws java.sql.SQLException {
+	protected void InitTransaction(Connection con,
+			String strTrans, String strAccess) throws java.sql.SQLException {
 		Statement statement = null;
 		try {
 			Date NetStartTime = new java.util.Date();
 
 			statement = con.createStatement();
+			statement.execute("begin transaction");
 			statement.execute("set transaction isolation level serializable");
+			statement.execute("select '" + strTrans + "'");
 
 			Date NetFinishTime = new java.util.Date();
 
@@ -526,7 +565,7 @@ public class dbOracle extends dbTPCCDatabase {
 				Date NetStartTime = new java.util.Date();
 
 				statement = con.createStatement();
-				statement.execute("commit");
+				statement.execute("commit transaction");
 
 				Date NetFinishTime = new java.util.Date();
 
@@ -548,14 +587,14 @@ public class dbOracle extends dbTPCCDatabase {
 		}
 	}
 
-	protected void RollbackTransaction(Connection con, Exception dump,
+	protected void RollbackTransaction(Connection con, java.lang.Exception dump,
 			String strTrans, String strAccess) throws java.sql.SQLException {
 		Statement statement = null;
 		try {
 			Date NetStartTime = new java.util.Date();
 
 			statement = con.createStatement();
-			statement.execute("rollback");
+			statement.execute("rollback transaction");
 
 			Date NetFinishTime = new java.util.Date();
 
@@ -572,4 +611,4 @@ public class dbOracle extends dbTPCCDatabase {
 		}
 	}
 }
-// arch-tag: 5fdbe754-a4ea-4fa6-b768-7ce766ea5c82
+// arch-tag: e3dade63-ee1f-4e59-847c-205abebe3048

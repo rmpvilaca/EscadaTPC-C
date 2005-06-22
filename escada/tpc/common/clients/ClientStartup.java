@@ -2,8 +2,8 @@ package escada.tpc.common.clients;
 
 import java.util.Vector;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
 
 import escada.tpc.common.Emulation;
 import escada.tpc.common.args.Arg;
@@ -30,7 +30,7 @@ public class ClientStartup {
 
 	public static void main(String args[]) {
 		try {
-			BasicConfigurator.configure();
+			DOMConfigurator.configure("configuration.files/logger.xml");
 			logger.info("Starting up the client application.");
 			ClientStartup c = new ClientStartup(args);
 		} catch (Exception ex) {
