@@ -41,11 +41,11 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 
 			con = getConnection();
 
-			InitTransaction(con, "tx neworder","w");
+			InitTransaction(con, "tx neworder", "w");
 
 			dbtrace = NewOrderDB(obj, con);
 
-			CommitTransaction(con,"tx neworder","w");
+			CommitTransaction(con, "tx neworder", "w");
 
 			Date NetFinishTime = new java.util.Date();
 
@@ -57,7 +57,8 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
-					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)) {
+					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
+					&& (sqlex.getMessage().indexOf("GENERATED") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
@@ -99,11 +100,11 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 
 			con = getConnection();
 
-			InitTransaction(con,"tx delivery","w");
+			InitTransaction(con, "tx delivery", "w");
 
 			dbtrace = DeliveryDB(obj, con);
 
-			CommitTransaction(con,"tx delivery","w");
+			CommitTransaction(con, "tx delivery", "w");
 
 			Date NetFinishTime = new java.util.Date();
 
@@ -115,7 +116,8 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
-					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)) {
+					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
+					&& (sqlex.getMessage().indexOf("GENERATED") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
@@ -158,26 +160,26 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 				Date NetStartTime = new java.util.Date();
 
 				con = getConnection();
-				InitTransaction(con, "tx orderstatus 01","r");
+				InitTransaction(con, "tx orderstatus 01", "r");
 				dbtrace = OrderStatusDB(obj, con);
-				CommitTransaction(con, "tx orderstatus 01","r");
+				CommitTransaction(con, "tx orderstatus 01", "r");
 				Date NetFinishTime = new java.util.Date();
-				
+
 				processLog(NetStartTime, NetFinishTime, "commit", "r",
-				"tx orderstatus 01");
+						"tx orderstatus 01");
 
 			} else {
 				Date NetStartTime = new java.util.Date();
 
 				con = getConnection();
-				InitTransaction(con, "tx orderstatus 02","r");
+				InitTransaction(con, "tx orderstatus 02", "r");
 				dbtrace = OrderStatusDB(obj, con);
-				CommitTransaction(con,"tx orderstatus 02","r");
+				CommitTransaction(con, "tx orderstatus 02", "r");
 
 				Date NetFinishTime = new java.util.Date();
-				
+
 				processLog(NetStartTime, NetFinishTime, "commit", "r",
-				"tx orderstatus 02");
+						"tx orderstatus 02");
 			}
 
 			logger.info("Finishing transaction order status.");
@@ -185,7 +187,8 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
-					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)) {
+					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
+					&& (sqlex.getMessage().indexOf("GENERATED") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
@@ -229,31 +232,31 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 
 				con = getConnection();
 
-				InitTransaction(con, "tx payment 01","w");
-				
+				InitTransaction(con, "tx payment 01", "w");
+
 				dbtrace = PaymentDB(obj, con);
 
-				CommitTransaction(con, "tx payment 01","w");
+				CommitTransaction(con, "tx payment 01", "w");
 
 				Date NetFinishTime = new java.util.Date();
-				
+
 				processLog(NetStartTime, NetFinishTime, "commit", "w",
-				"tx payment 01");
+						"tx payment 01");
 
 			} else {
 				Date NetStartTime = new java.util.Date();
 
 				con = getConnection();
 
-				InitTransaction(con, "tx payment 02","w");
+				InitTransaction(con, "tx payment 02", "w");
 				dbtrace = PaymentDB(obj, con);
 
-				CommitTransaction(con,"tx payment 02","w");
+				CommitTransaction(con, "tx payment 02", "w");
 
 				Date NetFinishTime = new java.util.Date();
-				
+
 				processLog(NetStartTime, NetFinishTime, "commit", "w",
-				"tx payment 02");
+						"tx payment 02");
 
 			}
 
@@ -263,7 +266,8 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
-					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)) {
+					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
+					&& (sqlex.getMessage().indexOf("GENERATED") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
@@ -306,11 +310,11 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 
 			con = getConnection();
 
-			InitTransaction(con, "tx stocklevel","r");
+			InitTransaction(con, "tx stocklevel", "r");
 
 			dbtrace = StockLevelDB(obj, con);
 
-			CommitTransaction(con, "tx stocklevel","r");
+			CommitTransaction(con, "tx stocklevel", "r");
 
 			Date NetFinishTime = new java.util.Date();
 
@@ -322,7 +326,8 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
-					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)) {
+					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
+					&& (sqlex.getMessage().indexOf("GENERATED") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
@@ -356,13 +361,14 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 	protected abstract HashSet StockLevelDB(OutInfo obj, Connection con)
 			throws java.sql.SQLException;
 
-	protected abstract void InitTransaction(Connection con,
-			String strTrans, String strAccess) throws java.sql.SQLException;
+	protected abstract void InitTransaction(Connection con, String strTrans,
+			String strAccess) throws java.sql.SQLException;
 
 	protected abstract void CommitTransaction(Connection con, String strTrans,
 			String strAccess) throws java.sql.SQLException;
 
-	protected abstract void RollbackTransaction(Connection con, java.lang.Exception dump,
-			String strTrans, String strAccess) throws java.sql.SQLException;
+	protected abstract void RollbackTransaction(Connection con,
+			java.lang.Exception dump, String strTrans, String strAccess)
+			throws java.sql.SQLException;
 }// arch-tag: 44ab82c5-4413-4b5c-84e3-daaa94482efb
 

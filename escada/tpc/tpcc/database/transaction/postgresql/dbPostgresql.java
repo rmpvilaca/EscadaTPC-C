@@ -391,7 +391,6 @@ public class dbPostgresql extends dbTPCCDatabase {
 					}
 
 					if (resubmit) {
-
 						if (str.equals("0")) {
 							InitTransaction(con, "tx payment 01", "w");
 						} else {

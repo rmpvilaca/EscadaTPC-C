@@ -18,7 +18,7 @@ clean:
 	
 ORACLE_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY true \
-             -CLI 10 \
+             -CLI 50 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.oracle.dbOracle \
              -TRACEFLAG TRACE \
@@ -49,16 +49,16 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 
 PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY true \
-             -CLI 5 \
+             -CLI 50 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
-             -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresqlConservative \
+             -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
-             -DBpath jdbc:postgresql://localhost:5432/tpcc \
+             -DBpath jdbc:postgresql://192.168.82.151:5432/tpcc \
              -DBdriver org.postgresql.Driver \
-             -DBusr tpcc \
-             -DBpasswd tpcc \
-             -POOL 20 \
+             -DBusr postgres \
+             -DBpasswd 123456 \
+             -POOL 50 \
              -MI 45 \
 	     -FRAG 1 \
 	     -RESUBMIT false
