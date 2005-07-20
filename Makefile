@@ -49,23 +49,23 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 
 PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY true \
-             -CLI 50 \
+             -CLI 20 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
-             -DBpath jdbc:postgresql://192.168.82.151:5432/tpcc \
+             -DBpath jdbc:postgresql://localhost/tpcc \
              -DBdriver org.postgresql.Driver \
-             -DBusr postgres \
+             -DBusr tpcc \
              -DBpasswd 123456 \
-             -POOL 50 \
+             -POOL 10 \
              -MI 45 \
 	     -FRAG 1 \
 	     -RESUBMIT false
 
 PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
-             -KEY false \
-             -CLI 10 \
+             -KEY true \
+             -CLI 20 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
@@ -74,9 +74,9 @@ PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
              -DBdriver org.postgresql.Driver \
              -DBusr tpcc \
              -DBpasswd tpcc \
-             -POOL 20 \
+             -POOL 10 \
              -MI 45 \
-	     -FRAG 2 \
+	     -FRAG 1 \
 	     -RESUBMIT false
 
 DBMSEMU_FLAGS =-EBclass escada.tpc.tpcc.TPCCEmulation \

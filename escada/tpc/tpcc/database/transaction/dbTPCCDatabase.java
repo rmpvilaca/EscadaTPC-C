@@ -58,14 +58,11 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
-					&& (sqlex.getMessage().indexOf("GENERATED") == -1)) {
+					&& (sqlex.getMessage().indexOf("connection") == -1)
+					) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
-			} else {
-				if (sqlex.getMessage().indexOf("certification") != -1)
-					logger.warn("NewOrder - SQL Exception "
-							+ sqlex.getMessage());
 			}
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend");
@@ -117,14 +114,10 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
-					&& (sqlex.getMessage().indexOf("GENERATED") == -1)) {
+					&& (sqlex.getMessage().indexOf("connection") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
-			} else {
-				if (sqlex.getMessage().indexOf("certification") != -1)
-					logger.warn("Delivery - SQL Exception "
-							+ sqlex.getMessage());
 			}
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend");
@@ -188,14 +181,10 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
-					&& (sqlex.getMessage().indexOf("GENERATED") == -1)) {
+					&& (sqlex.getMessage().indexOf("connection") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
-			} else {
-				if (sqlex.getMessage().indexOf("certification") != -1)
-					logger.warn("OrderStatus - SQL Exception "
-							+ sqlex.getMessage());
 			}
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend");
@@ -267,15 +256,10 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
-					&& (sqlex.getMessage().indexOf("GENERATED") == -1)) {
+					&& (sqlex.getMessage().indexOf("connection") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
-			} else {
-				if (sqlex.getMessage().indexOf("certification") != -1)
-					logger
-							.warn("Payment - SQL Exception "
-									+ sqlex.getMessage());
 			}
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend");
@@ -327,14 +311,10 @@ abstract public class dbTPCCDatabase extends CommonDatabase {
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
-					&& (sqlex.getMessage().indexOf("GENERATED") == -1)) {
+					&& (sqlex.getMessage().indexOf("connection") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);
-			} else {
-				if (sqlex.getMessage().indexOf("certification") != -1)
-					logger.warn("StockLevel - SQL Exception "
-							+ sqlex.getMessage());
 			}
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend");

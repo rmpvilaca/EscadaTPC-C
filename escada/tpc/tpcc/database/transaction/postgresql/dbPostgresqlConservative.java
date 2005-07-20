@@ -38,7 +38,8 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 				Date NetStartTime = new java.util.Date();
 				
 				controlStatement = con.createStatement();
-				controlStatement.execute("control write for district, stock, orders, new_order, order_line read for item, warehouse, customer");
+				controlStatement.execute("select tg_conservative ('district,stock,orders,new_order,order_line,item,warehouse,customer')");
+				System.exit(-1);
 
 				statement = con
 						.prepareCall("select tpcc_neworder (?,?,?,?,?,?,?,?)");
@@ -148,7 +149,7 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 				Date NetStartTime = new java.util.Date();
 
 				controlStatement = con.createStatement();
-				controlStatement.execute("control write for orders, new_order, order_line, customer");
+				controlStatement.execute("select tg_conservative('orders,new_order,order_line,customer')");
 
 				statement = con.prepareStatement("select tpcc_delivery(?,?)");
 
@@ -231,7 +232,7 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 				Date NetStartTime = new java.util.Date();
 				
 				controlStatement = con.createStatement();
-				controlStatement.execute("control read for orders, order_line, customer");
+				controlStatement.execute("select conservative ('orders,order_line,customer')");
 				
 
 				statement = con
@@ -345,7 +346,7 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 				Date NetStartTime = new java.util.Date();
 				
 				controlStatement = con.createStatement();
-				controlStatement.execute("control write for warehouse, district, customer, history");
+				controlStatement.execute("select tg_conservative('warehouse,district,customer,history')");
 
 				statement = con
 						.prepareStatement("select tpcc_payment(?,?,cast(? as numeric(6,2)),?,?,?,cast(? as char(16)))");
@@ -460,7 +461,7 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 				Date NetStartTime = new java.util.Date();
 				
 				controlStatement = con.createStatement();
-				controlStatement.execute("control read for district, stock, order_line");
+				controlStatement.execute("select tg_conservative('district,stock,order_line')");
 
 				statement = con
 						.prepareStatement("select tpcc_stocklevel(?,?,?)");

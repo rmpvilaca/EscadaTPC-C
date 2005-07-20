@@ -539,7 +539,6 @@ public class dbPostgresql extends dbTPCCDatabase {
 		{
 			Statement statement = null;
 			try {
-
 				Date NetStartTime = new java.util.Date();
 
 				statement = con.createStatement();
@@ -579,9 +578,7 @@ public class dbPostgresql extends dbTPCCDatabase {
 			processLog(NetStartTime, NetFinishTime, "aborting", strAccess,
 					strTrans);
 		} catch (java.lang.Exception ex) {
-			logger.fatal("Unexpected error. Something bad happend");
-			ex.printStackTrace(System.err);
-			System.exit(-1);
+			logger.warn("Error rolling back");
 		} finally {
 			if (statement != null) {
 				statement.close();
