@@ -79,35 +79,17 @@ PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -FRAG 1 \
 	     -RESUBMIT false
 
-DBMSEMU_FLAGS =-EBclass escada.tpc.tpcc.TPCCEmulation \
-             -KEY false \
-             -CLI 1 \
-             -STclass escada.tpc.tpcc.TPCCStateTransition \
-             -DBclass escada.tpc.tpcc.database.transaction.dbmsemu.dbDBMSEmu \
-             -TRACEFLAG TRACE \
-             -PREFIX TPC-C \
-             -DBpath jdbc:postgresql://localhost:5432/tpcc \
-             -DBdriver escada.dbmsemu.jdbcdriver.DBMSEmuJDBCDriver \
-             -DBusr tpcc \
-             -DBpasswd tpcc \
-             -POOL 10 \
-             -MI 45 \
-	     -FRAG 1
-
-run-dbmsemu:
-	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientStartup $(DBMSEMU_FLAGS)
-
 real-oracle:
-	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientStartup $(ORACLE_FLAGS)
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(ORACLE_FLAGS)
 
 real-mysql:
-	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientStartup $(MYSQL_FLAGS)
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(MYSQL_FLAGS)
 
 real-pgsql-01:
-	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientStartup $(PGSQL_FLAGS01)
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(PGSQL_FLAGS01)
 
 real-pgsql-02:
-	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientStartup $(PGSQL_FLAGS02)
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(PGSQL_FLAGS02)
 
 
 # arch-tag: 35a104c6-523c-493b-9afe-e85f72d9d865

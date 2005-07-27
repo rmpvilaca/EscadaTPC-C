@@ -187,7 +187,6 @@ public class ConnectionManager {
 			ex.printStackTrace(System.err);
 		}
 	}
-
 }
 
 // arch-tag: e016f45f-3046-4e29-956c-c3267f1d86ba

@@ -13,10 +13,10 @@ import escada.tpc.common.args.DateArg;
 import escada.tpc.common.args.DoubleArg;
 import escada.tpc.common.args.IntArg;
 import escada.tpc.common.args.StringArg;
-import escada.tpc.common.database.CommonDatabase;
+import escada.tpc.common.database.DatabaseManager;
 import escada.tpc.common.util.Pad;
 
-public class ClientStartup {
+public class ClientEmulationStartup {
 
 	private double slowDown;
 
@@ -26,20 +26,20 @@ public class ClientStartup {
 
 	private long term;
 
-	private static Logger logger = Logger.getLogger(ClientStartup.class);
+	private static Logger logger = Logger.getLogger(ClientEmulationStartup.class);
 
 	public static void main(String args[]) {
 		try {
 			DOMConfigurator.configure("configuration.files/logger.xml");
 			logger.info("Starting up the client application.");
-			ClientStartup c = new ClientStartup(args);
+			ClientEmulationStartup c = new ClientEmulationStartup(args);
 		} catch (Exception ex) {
 			logger.fatal("Error starting up client application.");
 			System.exit(-1);
 		}
 	}
 
-	public ClientStartup(String args[]) {
+	public ClientEmulationStartup(String args[]) {
 		Vector ebs = new Vector(0);
 		ClientEmulation e = null;
 		ArgDB db = new ArgDB();
@@ -49,7 +49,7 @@ public class ClientStartup {
 			logger.info("Remote Emulator for Database Benchmark ...");
 			logger
 					.info("Universidade do Minho (Grupo de Sistemas Distribuidos)");
-			logger.info("\nVersion 0.1\n");
+			logger.info("Version 0.1");
 
 			StringArg ebArg = new StringArg("-EBclass", "EB Factory",
 					"% Factory <class> used to create EBs.", db);
@@ -159,11 +159,11 @@ public class ClientStartup {
 
 			Usage(args, db);
 
-			CommonDatabase.setConnectionPool(true);
-			CommonDatabase.setMaxConnection(poolArg.num);
-			CommonDatabase.setDriverName(driverArg.s);
-			CommonDatabase.setjdbcPath(pathArg.s);
-			CommonDatabase.setUserInfo(usrArg.s, passwdArg.s);
+			DatabaseManager.setConnectionPool(true);
+			DatabaseManager.setMaxConnection(poolArg.num);
+			DatabaseManager.setDriverName(driverArg.s);
+			DatabaseManager.setjdbcPath(pathArg.s);
+			DatabaseManager.setUserInfo(usrArg.s, passwdArg.s);
 
 			Emulation.setFinished(false);
 			Emulation.setTraceInformation(prefix.s);
@@ -214,7 +214,7 @@ public class ClientStartup {
 		int a;
 
 		for (a = 0; a < args.length; a++) {
-			logger.info("#" + Pad.l(3, "" + (a + 1)) + "  " + args[a]);
+			System.out.println("#" + Pad.l(3, "" + (a + 1)) + "  " + args[a]);
 		}
 	}
 
@@ -222,7 +222,7 @@ public class ClientStartup {
 		logger.info("Input command-line arguments");
 		Arguments(args);
 		logger.info("Options");
-		db.print(logger);
+		db.print();
 	}
 
 	private void waitForRampDown(int start, int term) {

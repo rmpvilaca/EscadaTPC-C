@@ -2,8 +2,6 @@ package escada.tpc.common.args;
 
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 public class ArgDB {
 	private Vector argsList = new Vector(0);
 
@@ -52,11 +50,11 @@ public class ArgDB {
 		}
 	}
 
-	public void print(Logger out) {
+	public void print() {
 		int a;
 
 		for (a = 0; a < argsList.size(); a++) {
-			out.info("% " + argsList.elementAt(a));
+			System.out.println("% " + argsList.elementAt(a));
 		}
 	}
 }

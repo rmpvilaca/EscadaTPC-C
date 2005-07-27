@@ -2,7 +2,7 @@ package escada.tpc.common;
 
 import java.util.Random;
 
-import escada.tpc.common.database.CommonDatabase;
+import escada.tpc.common.database.DatabaseManager;
 
 public abstract class Emulation {
 
@@ -14,7 +14,7 @@ public abstract class Emulation {
   private static boolean key = true;
   private static boolean resubmit = true;
 
-  private CommonDatabase db = null;
+  private DatabaseManager db = null;
   private StateTransition sb = null;
   private String name = null;
   private int id = 0;
@@ -338,7 +338,7 @@ public abstract class Emulation {
   *
   * @return database based on the class CommonDatabase
   **/
-  public CommonDatabase getDatabase()
+  public DatabaseManager getDatabase()
   {
     return (db);
   }
@@ -349,7 +349,7 @@ public abstract class Emulation {
   *
   * @param CommonDatabase the object that defines the database, which
   **/
-  public void setDatabase(CommonDatabase db)
+  public void setDatabase(DatabaseManager db)
   {
     this.db=db;
   }

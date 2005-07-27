@@ -10,7 +10,7 @@ import escada.tpc.logger.PerformanceLogger;
  * It implements a generic database interface with connection control
  * (connection pool).
  */
-public class CommonDatabase {
+public class DatabaseManager {
 
 	private static ConnectionManager cn = new ConnectionManager();
 
@@ -18,14 +18,14 @@ public class CommonDatabase {
 
 	private static boolean virtualdatabase = false;
 
-	private static Logger logger = Logger.getLogger(CommonDatabase.class);
+	private static Logger logger = Logger.getLogger(DatabaseManager.class);
 
 	private static Date baseTime = new java.util.Date();
 
 	/**
 	 * It instanciates the CommonDatabase class.
 	 */
-	public CommonDatabase() {
+	public DatabaseManager() {
 	}
 
 	/**
@@ -35,6 +35,8 @@ public class CommonDatabase {
 	 * @param boolean
 	 *            (true) the database is virtual, (false) it is a normal
 	 *            database
+	 * 
+	 * TODO: SUMIR COM ESSA IDEIA DE BASE VIRTUAL
 	 */
 	public static void setVirtualDatabase(boolean v) {
 		virtualdatabase = v;

@@ -1,7 +1,7 @@
 package escada.tpc.tpcc.database.transaction;
 
 import escada.tpc.common.OutInfo;
-import escada.tpc.common.database.CommonDatabase;
+import escada.tpc.common.database.DatabaseManager;
 
 import org.apache.log4j.Logger;
 
@@ -14,7 +14,7 @@ import java.sql.Connection;
  * in order to emulate the TPC-C benchmark. Basically, it defines one method for
  * each transaction available in the TPC-C.
  */
-abstract public class dbTPCCDatabase extends CommonDatabase {
+abstract public class dbTPCCDatabase extends DatabaseManager {
 
 	private static Logger logger = Logger.getLogger(dbTPCCDatabase.class);
 

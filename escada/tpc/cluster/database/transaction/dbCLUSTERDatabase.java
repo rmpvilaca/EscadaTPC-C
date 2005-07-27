@@ -1,7 +1,7 @@
 package escada.tpc.cluster.database.transaction;
 
 import escada.tpc.common.OutInfo;
-import escada.tpc.common.database.CommonDatabase;
+import escada.tpc.common.database.DatabaseManager;
 
 import org.apache.log4j.Logger;
 
@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.sql.Connection;
 
-abstract public class dbCLUSTERDatabase extends CommonDatabase {
+abstract public class dbCLUSTERDatabase extends DatabaseManager {
 
 	private static Logger logger = Logger.getLogger(dbCLUSTERDatabase.class);
 

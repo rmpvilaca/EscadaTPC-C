@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 
 import escada.tpc.common.Emulation;
 import escada.tpc.common.StateTransition;
-import escada.tpc.common.database.CommonDatabase;
+import escada.tpc.common.database.DatabaseManager;
 
 /**
  * It initializes the client Emulation instantiating the appropriate objects.
@@ -49,7 +49,7 @@ public class ClientEmulation extends Thread {
 			int totalCli, int ncli, String trace, String hid, int nfrag) {
 
 		StateTransition s = null;
-		CommonDatabase d = null;
+		DatabaseManager d = null;
 		Class cl = null;
 		Constructor co = null;
 
@@ -65,9 +65,9 @@ public class ClientEmulation extends Thread {
 			} catch (Exception ex) {
 			}
 			if (co == null)
-				d = (CommonDatabase) cl.newInstance();
+				d = (DatabaseManager) cl.newInstance();
 			else
-				d = (CommonDatabase) co.newInstance(new Object[] { new Integer(
+				d = (DatabaseManager) co.newInstance(new Object[] { new Integer(
 						totalCli) });
 
 			int temp = (ncli + ((nfrag - 1) * 10));
