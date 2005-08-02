@@ -122,6 +122,26 @@ public class ConnectionManager {
 
 		return con;
 	}
+	
+	public synchronized void releaseConnections() {
+			Connection con;
+			
+			while (availConn.size() > 0) {
+				con = (Connection) availConn.firstElement();
+				availConn.removeElementAt(0);
+				try {
+					if (! con.isClosed()) {
+						con.close();
+					}
+				} catch (SQLException sqlex) {
+					logger.fatal("Unexpected error. Something bad happend.");
+					sqlex.printStackTrace(System.err);
+					System.exit(-1);
+				}
+			}
+			checkedOut = 0;
+			totalConnections = 0;
+	}	
 
 	/**
 	 * It returns the connection to the pool in order to improve performance,

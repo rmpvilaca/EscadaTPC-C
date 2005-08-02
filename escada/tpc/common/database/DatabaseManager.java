@@ -125,6 +125,10 @@ public class DatabaseManager {
 			}
 		return (null);
 	}
+	
+	public void releaseConnections() {
+		cn.releaseConnections();
+	}
 
 	/**
 	 * It returns the connection to the pool in order to improve performance,
