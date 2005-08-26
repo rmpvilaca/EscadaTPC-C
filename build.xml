@@ -1,0 +1,49 @@
+<project name="tpc" default="dist" basedir=".">
+
+	<!-- set global properties for this build -->
+	<property name="libs" location="../../lib/"/>
+	<property name="escada-libs" location="${libs}/"/>
+	<property name="build" location="../,build"/>
+	<property name="dist"  location="../,dist"/>
+	<property name="jarfile" value="Escada-TPC.jar"/>
+
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp/>
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build}"/>
+		<mkdir dir="${dist}"/>
+		<mkdir dir="${libs}"/>
+	</target>
+
+	<target name="tpc" depends="init">
+		<path id="tpc.classpath">
+                        <pathelement location="${libs}/msql/msbase.jar"/>
+                        <pathelement location="${libs}/msql/mssqlserver.jar"/>
+                        <pathelement location="${libs}/msql/msutil.jar"/>
+                        <pathelement location="${libs}/lib/postgresql/pg73jdbc3.jar"/>
+                        <pathelement location="${libs}/oracle/ojdbc14.jar"/>
+                        <pathelement location="${libs}/sybase/jconn2d.jar"/>
+                        <pathelement location="${libs}/log4j-1.2.9.jar"/>
+		</path>
+
+		<javac debug="yes" srcdir="escada" destdir="${build}" classpathref="tpc.classpath"/>
+	</target>
+
+	<target name="dist" depends="tpc">
+		<jar jarfile="${libs}/${jarfile}" 
+		     basedir="${build}" 
+		     includes="escada/**"/>
+	</target>
+
+	<target name="all" depends="dist"/>
+
+	<target name="clean" description="clean up" >
+		<!-- Delete the ${build} and ${dist} directory trees -->
+		<delete dir="${libs}/${jarfile}"/>
+	</target>
+
+</project>
+
+<!-- arch-tag: 44e0a0e7-fa48-4bb9-b3a0-1fb3b3745a14 -->
+
