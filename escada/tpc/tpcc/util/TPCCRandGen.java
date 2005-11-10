@@ -14,31 +14,42 @@ public class TPCCRandGen {
       "EING"
   };
 
-  public static String digSyl(int d, int n) {
-    String s = "";
+  public static String digSyl(int d, int n, int l) {
+	StringBuffer s = new StringBuffer();
+	int length = l - countLength(d);
 
-    if (n == 0) {
-      return (digSyl(d));
-    }
+	s.append(Integer.toString(d));
+	for (; length > 0; length--) {
+		s.append("0");
+	}
 
-    for (; n > 0; n--) {
-      int c = d % 10;
-      s = digS[c] + s;
-      d = d / 10;
-    }
+	d = Integer.parseInt(s.toString());
+	s = new StringBuffer();
 
-    return (s);
+	for (; n > 0; n--) {
+		int c = d % 10;
+		s.append(digS[c]);
+		d = d / 10;
+	}
+
+	return (s.toString());
   }
 
+  public static String digSyl(int d, int n) {
+	return (digSyl(d,((n==0)?countLength(d):n),countLength(d)));
+  }
+
+
   public static String digSyl(int d) {
-    String s = "";
+	return (digSyl(d,3,3));
+  }
 
-    for (; d != 0; d = d / 10) {
-      int c = d % 10;
-      s = digS[c] + s;
-    }
+  public static int countLength(int d) {
+	int c = 0;
 
-    return (s);
+ 	for( ; d > 0; d = d / 10, c++);
+
+	return (c);
   }
 }// arch-tag: 7697fdd2-6cda-40c2-b600-6c26f96eddfe
 // arch-tag: b8ae8fca-784f-4791-ab95-64f3b9ba8998
