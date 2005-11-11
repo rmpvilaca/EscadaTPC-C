@@ -1,21 +1,6 @@
 export projdir=$(shell pwd)/..
 include ./Makefile.vars
-GARBAGE=`find . -name \*.class`
 
-export SRCS=$(shell find escada/tpc -name \*.java)
-
-all: jar
-
-compile: $(SRCS)
-	$(JC) $(JIKES_FLAGS) -g $^
-	
-jar: compile
-	(cd $(classesdir) ; $(JAR) $(JAR_FLAGS) $(PROJ_JAR) `find  escada/tpc -name \*.class`);
-
-clean:
-	rm -rf $(GARBAGE)
-	echo $(GARBAGE)
-	
 ORACLE_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -KEY true \
              -CLI 50 \

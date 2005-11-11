@@ -2,7 +2,7 @@
 
 	<!-- set global properties for this build -->
 	<property name="libs" location="../../lib/"/>
-	<property name="escada-libs" location="${libs}/"/>
+	<property name="escada-libs" location="${libs}"/>
 	<property name="build" location="../,build"/>
 	<property name="dist"  location="../,dist"/>
 	<property name="jarfile" value="Escada-TPC.jar"/>
