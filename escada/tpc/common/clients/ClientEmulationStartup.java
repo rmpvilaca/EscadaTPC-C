@@ -30,11 +30,9 @@ public class ClientEmulationStartup {
 
 	public static void main(String args[]) {
 		try {
-			DOMConfigurator.configure("configuration.files/logger.xml");
-			logger.info("Starting up the client application.");
 			ClientEmulationStartup c = new ClientEmulationStartup(args);
 		} catch (Exception ex) {
-			logger.fatal("Error starting up client application.");
+			Thread.dumpStack();
 			System.exit(-1);
 		}
 	}
@@ -46,10 +44,7 @@ public class ClientEmulationStartup {
 
 		try {
 
-			logger.info("Remote Emulator for Database Benchmark ...");
-			logger
-					.info("Universidade do Minho (Grupo de Sistemas Distribuidos)");
-			logger.info("Version 0.1");
+			StringArg log4jArg = new StringArg("-LOGconfig", "Configuration file for Log4J.", "% Defines the logging output.", db);
 
 			StringArg ebArg = new StringArg("-EBclass", "EB Factory",
 					"% Factory <class> used to create EBs.", db);
@@ -157,7 +152,14 @@ public class ClientEmulationStartup {
 
 			db.parse(args);
 
+			DOMConfigurator.configure(log4jArg.s);
+			logger.info("Starting up the client application.");
+			logger.info("Remote Emulator for Database Benchmark ...");
+			logger.info("Universidade do Minho (Grupo de Sistemas Distribuidos)");
+			logger.info("Version 0.1");
+
 			Usage(args, db);
+
 
 			DatabaseManager.setConnectionPool(true);
 			DatabaseManager.setMaxConnection(poolArg.num);
