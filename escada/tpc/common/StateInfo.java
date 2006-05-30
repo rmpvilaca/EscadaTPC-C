@@ -1,13 +1,15 @@
 package escada.tpc.common;
 
+import escada.interfaces.utils.Configuration;
+
 /**
-* It is class that extends Info and transforms it an class
+* It is class that extends Configuration and transforms it an class
 * used to transfer state information.
 *
-* @see Info
+* @see Configuration
 **/
 public class StateInfo
-    extends Info {
+    extends Configuration {
 }
 // arch-tag: 8e6246ad-0a7e-43a6-b6ac-6864da488553
 

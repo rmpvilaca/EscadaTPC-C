@@ -53,7 +53,7 @@ public class DatabaseManager {
 	 */
 	public static void setMaxConnection(int mConn) {
 		if (!virtualdatabase)
-			ConnectionManager.setMaxConnection(mConn);
+			cn.setMaxConnection(mConn);
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class DatabaseManager {
 	 */
 	public static void setDriverName(String dName) {
 		if (!virtualdatabase)
-			ConnectionManager.setDriverName(dName);
+			cn.setDriverName(dName);
 	}
 
 	/**
@@ -92,7 +92,7 @@ public class DatabaseManager {
 	 */
 	public static void setjdbcPath(String jdbc) {
 		if (!virtualdatabase)
-			ConnectionManager.setjdbcPath(jdbc);
+			cn.setjdbcPath(jdbc);
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class DatabaseManager {
 	 */
 	public static void setUserInfo(String usr, String pass) {
 		if (!virtualdatabase)
-			ConnectionManager.setUserInfo(usr, pass);
+			cn.setUserInfo(usr, pass);
 	}
 
 	/**
@@ -134,7 +134,7 @@ public class DatabaseManager {
 	 * It returns the connection to the pool in order to improve performance,
 	 * instead of closing the connection.
 	 * 
-	 * @param Connection
+	 * @param ConnectionInterface
 	 *            the connection be released and stored into the pool
 	 */
 	public void returnConnection(Connection con) {

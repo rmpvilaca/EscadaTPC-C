@@ -12,21 +12,21 @@ import oracle.jdbc.pool.OracleDataSource;
 public class ConnectionManager {
 	private static Logger logger = Logger.getLogger(ConnectionManager.class);
 	
-	private static Vector availConn = new Vector(0);
+	private Vector availConn = new Vector(0);
 
-	private static int checkedOut = 0;
+	private int checkedOut = 0;
 
-	private static int totalConnections = 0;
+	private int totalConnections = 0;
 
-	private static String user = "tpcc";
+	private String user = "tpcc";
 
-	private static String passwd = null;
+	private String passwd = null;
 
-	private static String driverName = "org.postgresql.Driver";
+	private String driverName = "org.postgresql.Driver";
 
-	private static String jdbcPath = "jdbc:postgresql://localhost:5432/tpcc";
+	private String jdbcPath = "jdbc:postgresql://localhost:5432/tpcc";
 
-	private static int maxConn = 1;
+	private int maxConn = 1;
 
 	/*
 	 * It defines the maximum number of available connections. This information
@@ -36,7 +36,7 @@ public class ConnectionManager {
 	 * 
 	 * @param int the maximum number of connections
 	 */
-	public static void setMaxConnection(int mConn) {
+	public void setMaxConnection(int mConn) {
 		maxConn = mConn;
 	}
 
@@ -49,7 +49,7 @@ public class ConnectionManager {
 	 * @param String
 	 *            the driver
 	 */
-	public static void setDriverName(String dName) {
+	public void setDriverName(String dName) {
 		driverName = dName;
 	}
 
@@ -61,7 +61,7 @@ public class ConnectionManager {
 	 * @param String
 	 *            the jdbc path
 	 */
-	public static void setjdbcPath(String jdbc) {
+	public void setjdbcPath(String jdbc) {
 		jdbcPath = jdbc;
 	}
 
@@ -74,7 +74,7 @@ public class ConnectionManager {
 	 * @param passwd
 	 *            the password used to connect
 	 */
-	public static void setUserInfo(String usr, String pass) {
+	public void setUserInfo(String usr, String pass) {
 		user = usr;
 		passwd = pass;
 	}
@@ -147,7 +147,7 @@ public class ConnectionManager {
 	 * It returns the connection to the pool in order to improve performance,
 	 * instead of closing the connection.
 	 * 
-	 * @param Connection
+	 * @param ConnectionInterface
 	 *            the connection be released and stored into the pool
 	 */
 	public synchronized void returnConnection(Connection con) {

@@ -33,24 +33,26 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -FRAG 1
 
 PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
+	     -LOGconfig configuration.files/logger.xml \
              -KEY true \
-             -CLI 20 \
+             -CLI 10 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
-             -DBpath jdbc:postgresql://localhost/tpcc \
+             -DBpath jdbc:postgresql://localhost:5432/tpcc \
              -DBdriver org.postgresql.Driver \
              -DBusr tpcc \
              -DBpasswd 123456 \
-             -POOL 10 \
+             -POOL 20 \
              -MI 45 \
 	     -FRAG 1 \
 	     -RESUBMIT false
 
 PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
+	     -LOGconfig configuration.files/logger.xml \
              -KEY true \
-             -CLI 20 \
+             -CLI 10 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
@@ -59,9 +61,9 @@ PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
              -DBdriver org.postgresql.Driver \
              -DBusr tpcc \
              -DBpasswd tpcc \
-             -POOL 10 \
+             -POOL 20 \
              -MI 45 \
-	     -FRAG 1 \
+	     -FRAG 2 \
 	     -RESUBMIT false
 
 real-oracle:

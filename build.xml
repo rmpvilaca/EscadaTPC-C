@@ -2,9 +2,9 @@
 
 	<!-- set global properties for this build -->
 	<property name="libs" location="../../lib/"/>
-	<property name="escada-libs" location="${libs}"/>
-	<property name="build" location="../,build"/>
-	<property name="dist"  location="../,dist"/>
+	<property name="escada-libs" location="${libs}/escada"/>
+	<property name="build" location="./,build"/>
+	<property name="dist"  location="./,dist"/>
 	<property name="jarfile" value="Escada-TPC.jar"/>
 
 	<target name="init">
@@ -14,24 +14,27 @@
 		<mkdir dir="${build}"/>
 		<mkdir dir="${dist}"/>
 		<mkdir dir="${libs}"/>
+		<mkdir dir="${escada-libs}"/>
 	</target>
 
-	<target name="tpc" depends="init">
-		<path id="tpc.classpath">
+	<target name="escada" depends="init">
+		<path id="escada.classpath">
                         <pathelement location="${libs}/msql/msbase.jar"/>
                         <pathelement location="${libs}/msql/mssqlserver.jar"/>
                         <pathelement location="${libs}/msql/msutil.jar"/>
                         <pathelement location="${libs}/lib/postgresql/pg73jdbc3.jar"/>
                         <pathelement location="${libs}/oracle/ojdbc14.jar"/>
                         <pathelement location="${libs}/sybase/jconn2d.jar"/>
-                        <pathelement location="${libs}/log4j-1.2.9.jar"/>
+			<pathelement location="${libs}/log4j-1.2.9.jar"/>
+
+                        <pathelement location="${escada-libs}/Escada-Interfaces.jar"/>
 		</path>
 
-		<javac debug="yes" srcdir="escada" destdir="${build}" classpathref="tpc.classpath"/>
+		<javac debug="yes" srcdir="escada" destdir="${build}" classpathref="escada.classpath"/>
 	</target>
 
-	<target name="dist" depends="tpc">
-		<jar jarfile="${libs}/${jarfile}" 
+	<target name="dist" depends="escada">
+		<jar jarfile="${escada-libs}/${jarfile}" 
 		     basedir="${build}" 
 		     includes="escada/**"/>
 	</target>
@@ -40,7 +43,7 @@
 
 	<target name="clean" description="clean up" >
 		<!-- Delete the ${build} and ${dist} directory trees -->
-		<delete dir="${libs}/${jarfile}"/>
+		<delete dir="${escada-libs}/${jarfile}"/>
 	</target>
 
 </project>
