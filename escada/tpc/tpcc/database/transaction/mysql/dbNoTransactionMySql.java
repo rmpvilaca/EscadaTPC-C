@@ -1,6 +1,7 @@
 package escada.tpc.tpcc.database.transaction.mysql;
 
 import java.sql.Connection;
+
 import escada.tpc.common.OutInfo;
 
 /**

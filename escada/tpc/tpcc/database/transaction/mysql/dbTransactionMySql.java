@@ -965,15 +965,15 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				logger.warn("StockLevel - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex,"stocklevel","r");
+					RollbackTransaction(con, sqlex, "stocklevel", "r");
 					if (resubmit) {
-						InitTransaction(con, "tx stocklevel","r");
+						InitTransaction(con, "tx stocklevel", "r");
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex, "tx stocklevel","r");
+					RollbackTransaction(con, sqlex, "tx stocklevel", "r");
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {

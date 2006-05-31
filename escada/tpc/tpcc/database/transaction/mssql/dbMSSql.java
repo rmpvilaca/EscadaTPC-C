@@ -91,15 +91,15 @@ public class dbMSSql extends dbTPCCDatabase {
 				logger.warn("NewOrder - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex, "tx neworder","w");
+					RollbackTransaction(con, sqlex, "tx neworder", "w");
 					if (resubmit) {
-						InitTransaction(con, "tx neworder","w");
+						InitTransaction(con, "tx neworder", "w");
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex, "tx neworder","w");
+					RollbackTransaction(con, sqlex, "tx neworder", "w");
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -159,15 +159,15 @@ public class dbMSSql extends dbTPCCDatabase {
 				logger.warn("Delivery - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex, "tx delivery","w");
+					RollbackTransaction(con, sqlex, "tx delivery", "w");
 					if (resubmit) {
-						InitTransaction(con, "tx delivery","w");
+						InitTransaction(con, "tx delivery", "w");
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex, "tx delivery","w");
+					RollbackTransaction(con, sqlex, "tx delivery", "w");
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -237,33 +237,35 @@ public class dbMSSql extends dbTPCCDatabase {
 				logger
 						.warn("OrderStatus - SQL Exception "
 								+ sqlex.getMessage());
-				String str = (String) (obj).getInfo("cid");				
+				String str = (String) (obj).getInfo("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					if (str.equals("0")) {					
-					RollbackTransaction(con, sqlex,"tx orderstatus 01","r");
-					}
-					else {
-						RollbackTransaction(con, sqlex,"tx orderstatus 02","r");						
+					if (str.equals("0")) {
+						RollbackTransaction(con, sqlex, "tx orderstatus 01",
+								"r");
+					} else {
+						RollbackTransaction(con, sqlex, "tx orderstatus 02",
+								"r");
 					}
 
 					if (resubmit) {
 						if (str.equals("0")) {
-							InitTransaction(con, "tx orderstatus 01","r");
+							InitTransaction(con, "tx orderstatus 01", "r");
 						} else {
-							InitTransaction(con, "tx orderstatus 02","r");
+							InitTransaction(con, "tx orderstatus 02", "r");
 						}
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					if (str.equals("0")) {					
-						RollbackTransaction(con, sqlex,"tx orderstatus 01","r");
-						}
-						else {
-							RollbackTransaction(con, sqlex,"tx orderstatus 02","r");						
-						}
+					if (str.equals("0")) {
+						RollbackTransaction(con, sqlex, "tx orderstatus 01",
+								"r");
+					} else {
+						RollbackTransaction(con, sqlex, "tx orderstatus 02",
+								"r");
+					}
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -337,35 +339,33 @@ public class dbMSSql extends dbTPCCDatabase {
 
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("Payment - SQL Exception " + sqlex.getMessage());
-				
-				String str = (String) (obj).getInfo("cid");				
+
+				String str = (String) (obj).getInfo("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					
-					if (str.equals("0")) {					
-					RollbackTransaction(con, sqlex, "tx payment 01","w");
+
+					if (str.equals("0")) {
+						RollbackTransaction(con, sqlex, "tx payment 01", "w");
+					} else {
+						RollbackTransaction(con, sqlex, "tx payment 02", "w");
 					}
-					else {
-						RollbackTransaction(con, sqlex, "tx payment 02","w");						
-					}
-					
+
 					if (resubmit) {
 						if (str.equals("0")) {
-							InitTransaction(con, "tx payment 01","w");
+							InitTransaction(con, "tx payment 01", "w");
 						} else {
-							InitTransaction(con, "tx payment 02","w");
+							InitTransaction(con, "tx payment 02", "w");
 						}
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					if (str.equals("0")) {					
-						RollbackTransaction(con, sqlex, "tx payment 01","w");
-						}
-						else {
-							RollbackTransaction(con, sqlex, "tx payment 02","w");						
-						}
+					if (str.equals("0")) {
+						RollbackTransaction(con, sqlex, "tx payment 01", "w");
+					} else {
+						RollbackTransaction(con, sqlex, "tx payment 02", "w");
+					}
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {
@@ -427,15 +427,15 @@ public class dbMSSql extends dbTPCCDatabase {
 				logger.warn("StockLevel - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
-					RollbackTransaction(con, sqlex, "tx stocklevel","r");
+					RollbackTransaction(con, sqlex, "tx stocklevel", "r");
 					if (resubmit) {
-						InitTransaction(con, "tx stocklevel","r");
+						InitTransaction(con, "tx stocklevel", "r");
 						continue;
 					} else {
 						throw sqlex;
 					}
 				} else {
-					RollbackTransaction(con, sqlex, "tx stocklevel","r");
+					RollbackTransaction(con, sqlex, "tx stocklevel", "r");
 					throw sqlex;
 				}
 			} catch (java.lang.Exception ex) {

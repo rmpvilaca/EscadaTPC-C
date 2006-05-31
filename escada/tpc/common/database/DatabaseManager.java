@@ -2,6 +2,7 @@ package escada.tpc.common.database;
 
 import java.sql.Connection;
 import java.util.Date;
+
 import org.apache.log4j.Logger;
 
 import escada.tpc.logger.PerformanceLogger;
@@ -125,7 +126,7 @@ public class DatabaseManager {
 			}
 		return (null);
 	}
-	
+
 	public void releaseConnections() {
 		cn.releaseConnections();
 	}

@@ -1,13 +1,13 @@
 package escada.tpc.tpcc.database.transaction;
 
-import escada.tpc.common.OutInfo;
-import escada.tpc.common.database.DatabaseManager;
+import java.sql.Connection;
+import java.util.Date;
+import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.sql.Connection;
+import escada.tpc.common.OutInfo;
+import escada.tpc.common.database.DatabaseManager;
 
 /**
  * It defines the common methods that must be available at any dbImplementation
@@ -58,8 +58,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
-					&& (sqlex.getMessage().indexOf("connection") == -1)
-					) {
+					&& (sqlex.getMessage().indexOf("connection") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
 				System.exit(-1);

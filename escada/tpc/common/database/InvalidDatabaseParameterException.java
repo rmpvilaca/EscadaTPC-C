@@ -10,4 +10,4 @@ public class InvalidDatabaseParameterException extends java.lang.Exception {
 		super(msg);
 	}
 }
-//arch-tag: b85092ab-5876-4025-99ce-1e7c7af041c2
+// arch-tag: b85092ab-5876-4025-99ce-1e7c7af041c2

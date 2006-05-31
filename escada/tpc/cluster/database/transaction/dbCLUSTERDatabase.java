@@ -1,13 +1,13 @@
 package escada.tpc.cluster.database.transaction;
 
-import escada.tpc.common.OutInfo;
-import escada.tpc.common.database.DatabaseManager;
+import java.sql.Connection;
+import java.util.Date;
+import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.sql.Connection;
+import escada.tpc.common.OutInfo;
+import escada.tpc.common.database.DatabaseManager;
 
 abstract public class dbCLUSTERDatabase extends DatabaseManager {
 
@@ -26,11 +26,11 @@ abstract public class dbCLUSTERDatabase extends DatabaseManager {
 
 			con = getConnection();
 
-			InitTransaction(con, "tx updatetrans","w");
+			InitTransaction(con, "tx updatetrans", "w");
 
 			dbtrace = UpdateTransDB(obj, con);
 
-			CommitTransaction(con, "tx updatetrans","w");
+			CommitTransaction(con, "tx updatetrans", "w");
 
 			Date NetFinishTime = new java.util.Date();
 
@@ -74,11 +74,11 @@ abstract public class dbCLUSTERDatabase extends DatabaseManager {
 
 			con = getConnection();
 
-			InitTransaction(con, "tx readonlytrans","r");
+			InitTransaction(con, "tx readonlytrans", "r");
 
 			dbtrace = ReadOnlyTransDB(obj, con);
 
-			CommitTransaction(con,"tx readonlytrans","r");
+			CommitTransaction(con, "tx readonlytrans", "r");
 
 			Date NetFinishTime = new java.util.Date();
 
@@ -115,14 +115,15 @@ abstract public class dbCLUSTERDatabase extends DatabaseManager {
 	protected abstract HashSet ReadOnlyTransDB(OutInfo obj, Connection con)
 			throws java.sql.SQLException;
 
-	protected abstract void InitTransaction(Connection con,
-			String strTrans, String strAccess) throws java.sql.SQLException;
+	protected abstract void InitTransaction(Connection con, String strTrans,
+			String strAccess) throws java.sql.SQLException;
 
 	protected abstract void CommitTransaction(Connection con, String strTrans,
 			String strAccess) throws java.sql.SQLException;
 
-	protected abstract void RollbackTransaction(Connection con, java.lang.Exception dump,
-			String strTrans, String strAccess) throws java.sql.SQLException;
+	protected abstract void RollbackTransaction(Connection con,
+			java.lang.Exception dump, String strTrans, String strAccess)
+			throws java.sql.SQLException;
 
 }// arch-tag: b07c72e5-4bac-417e-a60b-1e38b6dd78cf
 

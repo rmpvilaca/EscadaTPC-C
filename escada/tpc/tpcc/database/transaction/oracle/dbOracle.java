@@ -10,7 +10,7 @@ import java.util.HashSet;
 import org.apache.log4j.Logger;
 
 import escada.tpc.common.OutInfo;
-import escada.tpc.tpcc.database.transaction.*;
+import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
 
 /**
  * It is an interface to a postgreSQL, which based is based on the the
@@ -80,7 +80,7 @@ public class dbOracle extends dbTPCCDatabase {
 				statement.execute();
 
 				rs = (ResultSet) statement.getObject(1);
-				
+
 				if (rs.next()) {
 					cursor = (String) rs.getString(1);
 				}
@@ -88,7 +88,7 @@ public class dbOracle extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
-				
+
 				NetFinishTime = new java.util.Date();
 
 				processLog(NetStartTime, NetFinishTime, "processing", "w",
@@ -454,9 +454,9 @@ public class dbOracle extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
-				
+
 				NetFinishTime = new java.util.Date();
-				
+
 				processLog(NetStartTime, NetFinishTime, "processing", "r",
 						"tx stocklevel");
 

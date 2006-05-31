@@ -20,7 +20,7 @@ public class PerformanceLogger {
 	public static boolean isPerformanceLoggerEnabled() {
 		return (logger.isInfoEnabled());
 	}
-	
+
 	public static void info(String pStr) {
 		logger.info(pStr);
 	}

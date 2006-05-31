@@ -10,7 +10,7 @@ import java.util.HashSet;
 import org.apache.log4j.Logger;
 
 import escada.tpc.common.OutInfo;
-import escada.tpc.tpcc.database.transaction.*;
+import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
 
 /**
  * It is an interface to a postgreSQL, which based is based on the the
@@ -507,8 +507,8 @@ public class dbPostgresql extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected void InitTransaction(Connection con,
-			String strTrans, String strAccess) throws java.sql.SQLException {
+	protected void InitTransaction(Connection con, String strTrans,
+			String strAccess) throws java.sql.SQLException {
 		Statement statement = null;
 		try {
 			Date NetStartTime = new java.util.Date();
@@ -564,8 +564,9 @@ public class dbPostgresql extends dbTPCCDatabase {
 		}
 	}
 
-	protected void RollbackTransaction(Connection con, java.lang.Exception dump,
-			String strTrans, String strAccess) throws java.sql.SQLException {
+	protected void RollbackTransaction(Connection con,
+			java.lang.Exception dump, String strTrans, String strAccess)
+			throws java.sql.SQLException {
 		Statement statement = null;
 		try {
 			Date NetStartTime = new java.util.Date();

@@ -26,7 +26,8 @@ public class ClientEmulationStartup {
 
 	private long term;
 
-	private static Logger logger = Logger.getLogger(ClientEmulationStartup.class);
+	private static Logger logger = Logger
+			.getLogger(ClientEmulationStartup.class);
 
 	public static void main(String args[]) {
 		try {
@@ -44,7 +45,9 @@ public class ClientEmulationStartup {
 
 		try {
 
-			StringArg log4jArg = new StringArg("-LOGconfig", "Configuration file for Log4J.", "% Defines the logging output.", db);
+			StringArg log4jArg = new StringArg("-LOGconfig",
+					"Configuration file for Log4J.",
+					"% Defines the logging output.", db);
 
 			StringArg ebArg = new StringArg("-EBclass", "EB Factory",
 					"% Factory <class> used to create EBs.", db);
@@ -107,12 +110,9 @@ public class ClientEmulationStartup {
 							+ "Accepts factional values and E notation.", 1.0,
 					db);
 
-			BooleanArg key = new BooleanArg(
-					"-KEY",
-					"Enable thinktime.",
-					"% It enables or disables the think time.",
-					true, db);
-			
+			BooleanArg key = new BooleanArg("-KEY", "Enable thinktime.",
+					"% It enables or disables the think time.", true, db);
+
 			IntArg cli = new IntArg("-CLI", "Number of clients",
 					"% Number of clients concurrently accessing the database.",
 					db);
@@ -134,17 +134,17 @@ public class ClientEmulationStartup {
 					"Shift the clients...",
 					"% It shifts the clients in order to access different warehouses...",
 					1, db);
-			
+
 			BooleanArg resArg = new BooleanArg(
 					"-RESUBMIT",
 					"Resubmit Transaction.",
 					"% It enables the transaction resubmition when an error occurs.",
 					true, db);
-			
+
 			IntArg hostArg = new IntArg("-HOST", "Connection Pool",
-					"% The number of entries available for connection pool...",0,
-					db);			
-			
+					"% The number of entries available for connection pool...",
+					0, db);
+
 			if (args.length == 0) {
 				Usage(args, db);
 				return;
@@ -155,11 +155,11 @@ public class ClientEmulationStartup {
 			DOMConfigurator.configure(log4jArg.s);
 			logger.info("Starting up the client application.");
 			logger.info("Remote Emulator for Database Benchmark ...");
-			logger.info("Universidade do Minho (Grupo de Sistemas Distribuidos)");
+			logger
+					.info("Universidade do Minho (Grupo de Sistemas Distribuidos)");
 			logger.info("Version 0.1");
 
 			Usage(args, db);
-
 
 			DatabaseManager.setConnectionPool(true);
 			DatabaseManager.setMaxConnection(poolArg.num);
@@ -232,7 +232,8 @@ public class ClientEmulationStartup {
 			waitForStart(start);
 			if (term < 0)
 				return;
-			Thread.sleep(term * 60 * 1000); // TODO: It must be changed to a constant.
+			Thread.sleep(term * 60 * 1000); // TODO: It must be changed to a
+			// constant.
 		} catch (InterruptedException ie) {
 			logger.error("In waitforrampdown, caught interrupted exception");
 		}
@@ -243,7 +244,7 @@ public class ClientEmulationStartup {
 			return;
 
 		Thread.sleep(start * 60 * 1000); // TODO - It must be changed to a
-										 // constant.
+		// constant.
 	}
 
 }

@@ -10,7 +10,7 @@ import escada.tpc.common.database.DatabaseManager;
 
 /**
  * It initializes the client Emulation instantiating the appropriate objects.
- *  
+ * 
  */
 public class ClientEmulation extends Thread {
 	private static Logger logger = Logger.getLogger(ClientEmulation.class);
@@ -67,8 +67,8 @@ public class ClientEmulation extends Thread {
 			if (co == null)
 				d = (DatabaseManager) cl.newInstance();
 			else
-				d = (DatabaseManager) co.newInstance(new Object[] { new Integer(
-						totalCli) });
+				d = (DatabaseManager) co
+						.newInstance(new Object[] { new Integer(totalCli) });
 
 			int temp = (ncli + ((nfrag - 1) * 10));
 
@@ -78,7 +78,7 @@ public class ClientEmulation extends Thread {
 			e.setStateTransition(s);
 			e.setDatabase(d);
 			e.setHostId(hid);
-			
+
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend.");
 			ex.printStackTrace(System.err);

@@ -7,107 +7,102 @@ import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
 import escada.tpc.tpcc.util.TPCCRandGen;
 
 /**
-* It implements the states according to the definition  of the TPC-C. Basically, it sets up import information used in the execution of the payment transaction. Additionally, it defines the trace flag, which is a boolean value used to log traces or not and the trace file.
-**/
-public class PaymentTrans
-    extends StateObject {
-  public void initProcess(Emulation em,String hid) {
-    int wid = (em.getEmulationId() / 10) + 1; // TODO: MODIFICAR ISSO.
-    int cid = 0;
-    int did = 0;
-    int cwid = 0;
-    int cdid = 0;
-    String lastname = null;
-    float hamount = 0;
+ * It implements the states according to the definition of the TPC-C. Basically,
+ * it sets up import information used in the execution of the payment
+ * transaction. Additionally, it defines the trace flag, which is a boolean
+ * value used to log traces or not and the trace file.
+ */
+public class PaymentTrans extends StateObject {
+	public void initProcess(Emulation em, String hid) {
+		int wid = (em.getEmulationId() / 10) + 1; // TODO: MODIFICAR ISSO.
+		int cid = 0;
+		int did = 0;
+		int cwid = 0;
+		int cdid = 0;
+		String lastname = null;
+		float hamount = 0;
 
-    outInfo.putInfo("trace", Emulation.getTraceInformation());
-    outInfo.putInfo("resubmit",Boolean.toString(Emulation.getStatusReSubmit()));
-    outInfo.putInfo("abort", "0");
-    outInfo.putInfo("hid",hid);
-    
-    
-    outInfo.putInfo("wid", Integer.toString(wid));
-    did = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
-    outInfo.putInfo("did", Integer.toString(did));
+		outInfo.putInfo("trace", Emulation.getTraceInformation());
+		outInfo.putInfo("resubmit", Boolean.toString(Emulation
+				.getStatusReSubmit()));
+		outInfo.putInfo("abort", "0");
+		outInfo.putInfo("hid", hid);
 
-    if (RandGen.nextInt(em.getRandom(), TPCCConst.rngLASTNAME + 1) <=
-        TPCCConst.probLASTNAME) {
-      lastname = TPCCRandGen.digSyl(RandGen.NURand(em.getRandom(),
-          TPCCConst.LastNameA,
-          TPCCConst.numINILastName,
-          TPCCConst.numENDLastName));
-      outInfo.putInfo("lastname", lastname);
-      outInfo.putInfo("cid", "0");
-    }
-    else {
-      cid = RandGen.NURand(em.getRandom(),
-                           TPCCConst.CustomerA, TPCCConst.numINICustomer,
-                           TPCCConst.numENDCustomer);
-      outInfo.putInfo("cid", Integer.toString(cid));
-      outInfo.putInfo("lastname", "");
-    }
+		outInfo.putInfo("wid", Integer.toString(wid));
+		did = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
+		outInfo.putInfo("did", Integer.toString(did));
 
-    if ( (RandGen.nextInt(em.getRandom(),
-                          TPCCConst.rngPaymentLOCALWarehouse + 1) <=
-          TPCCConst.probPaymentLOCALWarehouse) ||
-        (Emulation.getNumberConcurrentEmulators() <= TPCCConst.numMinClients)) {
-      outInfo.putInfo("cwid", Integer.toString(wid));
-      outInfo.putInfo("cdid", Integer.toString(did));
-    }
-    else {
-      cdid = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
-      outInfo.putInfo("cdid", Integer.toString(cdid));
-      cwid = RandGen.nextInt(em.getRandom(), 1,
-                             (Emulation.getNumberConcurrentEmulators() / 10) + 1);
-      outInfo.putInfo("cwid", Integer.toString(cwid));
-    }
+		if (RandGen.nextInt(em.getRandom(), TPCCConst.rngLASTNAME + 1) <= TPCCConst.probLASTNAME) {
+			lastname = TPCCRandGen.digSyl(RandGen.NURand(em.getRandom(),
+					TPCCConst.LastNameA, TPCCConst.numINILastName,
+					TPCCConst.numENDLastName));
+			outInfo.putInfo("lastname", lastname);
+			outInfo.putInfo("cid", "0");
+		} else {
+			cid = RandGen.NURand(em.getRandom(), TPCCConst.CustomerA,
+					TPCCConst.numINICustomer, TPCCConst.numENDCustomer);
+			outInfo.putInfo("cid", Integer.toString(cid));
+			outInfo.putInfo("lastname", "");
+		}
 
-    hamount =
-        (float) RandGen.nextInt(em.getRandom(), TPCCConst.numINIAmount,
-                                TPCCConst.numENDAmount + 1) /
-        (float) TPCCConst.numDIVAmount;
-    outInfo.putInfo("hamount", Float.toString(hamount));
-    outInfo.putInfo("thinktime", Long.toString(em.getThinkTime()));
-    outInfo.putInfo("file", em.getEmulationName());
-  }
+		if ((RandGen.nextInt(em.getRandom(),
+				TPCCConst.rngPaymentLOCALWarehouse + 1) <= TPCCConst.probPaymentLOCALWarehouse)
+				|| (Emulation.getNumberConcurrentEmulators() <= TPCCConst.numMinClients)) {
+			outInfo.putInfo("cwid", Integer.toString(wid));
+			outInfo.putInfo("cdid", Integer.toString(did));
+		} else {
+			cdid = RandGen
+					.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
+			outInfo.putInfo("cdid", Integer.toString(cdid));
+			cwid = RandGen.nextInt(em.getRandom(), 1, (Emulation
+					.getNumberConcurrentEmulators() / 10) + 1);
+			outInfo.putInfo("cwid", Integer.toString(cwid));
+		}
 
-  public void prepareProcess(Emulation em,String hid) {
+		hamount = (float) RandGen.nextInt(em.getRandom(),
+				TPCCConst.numINIAmount, TPCCConst.numENDAmount + 1)
+				/ (float) TPCCConst.numDIVAmount;
+		outInfo.putInfo("hamount", Float.toString(hamount));
+		outInfo.putInfo("thinktime", Long.toString(em.getThinkTime()));
+		outInfo.putInfo("file", em.getEmulationName());
+	}
 
-  }
+	public void prepareProcess(Emulation em, String hid) {
 
-  public Object requestProcess(Emulation em,String hid) {
-    Object requestProcess = null;
-    dbTPCCDatabase db = (dbTPCCDatabase) em.getDatabase();
-    try {
-      initProcess(em,hid);
-      requestProcess = db.TracePaymentDB(outInfo,hid);
-    }
-    catch (Exception ex) {
-      ex.printStackTrace(System.err);
-    }
-    return (requestProcess);
-  }
+	}
 
-  public void postProcess(Emulation em,String hid) {
-    inInfo.resetInfo();
-    outInfo.resetInfo();
-  }
+	public Object requestProcess(Emulation em, String hid) {
+		Object requestProcess = null;
+		dbTPCCDatabase db = (dbTPCCDatabase) em.getDatabase();
+		try {
+			initProcess(em, hid);
+			requestProcess = db.TracePaymentDB(outInfo, hid);
+		} catch (Exception ex) {
+			ex.printStackTrace(System.err);
+		}
+		return (requestProcess);
+	}
 
-  public void setProb() {
-     prob = 43;
-   }
+	public void postProcess(Emulation em, String hid) {
+		inInfo.resetInfo();
+		outInfo.resetInfo();
+	}
 
-  public void setKeyingTime() {
-    keyingtime = 3;
-  }
+	public void setProb() {
+		prob = 43;
+	}
 
-   public void setThinkTime() {
-    thinktime = 12;
-  }
+	public void setKeyingTime() {
+		keyingtime = 3;
+	}
 
-  public String toString() {
-    return ("PaymentTrans");
-  }
+	public void setThinkTime() {
+		thinktime = 12;
+	}
+
+	public String toString() {
+		return ("PaymentTrans");
+	}
 }
 // arch-tag: 903bfad5-d906-42fd-8d7c-cc9051459c7d
 

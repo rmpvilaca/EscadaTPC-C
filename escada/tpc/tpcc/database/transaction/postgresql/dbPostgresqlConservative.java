@@ -10,7 +10,7 @@ import java.util.HashSet;
 import org.apache.log4j.Logger;
 
 import escada.tpc.common.OutInfo;
-import escada.tpc.tpcc.database.transaction.*;
+import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
 
 /**
  * It is an interface to a postgreSQL, which based is based on the the
@@ -18,7 +18,8 @@ import escada.tpc.tpcc.database.transaction.*;
  */
 public class dbPostgresqlConservative extends dbTPCCDatabase {
 
-	private static Logger logger = Logger.getLogger(dbPostgresqlConservative.class);
+	private static Logger logger = Logger
+			.getLogger(dbPostgresqlConservative.class);
 
 	protected HashSet NewOrderDB(OutInfo obj, Connection con)
 			throws java.sql.SQLException {
@@ -36,9 +37,10 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 			try {
 
 				Date NetStartTime = new java.util.Date();
-				
+
 				controlStatement = con.createStatement();
-				controlStatement.execute("select tg_conservative ('district,stock,orders,new_order,order_line,item,warehouse,customer')");
+				controlStatement
+						.execute("select tg_conservative ('district,stock,orders,new_order,order_line,item,warehouse,customer')");
 				System.exit(-1);
 
 				statement = con
@@ -144,12 +146,13 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
-			
+
 			try {
 				Date NetStartTime = new java.util.Date();
 
 				controlStatement = con.createStatement();
-				controlStatement.execute("select tg_conservative('orders,new_order,order_line,customer')");
+				controlStatement
+						.execute("select tg_conservative('orders,new_order,order_line,customer')");
 
 				statement = con.prepareStatement("select tpcc_delivery(?,?)");
 
@@ -230,10 +233,10 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 
 			try {
 				Date NetStartTime = new java.util.Date();
-				
+
 				controlStatement = con.createStatement();
-				controlStatement.execute("select conservative ('orders,order_line,customer')");
-				
+				controlStatement
+						.execute("select conservative ('orders,order_line,customer')");
 
 				statement = con
 						.prepareStatement("select tpcc_orderstatus(?,?,?,?)");
@@ -344,9 +347,10 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 
 			try {
 				Date NetStartTime = new java.util.Date();
-				
+
 				controlStatement = con.createStatement();
-				controlStatement.execute("select tg_conservative('warehouse,district,customer,history')");
+				controlStatement
+						.execute("select tg_conservative('warehouse,district,customer,history')");
 
 				statement = con
 						.prepareStatement("select tpcc_payment(?,?,cast(? as numeric(6,2)),?,?,?,cast(? as char(16)))");
@@ -459,9 +463,10 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 
 			try {
 				Date NetStartTime = new java.util.Date();
-				
+
 				controlStatement = con.createStatement();
-				controlStatement.execute("select tg_conservative('district,stock,order_line')");
+				controlStatement
+						.execute("select tg_conservative('district,stock,order_line')");
 
 				statement = con
 						.prepareStatement("select tpcc_stocklevel(?,?,?)");
@@ -530,8 +535,8 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected void InitTransaction(Connection con,
-			String strTrans, String strAccess) throws java.sql.SQLException {
+	protected void InitTransaction(Connection con, String strTrans,
+			String strAccess) throws java.sql.SQLException {
 		Statement statement = null;
 		try {
 			Date NetStartTime = new java.util.Date();
@@ -588,8 +593,9 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 		}
 	}
 
-	protected void RollbackTransaction(Connection con, java.lang.Exception dump,
-			String strTrans, String strAccess) throws java.sql.SQLException {
+	protected void RollbackTransaction(Connection con,
+			java.lang.Exception dump, String strTrans, String strAccess)
+			throws java.sql.SQLException {
 		Statement statement = null;
 		try {
 			Date NetStartTime = new java.util.Date();
