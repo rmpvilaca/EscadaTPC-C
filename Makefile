@@ -63,7 +63,7 @@ PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
              -DBpasswd tpcc \
              -POOL 20 \
              -MI 45 \
-	     -FRAG 2 \
+	     -FRAG 1 \
 	     -RESUBMIT false
 
 real-oracle:
