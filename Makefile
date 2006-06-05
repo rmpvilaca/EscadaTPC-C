@@ -35,7 +35,7 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -LOGconfig configuration.files/logger.xml \
              -KEY true \
-             -CLI 10 \
+             -CLI 20 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
@@ -52,7 +52,7 @@ PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -LOGconfig configuration.files/logger.xml \
              -KEY true \
-             -CLI 10 \
+             -CLI 20 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
