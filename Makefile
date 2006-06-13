@@ -78,5 +78,8 @@ real-pgsql-01:
 real-pgsql-02:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(PGSQL_FLAGS02)
 
+load-pgsql-01:
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.tpcc.database.populate.Populate P 2
+
 
 # arch-tag: 35a104c6-523c-493b-9afe-e85f72d9d865

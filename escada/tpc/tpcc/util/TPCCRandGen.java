@@ -50,6 +50,8 @@ public class TPCCRandGen {
 
 		return (c);
 	}
-}// arch-tag: 7697fdd2-6cda-40c2-b600-6c26f96eddfe
+}
+
+// arch-tag: 7697fdd2-6cda-40c2-b600-6c26f96eddfe
 // arch-tag: b8ae8fca-784f-4791-ab95-64f3b9ba8998
 // arch-tag: c514e873-ee5c-4e3e-b918-328ce4260594
