@@ -5,7 +5,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 public class Populate {
 	public Populate(Connection conn, int numWareh) {
@@ -278,7 +280,7 @@ public class Populate {
 
 	public String generateString(int length) {
 		String rString = "";
-		Map<Integer,String> lastName = new HashMap<Integer,String>();
+		Map<Integer, String> lastName = new HashMap<Integer, String>();
 		Random rg = new Random();
 		int number = 0;
 		int prevNumber = 0;
