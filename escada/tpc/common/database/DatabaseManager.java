@@ -1,11 +1,12 @@
 package escada.tpc.common.database;
 
+import escada.tpc.logger.PerformanceLogger;
+import gorda.reflector.interfaces.utils.connection.ConnectionManager;
+
 import java.sql.Connection;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-
-import escada.tpc.logger.PerformanceLogger;
 
 /**
  * It implements a generic database interface with connection control

@@ -23,7 +23,7 @@
 	</category>
 
 	<root>
-	   <priority value ="debug" />
+	   <priority value ="warn" />
    	   <appender-ref ref="ASYNC" />
 	</root>
 	

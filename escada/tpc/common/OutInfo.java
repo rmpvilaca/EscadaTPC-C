@@ -1,6 +1,6 @@
 package escada.tpc.common;
 
-import escada.interfaces.utils.Configuration;
+import gorda.reflector.interfaces.utils.configuration.Configuration;
 
 /**
  * It is class that extends Configuration and transforms it an class used to

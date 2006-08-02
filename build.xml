@@ -3,6 +3,7 @@
 	<!-- set global properties for this build -->
 	<property name="libs" location="../../lib/"/>
 	<property name="escada-libs" location="${libs}/escada"/>
+	<property name="gorda-libs" location="${libs}/gorda"/>
 	<property name="build" location="./,build"/>
 	<property name="dist"  location="./,dist"/>
 	<property name="jarfile" value="Escada-TPC.jar"/>
@@ -27,6 +28,7 @@
                         <pathelement location="${libs}/sybase/jconn2d.jar"/>
 			<pathelement location="${libs}/log4j-1.2.9.jar"/>
 
+                        <pathelement location="${gorda-libs}/Gorda-Utils.jar"/>
                         <pathelement location="${escada-libs}/Escada-Interfaces.jar"/>
 		</path>
 

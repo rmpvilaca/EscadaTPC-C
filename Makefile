@@ -35,12 +35,12 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -LOGconfig configuration.files/logger.xml \
              -KEY true \
-             -CLI 20 \
+             -CLI 5 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
-             -DBpath jdbc:postgresql://localhost:5432/tpcc \
+             -DBpath jdbc:postgresql://localhost/tpcc \
              -DBdriver org.postgresql.Driver \
              -DBusr tpcc \
              -DBpasswd 123456 \
@@ -57,14 +57,51 @@ PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
              -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
-             -DBpath jdbc:postgresql://localhost:5433/tpcc \
+             -DBpath jdbc:postgresql://192.168.74.11/tpcc \
              -DBdriver org.postgresql.Driver \
              -DBusr tpcc \
              -DBpasswd tpcc \
              -POOL 20 \
              -MI 45 \
-	     -FRAG 1 \
+	     -FRAG 3 \
 	     -RESUBMIT false
+
+
+PGSQL_FLAGS03 =-EBclass escada.tpc.tpcc.TPCCEmulation \
+             -LOGconfig configuration.files/logger.xml \
+             -KEY true \
+             -CLI 30 \
+             -STclass escada.tpc.tpcc.TPCCStateTransition \
+             -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
+             -TRACEFLAG TRACE \
+             -PREFIX TPC-C \
+             -DBpath jdbc:postgresql://192.168.74.16/tpcc \
+             -DBdriver org.postgresql.Driver \
+             -DBusr tpcc \
+             -DBpasswd tpcc \
+             -POOL 30 \
+             -MI 45 \
+             -FRAG 5 \
+             -RESUBMIT false
+
+
+PGSQL_FLAGS04 =-EBclass escada.tpc.tpcc.TPCCEmulation \
+             -LOGconfig configuration.files/logger.xml \
+             -KEY true \
+             -CLI 30 \
+             -STclass escada.tpc.tpcc.TPCCStateTransition \
+             -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
+             -TRACEFLAG TRACE \
+             -PREFIX TPC-C \
+             -DBpath jdbc:postgresql://192.168.74.10/tpcc \
+             -DBdriver org.postgresql.Driver \
+             -DBusr tpcc \
+             -DBpasswd tpcc \
+             -POOL 30 \
+             -MI 45 \
+             -FRAG 8 \
+             -RESUBMIT false
+
 
 real-oracle:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(ORACLE_FLAGS)
@@ -80,6 +117,12 @@ real-pgsql-02:
 
 load-pgsql-01:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.tpcc.database.populate.Populate P 2
+
+real-pgsql-03:
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(PGSQL_FLAGS03)
+
+real-pgsql-04:
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(PGSQL_FLAGS04)
 
 
 # arch-tag: 35a104c6-523c-493b-9afe-e85f72d9d865
