@@ -1,5 +1,7 @@
 package escada.tpc.common;
 
+import java.util.Properties;
+
 /**
  * It is an abstract class that defines the states through which our emulator
  * will pass during each interaction, or in other words, during each
@@ -7,11 +9,11 @@ package escada.tpc.common;
  * 
  */
 public abstract class StateObject {
-	protected StateInfo stInfo = new StateInfo();
+	protected Properties stInfo = new Properties();
 
-	protected OutInfo outInfo = new OutInfo();
+	protected Properties outInfo = new Properties();
 
-	protected InInfo inInfo = new InInfo();
+	protected Properties inInfo = new Properties();
 
 	protected int prob = 0;
 

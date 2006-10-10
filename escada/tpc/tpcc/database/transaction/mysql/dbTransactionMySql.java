@@ -7,10 +7,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import escada.tpc.common.OutInfo;
 import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
 
 /**
@@ -21,11 +21,11 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 
 	private Logger logger = Logger.getLogger(dbTransactionMySql.class);
 
-	protected HashSet NewOrderDB(OutInfo obj, Connection con)
+	protected HashSet NewOrderDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
 		boolean resubmit = Boolean.parseBoolean((String) obj
-				.getInfo("resubmit"));
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -38,12 +38,12 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			NetStartTime = new java.util.Date();
 
 			try {
-				int _w_id = Integer.parseInt((String) obj.getInfo("wid"));
-				int _d_id = Integer.parseInt((String) obj.getInfo("did"));
-				int _c_id = Integer.parseInt((String) obj.getInfo("cid"));
-				int _o_ol_cnt = Integer.parseInt((String) obj.getInfo("qtd"));
+				int _w_id = Integer.parseInt((String) obj.get("wid"));
+				int _d_id = Integer.parseInt((String) obj.get("did"));
+				int _c_id = Integer.parseInt((String) obj.get("cid"));
+				int _o_ol_cnt = Integer.parseInt((String) obj.get("qtd"));
 				int _o_all_local = Integer.parseInt((String) obj
-						.getInfo("localwid"));
+						.get("localwid"));
 
 				double _w_tax;
 				double _d_tax;
@@ -92,11 +92,11 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				_commit_flag = 0;
 
 				while (_li_no < _o_ol_cnt) {
-					_li_id = Integer.parseInt((String) obj.getInfo("iid"
+					_li_id = Integer.parseInt((String) obj.get("iid"
 							+ _li_no));
-					_li_s_w_id = Integer.parseInt((String) obj.getInfo("supwid"
+					_li_s_w_id = Integer.parseInt((String) obj.get("supwid"
 							+ _li_no));
-					_li_qty = Integer.parseInt((String) obj.getInfo("qtdi"
+					_li_qty = Integer.parseInt((String) obj.get("qtdi"
 							+ _li_no));
 
 					statement = con
@@ -290,11 +290,11 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected HashSet DeliveryDB(OutInfo obj, Connection con)
+	protected HashSet DeliveryDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
 		boolean resubmit = Boolean.parseBoolean((String) obj
-				.getInfo("resubmit"));
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -307,9 +307,9 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			NetStartTime = new java.util.Date();
 
 			try {
-				int _w_id = Integer.parseInt((String) obj.getInfo("wid"));
+				int _w_id = Integer.parseInt((String) obj.get("wid"));
 				int _o_carrier_id = Integer.parseInt((String) obj
-						.getInfo("crid"));
+						.get("crid"));
 
 				int _d_id;
 				int _o_id;
@@ -471,11 +471,11 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected HashSet OrderStatusDB(OutInfo obj, Connection con)
+	protected HashSet OrderStatusDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
 		boolean resubmit = Boolean.parseBoolean((String) obj
-				.getInfo("resubmit"));
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -488,10 +488,10 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			NetStartTime = new java.util.Date();
 
 			try {
-				int __w_id = Integer.parseInt((String) obj.getInfo("wid"));
-				int __d_id = Integer.parseInt((String) obj.getInfo("did"));
-				int __c_id = Integer.parseInt((String) obj.getInfo("cid"));
-				String __c_last = (String) obj.getInfo("lastname");
+				int __w_id = Integer.parseInt((String) obj.get("wid"));
+				int __d_id = Integer.parseInt((String) obj.get("did"));
+				int __c_id = Integer.parseInt((String) obj.get("cid"));
+				String __c_last = (String) obj.get("lastname");
 
 				double _c_balance;
 				String _c_first;
@@ -584,7 +584,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 
 				NetFinishTime = new java.util.Date();
 
-				String str = (String) (obj).getInfo("cid");
+				String str = (String) (obj).get("cid");
 
 				if (str.equals("0")) {
 					processLog(NetStartTime, NetFinishTime, "processing", "r",
@@ -598,7 +598,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				logger
 						.warn("OrderStatus - SQL Exception "
 								+ sqlex.getMessage());
-				String str = (String) (obj).getInfo("cid");
+				String str = (String) (obj).get("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
 					if (str.equals("0")) {
@@ -647,11 +647,11 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected HashSet PaymentDB(OutInfo obj, Connection con)
+	protected HashSet PaymentDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
 		boolean resubmit = Boolean.parseBoolean((String) obj
-				.getInfo("resubmit"));
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -664,14 +664,14 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			NetStartTime = new java.util.Date();
 
 			try {
-				int __w_id = Integer.parseInt((String) obj.getInfo("wid"));
-				int __c_w_id = Integer.parseInt((String) obj.getInfo("cwid"));
+				int __w_id = Integer.parseInt((String) obj.get("wid"));
+				int __c_w_id = Integer.parseInt((String) obj.get("cwid"));
 				float __h_amount = Float.parseFloat((String) obj
-						.getInfo("hamount"));
-				int __d_id = Integer.parseInt((String) obj.getInfo("did"));
-				int __c_d_id = Integer.parseInt((String) obj.getInfo("cdid"));
-				int __c_id = Integer.parseInt((String) obj.getInfo("cid"));
-				String __c_last = (String) obj.getInfo("lastname");
+						.get("hamount"));
+				int __d_id = Integer.parseInt((String) obj.get("did"));
+				int __c_d_id = Integer.parseInt((String) obj.get("cdid"));
+				int __c_id = Integer.parseInt((String) obj.get("cid"));
+				String __c_last = (String) obj.get("lastname");
 
 				String _w_street_1;
 				String _w_street_2;
@@ -850,7 +850,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				rs = null;
 				statement = null;
 
-				String str = (String) (obj).getInfo("cid");
+				String str = (String) (obj).get("cid");
 				if (str.equals("0")) {
 					processLog(NetStartTime, NetFinishTime, "processing", "w",
 							"tx payment 01");
@@ -860,7 +860,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				}
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("Payment - SQL Exception " + sqlex.getMessage());
-				String str = (String) (obj).getInfo("cid");
+				String str = (String) (obj).get("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
 					if (str.equals("0")) {
@@ -903,11 +903,11 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected HashSet StockLevelDB(OutInfo obj, Connection con)
+	protected HashSet StockLevelDB(java.util.Properties obj, Connection con)
 			throws java.sql.SQLException {
 
 		boolean resubmit = Boolean.parseBoolean((String) obj
-				.getInfo("resubmit"));
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -920,10 +920,10 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			NetStartTime = new java.util.Date();
 
 			try {
-				int __w_id = Integer.parseInt((String) obj.getInfo("wid"));
-				int __d_id = Integer.parseInt((String) obj.getInfo("did"));
+				int __w_id = Integer.parseInt((String) obj.get("wid"));
+				int __d_id = Integer.parseInt((String) obj.get("did"));
 				int __threshhold = Integer.parseInt((String) obj
-						.getInfo("threshhold"));
+						.get("threshhold"));
 
 				int _o_id_low;
 				int _o_id_high;

@@ -19,30 +19,30 @@ public class OrderStatusTrans extends StateObject {
 		int did = 0;
 		String lastname = null;
 
-		outInfo.putInfo("resubmit", Boolean.toString(Emulation
+		outInfo.put("resubmit", Boolean.toString(Emulation
 				.getStatusReSubmit()));
-		outInfo.putInfo("trace", Emulation.getTraceInformation());
-		outInfo.putInfo("abort", "0");
-		outInfo.putInfo("hid", hid);
+		outInfo.put("trace", Emulation.getTraceInformation());
+		outInfo.put("abort", "0");
+		outInfo.put("hid", hid);
 
-		outInfo.putInfo("wid", Integer.toString(wid));
+		outInfo.put("wid", Integer.toString(wid));
 		did = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
-		outInfo.putInfo("did", Integer.toString(did));
+		outInfo.put("did", Integer.toString(did));
 
 		if (RandGen.nextInt(em.getRandom(), TPCCConst.rngLASTNAME + 1) <= TPCCConst.probLASTNAME) {
 			lastname = TPCCRandGen.digSyl(RandGen.NURand(em.getRandom(),
 					TPCCConst.LastNameA, TPCCConst.numINILastName,
 					TPCCConst.numENDLastName));
-			outInfo.putInfo("lastname", lastname);
-			outInfo.putInfo("cid", "0");
+			outInfo.put("lastname", lastname);
+			outInfo.put("cid", "0");
 		} else {
 			cid = RandGen.NURand(em.getRandom(), TPCCConst.CustomerA,
 					TPCCConst.numINICustomer, TPCCConst.numENDCustomer);
-			outInfo.putInfo("cid", Integer.toString(cid));
-			outInfo.putInfo("lastname", "");
+			outInfo.put("cid", Integer.toString(cid));
+			outInfo.put("lastname", "");
 		}
-		outInfo.putInfo("thinktime", Long.toString(em.getThinkTime()));
-		outInfo.putInfo("file", em.getEmulationName());
+		outInfo.put("thinktime", Long.toString(em.getThinkTime()));
+		outInfo.put("file", em.getEmulationName());
 	}
 
 	public void prepareProcess(Emulation em, String hid) {
@@ -61,8 +61,8 @@ public class OrderStatusTrans extends StateObject {
 	}
 
 	public void postProcess(Emulation em, String hid) {
-		inInfo.resetInfo();
-		outInfo.resetInfo();
+		inInfo.clear();
+		outInfo.clear();
 	}
 
 	public void setProb() {

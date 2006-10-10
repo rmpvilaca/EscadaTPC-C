@@ -20,25 +20,25 @@ public class NewOrderTrans extends StateObject {
 		boolean error = false;
 		boolean localWarehouse = false;
 
-		outInfo.putInfo("resubmit", Boolean.toString(Emulation
+		outInfo.put("resubmit", Boolean.toString(Emulation
 				.getStatusReSubmit()));
-		outInfo.putInfo("trace", Emulation.getTraceInformation());
-		outInfo.putInfo("abort", Integer.toString(0));
-		outInfo.putInfo("hid", hid);
+		outInfo.put("trace", Emulation.getTraceInformation());
+		outInfo.put("abort", Integer.toString(0));
+		outInfo.put("hid", hid);
 
-		outInfo.putInfo("wid", Integer.toString(wid));
+		outInfo.put("wid", Integer.toString(wid));
 
 		did = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
-		outInfo.putInfo("did", Integer.toString(did));
+		outInfo.put("did", Integer.toString(did));
 
 		cid = RandGen.NURand(em.getRandom(), TPCCConst.CustomerA,
 				TPCCConst.numINICustomer, TPCCConst.numENDCustomer);
-		outInfo.putInfo("cid", Integer.toString(cid));
+		outInfo.put("cid", Integer.toString(cid));
 
 		qtd = RandGen.nextInt(em.getRandom(), TPCCConst.qtdINIItem,
 				TPCCConst.qtdENDItem + 1);
 
-		outInfo.putInfo("qtd", Integer.toString(qtd));
+		outInfo.put("qtd", Integer.toString(qtd));
 
 		if (RandGen.nextInt(em.getRandom(), TPCCConst.rngABORTNewOrder + 1) == TPCCConst.probABORTNewOrder) {
 			error = true;
@@ -54,31 +54,31 @@ public class NewOrderTrans extends StateObject {
 			qtdi = RandGen.nextInt(em.getRandom(), 1, TPCCConst.qtdItem + 1);
 			if ((error) && ((i + 1) >= qtd)) {
 				iid = 0;
-				outInfo.putInfo("abort", Integer.toString(1));
+				outInfo.put("abort", Integer.toString(1));
 			}
-			outInfo.putInfo("iid" + i, Integer.toString(iid));
-			outInfo.putInfo("qtdi" + i, Integer.toString(qtdi));
+			outInfo.put("iid" + i, Integer.toString(iid));
+			outInfo.put("qtdi" + i, Integer.toString(qtdi));
 			if ((RandGen.nextInt(em.getRandom(),
 					TPCCConst.rngNewOrderLOCALWarehouse + 1) <= TPCCConst.probNewOrderLOCALWarehouse)
 					|| (Emulation.getNumberConcurrentEmulators() <= TPCCConst.numMinClients)) {
-				outInfo.putInfo("supwid" + i, Integer.toString(wid));
+				outInfo.put("supwid" + i, Integer.toString(wid));
 			} else {
 				supwid = RandGen.nextInt(em.getRandom(), 1, (Emulation
 						.getNumberConcurrentEmulators() / 10) + 1);
-				outInfo.putInfo("supwid" + i, Integer.toString(supwid));
+				outInfo.put("supwid" + i, Integer.toString(supwid));
 				localWarehouse = false;
 			}
 			i++;
 		}
 
 		if (localWarehouse) {
-			outInfo.putInfo("localwid", Integer.toString(1));
+			outInfo.put("localwid", Integer.toString(1));
 		} else {
-			outInfo.putInfo("localwid", Integer.toString(0));
+			outInfo.put("localwid", Integer.toString(0));
 		}
 
-		outInfo.putInfo("thinktime", Long.toString(em.getThinkTime()));
-		outInfo.putInfo("file", em.getEmulationName());
+		outInfo.put("thinktime", Long.toString(em.getThinkTime()));
+		outInfo.put("file", em.getEmulationName());
 	}
 
 	public void prepareProcess(Emulation em, String hid) {
@@ -98,8 +98,8 @@ public class NewOrderTrans extends StateObject {
 	}
 
 	public void postProcess(Emulation em, String hid) {
-		inInfo.resetInfo();
-		outInfo.resetInfo();
+		inInfo.clear();
+		outInfo.clear();
 	}
 
 	public void setProb() {

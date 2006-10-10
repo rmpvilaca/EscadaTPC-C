@@ -4,10 +4,10 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.HashSet;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import escada.tpc.common.OutInfo;
 import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
 
 /**
@@ -18,11 +18,11 @@ public class dbMSSql extends dbTPCCDatabase {
 
 	private Logger logger = Logger.getLogger(dbMSSql.class);
 
-	protected HashSet NewOrderDB(OutInfo obj, Connection con)
+	protected HashSet NewOrderDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
 		boolean resubmit = Boolean.parseBoolean((String) obj
-				.getInfo("resubmit"));
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -40,28 +40,28 @@ public class dbMSSql extends dbTPCCDatabase {
 						.prepareCall("{call tpcc_neworder(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
 
 				statement.setInt(1, Integer.parseInt((String) obj
-						.getInfo("wid")));
+						.get("wid")));
 				statement.setInt(2, Integer.parseInt((String) obj
-						.getInfo("did")));
+						.get("did")));
 				statement.setInt(3, Integer.parseInt((String) obj
-						.getInfo("cid")));
+						.get("cid")));
 				statement.setInt(4, Integer.parseInt((String) obj
-						.getInfo("qtd")));
+						.get("qtd")));
 				statement.setInt(5, Integer.parseInt((String) obj
-						.getInfo("localwid")));
+						.get("localwid")));
 
 				int icont = 0;
 				int desParam = 6;
 				int qtdTotal = 15;
-				int qtd = Integer.parseInt((String) obj.getInfo("qtd"));
+				int qtd = Integer.parseInt((String) obj.get("qtd"));
 
 				while (icont < qtd) {
 					statement.setInt(desParam, Integer.parseInt((String) obj
-							.getInfo("iid" + icont)));
+							.get("iid" + icont)));
 					statement.setInt(desParam + 1, Integer
-							.parseInt((String) obj.getInfo("supwid" + icont)));
+							.parseInt((String) obj.get("supwid" + icont)));
 					statement.setInt(desParam + 2, Integer
-							.parseInt((String) obj.getInfo("qtdi" + icont)));
+							.parseInt((String) obj.get("qtdi" + icont)));
 					icont++;
 					desParam = desParam + 3;
 				}
@@ -119,10 +119,10 @@ public class dbMSSql extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected HashSet DeliveryDB(OutInfo obj, Connection con)
+	protected HashSet DeliveryDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 		boolean resubmit = Boolean.parseBoolean((String) obj
-				.getInfo("resubmit"));
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -138,9 +138,9 @@ public class dbMSSql extends dbTPCCDatabase {
 				statement = con.prepareCall("{call tpcc_delivery(?,?)}");
 
 				statement.setInt(1, Integer.parseInt((String) obj
-						.getInfo("wid")));
+						.get("wid")));
 				statement.setInt(2, Integer.parseInt((String) obj
-						.getInfo("crid")));
+						.get("crid")));
 				rs = statement.executeQuery();
 
 				while (rs.next()) {
@@ -187,10 +187,10 @@ public class dbMSSql extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected HashSet OrderStatusDB(OutInfo obj, Connection con)
+	protected HashSet OrderStatusDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 		boolean resubmit = Boolean.parseBoolean((String) obj
-				.getInfo("resubmit"));
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -206,12 +206,12 @@ public class dbMSSql extends dbTPCCDatabase {
 				statement = con.prepareCall("{call tpcc_orderstatus(?,?,?,?)}");
 
 				statement.setInt(1, Integer.parseInt((String) obj
-						.getInfo("wid")));
+						.get("wid")));
 				statement.setInt(2, Integer.parseInt((String) obj
-						.getInfo("did")));
+						.get("did")));
 				statement.setInt(3, Integer.parseInt((String) obj
-						.getInfo("cid")));
-				statement.setString(4, (String) obj.getInfo("lastname"));
+						.get("cid")));
+				statement.setString(4, (String) obj.get("lastname"));
 				rs = statement.executeQuery();
 
 				while (rs.next()) {
@@ -223,7 +223,7 @@ public class dbMSSql extends dbTPCCDatabase {
 				statement = null;
 				NetFinishTime = new java.util.Date();
 
-				String str = (String) (obj).getInfo("cid");
+				String str = (String) (obj).get("cid");
 
 				if (str.equals("0")) {
 					processLog(NetStartTime, NetFinishTime, "processing", "r",
@@ -237,7 +237,7 @@ public class dbMSSql extends dbTPCCDatabase {
 				logger
 						.warn("OrderStatus - SQL Exception "
 								+ sqlex.getMessage());
-				String str = (String) (obj).getInfo("cid");
+				String str = (String) (obj).get("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
 					if (str.equals("0")) {
@@ -285,10 +285,10 @@ public class dbMSSql extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected HashSet PaymentDB(OutInfo obj, Connection con)
+	protected HashSet PaymentDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 		boolean resubmit = Boolean.parseBoolean((String) obj
-				.getInfo("resubmit"));
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -305,18 +305,18 @@ public class dbMSSql extends dbTPCCDatabase {
 						.prepareCall("{call tpcc_payment(?,?,?,?,?,?,?)}");
 
 				statement.setInt(1, Integer.parseInt((String) obj
-						.getInfo("wid")));
+						.get("wid")));
 				statement.setInt(2, Integer.parseInt((String) obj
-						.getInfo("cwid")));
+						.get("cwid")));
 				statement.setFloat(3, Float.parseFloat((String) obj
-						.getInfo("hamount")));
+						.get("hamount")));
 				statement.setInt(4, Integer.parseInt((String) obj
-						.getInfo("did")));
+						.get("did")));
 				statement.setInt(5, Integer.parseInt((String) obj
-						.getInfo("cdid")));
+						.get("cdid")));
 				statement.setInt(6, Integer.parseInt((String) obj
-						.getInfo("cid")));
-				statement.setString(7, (String) obj.getInfo("lastname"));
+						.get("cid")));
+				statement.setString(7, (String) obj.get("lastname"));
 
 				rs = statement.executeQuery();
 
@@ -328,7 +328,7 @@ public class dbMSSql extends dbTPCCDatabase {
 				statement.close();
 				statement = null;
 
-				String str = (String) (obj).getInfo("cid");
+				String str = (String) (obj).get("cid");
 				if (str.equals("0")) {
 					processLog(NetStartTime, NetFinishTime, "processing", "w",
 							"tx payment 01");
@@ -340,7 +340,7 @@ public class dbMSSql extends dbTPCCDatabase {
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("Payment - SQL Exception " + sqlex.getMessage());
 
-				String str = (String) (obj).getInfo("cid");
+				String str = (String) (obj).get("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
 
@@ -385,10 +385,10 @@ public class dbMSSql extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected HashSet StockLevelDB(OutInfo obj, Connection con)
+	protected HashSet StockLevelDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 		boolean resubmit = Boolean.parseBoolean((String) obj
-				.getInfo("resubmit"));
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -404,11 +404,11 @@ public class dbMSSql extends dbTPCCDatabase {
 				statement = con.prepareCall("{call tpcc_stocklevel(?,?,?)}");
 
 				statement.setInt(1, Integer.parseInt((String) obj
-						.getInfo("wid")));
+						.get("wid")));
 				statement.setInt(2, Integer.parseInt((String) obj
-						.getInfo("did")));
+						.get("did")));
 				statement.setInt(3, Integer.parseInt((String) obj
-						.getInfo("threshhold")));
+						.get("threshhold")));
 				rs = statement.executeQuery();
 
 				while (rs.next()) {

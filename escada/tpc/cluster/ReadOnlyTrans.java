@@ -14,17 +14,17 @@ import escada.tpc.common.util.RandGen;
 public class ReadOnlyTrans extends StateObject {
 
 	public void initProcess(Emulation em, String hid) {
-		outInfo.putInfo("resubmit", Boolean.toString(Emulation
+		outInfo.put("resubmit", Boolean.toString(Emulation
 				.getStatusReSubmit()));
-		outInfo.putInfo("trace", Emulation.getTraceInformation());
-		outInfo.putInfo("abort", "0");
-		outInfo.putInfo("hid", hid);
+		outInfo.put("trace", Emulation.getTraceInformation());
+		outInfo.put("abort", "0");
+		outInfo.put("hid", hid);
 
 		int crid = RandGen.nextInt(em.getRandom(), 1,
 				CLUSTERConst.rngCarrier + 1);
-		outInfo.putInfo("crid", Integer.toString(crid));
-		outInfo.putInfo("thinktime", Long.toString(em.getThinkTime()));
-		outInfo.putInfo("file", em.getEmulationName());
+		outInfo.put("crid", Integer.toString(crid));
+		outInfo.put("thinktime", Long.toString(em.getThinkTime()));
+		outInfo.put("file", em.getEmulationName());
 	}
 
 	public void prepareProcess(Emulation em, String hid) {
@@ -44,8 +44,8 @@ public class ReadOnlyTrans extends StateObject {
 	}
 
 	public void postProcess(Emulation em, String hid) {
-		inInfo.resetInfo();
-		outInfo.resetInfo();
+		inInfo.clear();
+		outInfo.clear();
 	}
 
 	public void setProb() {

@@ -1,7 +1,6 @@
 package escada.tpc.common.database;
 
 import escada.tpc.logger.PerformanceLogger;
-import gorda.reflector.interfaces.utils.connection.ConnectionManager;
 
 import java.sql.Connection;
 import java.util.Date;

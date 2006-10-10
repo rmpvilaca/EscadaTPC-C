@@ -22,49 +22,49 @@ public class PaymentTrans extends StateObject {
 		String lastname = null;
 		float hamount = 0;
 
-		outInfo.putInfo("trace", Emulation.getTraceInformation());
-		outInfo.putInfo("resubmit", Boolean.toString(Emulation
+		outInfo.put("trace", Emulation.getTraceInformation());
+		outInfo.put("resubmit", Boolean.toString(Emulation
 				.getStatusReSubmit()));
-		outInfo.putInfo("abort", "0");
-		outInfo.putInfo("hid", hid);
+		outInfo.put("abort", "0");
+		outInfo.put("hid", hid);
 
-		outInfo.putInfo("wid", Integer.toString(wid));
+		outInfo.put("wid", Integer.toString(wid));
 		did = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
-		outInfo.putInfo("did", Integer.toString(did));
+		outInfo.put("did", Integer.toString(did));
 
 		if (RandGen.nextInt(em.getRandom(), TPCCConst.rngLASTNAME + 1) <= TPCCConst.probLASTNAME) {
 			lastname = TPCCRandGen.digSyl(RandGen.NURand(em.getRandom(),
 					TPCCConst.LastNameA, TPCCConst.numINILastName,
 					TPCCConst.numENDLastName));
-			outInfo.putInfo("lastname", lastname);
-			outInfo.putInfo("cid", "0");
+			outInfo.put("lastname", lastname);
+			outInfo.put("cid", "0");
 		} else {
 			cid = RandGen.NURand(em.getRandom(), TPCCConst.CustomerA,
 					TPCCConst.numINICustomer, TPCCConst.numENDCustomer);
-			outInfo.putInfo("cid", Integer.toString(cid));
-			outInfo.putInfo("lastname", "");
+			outInfo.put("cid", Integer.toString(cid));
+			outInfo.put("lastname", "");
 		}
 
 		if ((RandGen.nextInt(em.getRandom(),
 				TPCCConst.rngPaymentLOCALWarehouse + 1) <= TPCCConst.probPaymentLOCALWarehouse)
 				|| (Emulation.getNumberConcurrentEmulators() <= TPCCConst.numMinClients)) {
-			outInfo.putInfo("cwid", Integer.toString(wid));
-			outInfo.putInfo("cdid", Integer.toString(did));
+			outInfo.put("cwid", Integer.toString(wid));
+			outInfo.put("cdid", Integer.toString(did));
 		} else {
 			cdid = RandGen
 					.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
-			outInfo.putInfo("cdid", Integer.toString(cdid));
+			outInfo.put("cdid", Integer.toString(cdid));
 			cwid = RandGen.nextInt(em.getRandom(), 1, (Emulation
 					.getNumberConcurrentEmulators() / 10) + 1);
-			outInfo.putInfo("cwid", Integer.toString(cwid));
+			outInfo.put("cwid", Integer.toString(cwid));
 		}
 
 		hamount = (float) RandGen.nextInt(em.getRandom(),
 				TPCCConst.numINIAmount, TPCCConst.numENDAmount + 1)
 				/ (float) TPCCConst.numDIVAmount;
-		outInfo.putInfo("hamount", Float.toString(hamount));
-		outInfo.putInfo("thinktime", Long.toString(em.getThinkTime()));
-		outInfo.putInfo("file", em.getEmulationName());
+		outInfo.put("hamount", Float.toString(hamount));
+		outInfo.put("thinktime", Long.toString(em.getThinkTime()));
+		outInfo.put("file", em.getEmulationName());
 	}
 
 	public void prepareProcess(Emulation em, String hid) {
@@ -84,8 +84,8 @@ public class PaymentTrans extends StateObject {
 	}
 
 	public void postProcess(Emulation em, String hid) {
-		inInfo.resetInfo();
-		outInfo.resetInfo();
+		inInfo.clear();
+		outInfo.clear();
 	}
 
 	public void setProb() {

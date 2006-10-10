@@ -3,17 +3,17 @@ package escada.tpc.cluster.database.transaction;
 import java.sql.Connection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import escada.tpc.common.OutInfo;
 import escada.tpc.common.database.DatabaseManager;
 
 abstract public class dbCLUSTERDatabase extends DatabaseManager {
 
 	private static Logger logger = Logger.getLogger(dbCLUSTERDatabase.class);
 
-	public Object TraceUpdateTrans(OutInfo obj, String hid)
+	public Object TraceUpdateTrans(Properties obj, String hid)
 			throws java.sql.SQLException {
 
 		Connection con = null;
@@ -61,7 +61,7 @@ abstract public class dbCLUSTERDatabase extends DatabaseManager {
 		return (dbtrace);
 	}
 
-	public Object TraceReadOnlyTrans(OutInfo obj, String hid)
+	public Object TraceReadOnlyTrans(Properties obj, String hid)
 			throws java.sql.SQLException {
 
 		Connection con = null;
@@ -109,10 +109,10 @@ abstract public class dbCLUSTERDatabase extends DatabaseManager {
 		return (dbtrace);
 	}
 
-	protected abstract HashSet UpdateTransDB(OutInfo obj, Connection con)
+	protected abstract HashSet UpdateTransDB(Properties obj, Connection con)
 			throws java.sql.SQLException;
 
-	protected abstract HashSet ReadOnlyTransDB(OutInfo obj, Connection con)
+	protected abstract HashSet ReadOnlyTransDB(Properties obj, Connection con)
 			throws java.sql.SQLException;
 
 	protected abstract void InitTransaction(Connection con, String strTrans,

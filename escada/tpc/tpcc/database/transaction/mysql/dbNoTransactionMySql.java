@@ -1,8 +1,7 @@
 package escada.tpc.tpcc.database.transaction.mysql;
 
 import java.sql.Connection;
-
-import escada.tpc.common.OutInfo;
+import java.util.Properties;
 
 /**
  * It is an interface to a postgreSQL, which based is based on the the
@@ -10,7 +9,7 @@ import escada.tpc.common.OutInfo;
  */
 public class dbNoTransactionMySql extends dbTransactionMySql {
 
-	protected void InitTransaction(OutInfo obj, Connection con,
+	protected void InitTransaction(Properties obj, Connection con,
 			String transaction) throws java.sql.SQLException {
 	}
 

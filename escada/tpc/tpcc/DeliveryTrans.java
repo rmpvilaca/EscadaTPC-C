@@ -16,17 +16,17 @@ public class DeliveryTrans extends StateObject {
 		int wid = (em.getEmulationId() / 10) + 1; // TODO: CHANGE TO CONSTANT
 		int crid = 0;
 
-		outInfo.putInfo("resubmit", Boolean.toString(Emulation
+		outInfo.put("resubmit", Boolean.toString(Emulation
 				.getStatusReSubmit()));
-		outInfo.putInfo("trace", Emulation.getTraceInformation());
-		outInfo.putInfo("abort", "0");
-		outInfo.putInfo("hid", hid);
+		outInfo.put("trace", Emulation.getTraceInformation());
+		outInfo.put("abort", "0");
+		outInfo.put("hid", hid);
 
-		outInfo.putInfo("wid", Integer.toString(wid));
+		outInfo.put("wid", Integer.toString(wid));
 		crid = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngCarrier + 1);
-		outInfo.putInfo("crid", Integer.toString(crid));
-		outInfo.putInfo("thinktime", Long.toString(em.getThinkTime()));
-		outInfo.putInfo("file", em.getEmulationName());
+		outInfo.put("crid", Integer.toString(crid));
+		outInfo.put("thinktime", Long.toString(em.getThinkTime()));
+		outInfo.put("file", em.getEmulationName());
 	}
 
 	public void prepareProcess(Emulation em, String hid) {
@@ -46,8 +46,8 @@ public class DeliveryTrans extends StateObject {
 	}
 
 	public void postProcess(Emulation em, String hid) {
-		inInfo.resetInfo();
-		outInfo.resetInfo();
+		inInfo.clear();
+		outInfo.clear();
 	}
 
 	public void setProb() {

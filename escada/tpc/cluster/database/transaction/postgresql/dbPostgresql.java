@@ -4,11 +4,11 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
 import escada.tpc.cluster.database.transaction.dbCLUSTERDatabase;
-import escada.tpc.common.OutInfo;
 
 /**
  * It is an interface to a postgreSQL, which based is based on the the
@@ -18,12 +18,12 @@ public class dbPostgresql extends dbCLUSTERDatabase {
 
 	private static Logger logger = Logger.getLogger(dbPostgresql.class);
 
-	protected HashSet UpdateTransDB(OutInfo obj, Connection con)
+	protected HashSet UpdateTransDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 		return null;
 	}
 
-	protected HashSet ReadOnlyTransDB(OutInfo obj, Connection con)
+	protected HashSet ReadOnlyTransDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 		return null;
 	}

@@ -3,10 +3,10 @@ package escada.tpc.tpcc.database.transaction;
 import java.sql.Connection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import escada.tpc.common.OutInfo;
 import escada.tpc.common.database.DatabaseManager;
 
 /**
@@ -28,7 +28,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 	 *            the host id to which the client is attached to
 	 * @return the result of the transaction
 	 */
-	public Object TraceNewOrderDB(OutInfo obj, String hid)
+	public Object TraceNewOrderDB(Properties obj, String hid)
 			throws java.sql.SQLException {
 
 		Connection con = null;
@@ -83,7 +83,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 	 *            the host id to which the client is attached to
 	 * @return the result of the transaction
 	 */
-	public Object TraceDeliveryDB(OutInfo obj, String hid)
+	public Object TraceDeliveryDB(Properties obj, String hid)
 			throws java.sql.SQLException {
 
 		Connection con = null;
@@ -138,7 +138,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 	 *            the host id to which the client is attached to
 	 * @return the result of the transaction
 	 */
-	public Object TraceOrderStatusDB(OutInfo obj, String hid)
+	public Object TraceOrderStatusDB(Properties obj, String hid)
 			throws java.sql.SQLException {
 
 		Connection con = null;
@@ -147,7 +147,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 		try {
 			logger.info("Beginning transaction order status.");
 
-			String str = (String) (obj).getInfo("cid");
+			String str = (String) (obj).get("cid");
 			if (str.equals("0")) {
 				Date NetStartTime = new java.util.Date();
 
@@ -205,7 +205,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 	 *            the host id to which the client is attached to
 	 * @return the result of the transaction
 	 */
-	public Object TracePaymentDB(OutInfo obj, String hid)
+	public Object TracePaymentDB(Properties obj, String hid)
 			throws java.sql.SQLException {
 
 		Connection con = null;
@@ -214,7 +214,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 		try {
 			logger.info("Beginning transaction payment.");
 
-			String str = (String) (obj).getInfo("cid");
+			String str = (String) (obj).get("cid");
 			if (str.equals("0")) {
 				Date NetStartTime = new java.util.Date();
 
@@ -280,7 +280,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 	 *            the host id to which the client is attached to
 	 * @return the result of the transaction
 	 */
-	public Object TraceStockLevelDB(OutInfo obj, String hid)
+	public Object TraceStockLevelDB(Properties obj, String hid)
 			throws java.sql.SQLException {
 
 		Connection con = null;
@@ -325,19 +325,19 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 		return (dbtrace);
 	}
 
-	protected abstract HashSet NewOrderDB(OutInfo obj, Connection con)
+	protected abstract HashSet NewOrderDB(Properties obj, Connection con)
 			throws java.sql.SQLException;
 
-	protected abstract HashSet DeliveryDB(OutInfo obj, Connection con)
+	protected abstract HashSet DeliveryDB(Properties obj, Connection con)
 			throws java.sql.SQLException;
 
-	protected abstract HashSet OrderStatusDB(OutInfo obj, Connection con)
+	protected abstract HashSet OrderStatusDB(Properties obj, Connection con)
 			throws java.sql.SQLException;
 
-	protected abstract HashSet PaymentDB(OutInfo obj, Connection con)
+	protected abstract HashSet PaymentDB(Properties obj, Connection con)
 			throws java.sql.SQLException;
 
-	protected abstract HashSet StockLevelDB(OutInfo obj, Connection con)
+	protected abstract HashSet StockLevelDB(Properties obj, Connection con)
 			throws java.sql.SQLException;
 
 	protected abstract void InitTransaction(Connection con, String strTrans,
