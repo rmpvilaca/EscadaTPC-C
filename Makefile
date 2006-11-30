@@ -35,17 +35,17 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -LOGconfig configuration.files/logger.xml \
              -KEY true \
-             -CLI 5 \
+             -CLI 50 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
-             -DBpath jdbc:postgresql://localhost/tpcc \
+             -DBpath jdbc:postgresql://127.0.0.1/tpcc \
              -DBdriver org.postgresql.Driver \
              -DBusr tpcc \
              -DBpasswd 123456 \
-             -POOL 20 \
-             -MI 45 \
+             -POOL 50 \
+             -MI 15 \
 	     -FRAG 1 \
 	     -RESUBMIT false
 

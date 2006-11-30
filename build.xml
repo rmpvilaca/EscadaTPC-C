@@ -1,11 +1,11 @@
-<project name="tpc" default="dist" basedir=".">
+<project name="TPCCLoadGenerator" default="dist" basedir=".">
 
 	<!-- set global properties for this build -->
 	<property name="libs" location="../../lib/"/>
 	<property name="escada-libs" location="${libs}/escada"/>
 	<property name="gorda-libs" location="${libs}/gorda"/>
-	<property name="build" location="./,build"/>
-	<property name="dist"  location="./,dist"/>
+	<property name="build" location="./bin"/>
+	<property name="dist"  location="./dist"/>
 	<property name="jarfile" value="Escada-TPC.jar"/>
 
 	<target name="init">
