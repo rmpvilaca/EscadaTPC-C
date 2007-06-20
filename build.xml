@@ -20,12 +20,8 @@
 
 	<target name="escada" depends="init">
 		<path id="escada.classpath">
-                        <pathelement location="${libs}/msql/msbase.jar"/>
-                        <pathelement location="${libs}/msql/mssqlserver.jar"/>
-                        <pathelement location="${libs}/msql/msutil.jar"/>
                         <pathelement location="${libs}/lib/postgresql/pg73jdbc3.jar"/>
                         <pathelement location="${libs}/oracle/ojdbc14.jar"/>
-                        <pathelement location="${libs}/sybase/jconn2d.jar"/>
 			<pathelement location="${libs}/log4j-1.2.9.jar"/>
 
                         <pathelement location="${gorda-libs}/Gorda-Utils.jar"/>

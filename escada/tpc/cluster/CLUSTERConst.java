@@ -2,7 +2,7 @@ package escada.tpc.cluster;
 
 /**
  * It defines important constants used in the simulation of the TPC-C.
- */
+ */ 
 public class CLUSTERConst {
 	public final static int CustomerA = 1023;
 

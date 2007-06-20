@@ -58,6 +58,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
+					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
 					&& (sqlex.getMessage().indexOf("connection") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
@@ -113,6 +114,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
+					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
 					&& (sqlex.getMessage().indexOf("connection") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
@@ -180,6 +182,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
+					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
 					&& (sqlex.getMessage().indexOf("connection") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
@@ -255,6 +258,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
+					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
 					&& (sqlex.getMessage().indexOf("connection") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
@@ -310,6 +314,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
+					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
 					&& (sqlex.getMessage().indexOf("connection") == -1)) {
 				logger.fatal("Unexpected error. Something bad happend");
 				sqlex.printStackTrace(System.err);
