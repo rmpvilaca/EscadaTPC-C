@@ -1,37 +1,3 @@
-/*
- * TPCC Client
- * Copyright (C) 2006 University of Minho
- * See http://gorda.di.uminho.pt/ for more information.
- *
- * Partially funded by the European Union Framework Programme for
- * Research and Technological Development, thematic priority
- * Information Society and Media, project GORDA (004758).
- * 
- * Contributors:
- *  - Rui Oliveira <rco@di.uminho.pt>
- *  - Jose Orlando Pereira <jop@di.uminho.pt>
- *  - Antonio Luis Sousa <als@di.uminho.pt>
- *  - Alfranio Tavares Correia Junior <alfranio@lsd.di.uminho.pt> 
- *  - Luis Soares <los@di.uminho.pt>
- *  - Ricardo Manuel Pereira Vilaca <rmvilaca@di.uminho.pt>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA.
- */
-
-
 package escada.tpc.tpcc.database.transaction.mysql;
 
 import java.sql.Connection;
@@ -221,7 +187,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 						statement.setInt(4, _li_no);
 						statement.setInt(5, _li_id);
 						statement.setInt(6, _li_s_w_id);
-						statement.setString(7, "dec 31, 1899");
+						statement.setString(7, "1899-12-31");
 						statement.setInt(8, _li_qty);
 						statement.setDouble(9, _i_price * _li_qty);
 						statement.setString(10, _s_dist);
@@ -295,7 +261,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("NewOrder - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
-						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
+						|| (sqlex.getMessage().indexOf("timeout") != -1) 
+						|| (sqlex.getMessage().indexOf("Deadlock") != -1)) {
 					RollbackTransaction(con, sqlex, "tx neworder", "w");
 					if (resubmit) {
 						InitTransaction(con, "tx neworder", "w");
@@ -476,7 +443,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("Delivery - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
-						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
+						|| (sqlex.getMessage().indexOf("timeout") != -1) 
+						|| (sqlex.getMessage().indexOf("Deadlock") != -1)) {
 					RollbackTransaction(con, sqlex, "tx delivery", "w");
 					if (resubmit) {
 						InitTransaction(con, "tx delivery", "w");
@@ -634,7 +602,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 								+ sqlex.getMessage());
 				String str = (String) (obj).get("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
-						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
+						|| (sqlex.getMessage().indexOf("timeout") != -1) 
+						|| (sqlex.getMessage().indexOf("Deadlock") != -1)) {
 					if (str.equals("0")) {
 						RollbackTransaction(con, sqlex, "tx orderstatus 01",
 								"r");
@@ -779,7 +748,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				statement.setInt(3, __c_d_id);
 				statement.executeUpdate();
 				statement.close();
-
+				logger.debug("c_id:"+_c_id+";c_w_id:"+__c_w_id+";c_d_id:"+__c_d_id);
 				statement = con
 						.prepareStatement("select *  from customer  where c_id = ? and  c_w_id = ? and  c_d_id = ?");
 				statement.setInt(1, _c_id);
@@ -884,6 +853,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				rs = null;
 				statement = null;
 
+				NetFinishTime = new java.util.Date();
 				String str = (String) (obj).get("cid");
 				if (str.equals("0")) {
 					processLog(NetStartTime, NetFinishTime, "processing", "w",
@@ -896,7 +866,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				logger.warn("Payment - SQL Exception " + sqlex.getMessage());
 				String str = (String) (obj).get("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
-						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
+						|| (sqlex.getMessage().indexOf("timeout") != -1) 
+						|| (sqlex.getMessage().indexOf("Deadlock") != -1)) {
 					if (str.equals("0")) {
 						RollbackTransaction(con, sqlex, "tx payment 01", "w");
 					} else {
@@ -998,7 +969,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("StockLevel - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
-						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
+						|| (sqlex.getMessage().indexOf("timeout") != -1) 
+						|| (sqlex.getMessage().indexOf("Deadlock") != -1)) {
 					RollbackTransaction(con, sqlex, "stocklevel", "r");
 					if (resubmit) {
 						InitTransaction(con, "tx stocklevel", "r");
@@ -1063,7 +1035,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				Date NetStartTime = new java.util.Date();
 
 				statement = con.createStatement();
-				statement.execute("commit transaction");
+				statement.execute("commit");
 
 				Date NetFinishTime = new java.util.Date();
 
@@ -1092,7 +1064,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			Date NetStartTime = new java.util.Date();
 
 			statement = con.createStatement();
-			statement.execute("rollback transaction");
+			statement.execute("ROLLBACK");
 
 			Date NetFinishTime = new java.util.Date();
 

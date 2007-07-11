@@ -1,8 +1,10 @@
-package escada.tpc.tpcc.database.transaction.mssql;
+package escada.tpc.tpcc.database.transaction.postgresql;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Properties;
 
@@ -14,9 +16,10 @@ import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
  * It is an interface to a postgreSQL, which based is based on the the
  * distributions of the TPC-C.
  */
-public class dbMSSql extends dbTPCCDatabase {
+public class dbConservativePostgresql extends dbTPCCDatabase {
 
-	private Logger logger = Logger.getLogger(dbMSSql.class);
+	private static Logger logger = Logger
+			.getLogger(dbConservativePostgresql.class);
 
 	protected HashSet NewOrderDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
@@ -26,18 +29,22 @@ public class dbMSSql extends dbTPCCDatabase {
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
-
-			CallableStatement statement = null;
+			PreparedStatement statement = null;
+			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
 
-			java.util.Date NetStartTime = null;
-			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();
-
 			try {
+
+				Date NetStartTime = new java.util.Date();
+
+				controlStatement = con.createStatement();
+				controlStatement
+						.execute("select tg_conservative ('district,stock,orders,new_order,order_line,item,warehouse,customer')");
+				System.exit(-1);
+
 				statement = con
-						.prepareCall("{call tpcc_neworder(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
+						.prepareCall("select tpcc_neworder (?,?,?,?,?,?,?,?)");
 
 				statement.setInt(1, Integer.parseInt((String) obj
 						.get("wid")));
@@ -51,27 +58,34 @@ public class dbMSSql extends dbTPCCDatabase {
 						.get("localwid")));
 
 				int icont = 0;
-				int desParam = 6;
-				int qtdTotal = 15;
 				int qtd = Integer.parseInt((String) obj.get("qtd"));
-
+				StringBuffer iid = new StringBuffer();
+				StringBuffer wid = new StringBuffer();
+				StringBuffer qtdi = new StringBuffer();
 				while (icont < qtd) {
-					statement.setInt(desParam, Integer.parseInt((String) obj
-							.get("iid" + icont)));
-					statement.setInt(desParam + 1, Integer
-							.parseInt((String) obj.get("supwid" + icont)));
-					statement.setInt(desParam + 2, Integer
-							.parseInt((String) obj.get("qtdi" + icont)));
+					iid.append((String) obj.get("iid" + icont));
+					iid.append(",");
+					wid.append((String) obj.get("supwid" + icont));
+					wid.append(",");
+					qtdi.append((String) obj.get("qtdi" + icont));
+					qtdi.append(",");
 					icont++;
-					desParam = desParam + 3;
 				}
-				while (icont < qtdTotal) {
-					statement.setInt(desParam, 0);
-					statement.setInt(desParam + 1, 0);
-					statement.setInt(desParam + 2, 0);
-					icont++;
-					desParam = desParam + 3;
+				statement.setString(6, iid.toString());
+				statement.setString(7, wid.toString());
+				statement.setString(8, qtdi.toString());
+
+				rs = statement.executeQuery();
+
+				if (rs.next()) {
+					cursor = (String) rs.getString(1);
 				}
+				rs.close();
+				rs = null;
+				statement.close();
+				statement = null;
+				statement = con.prepareStatement("fetch all in \"" + cursor
+						+ "\"");
 				rs = statement.executeQuery();
 
 				while (rs.next()) {
@@ -82,7 +96,7 @@ public class dbMSSql extends dbTPCCDatabase {
 				statement.close();
 				statement = null;
 
-				NetFinishTime = new java.util.Date();
+				Date NetFinishTime = new java.util.Date();
 
 				processLog(NetStartTime, NetFinishTime, "processing", "w",
 						"tx neworder");
@@ -121,26 +135,42 @@ public class dbMSSql extends dbTPCCDatabase {
 
 	protected HashSet DeliveryDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
+
 		boolean resubmit = Boolean.parseBoolean((String) obj
 				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
-			CallableStatement statement = null;
+
+			PreparedStatement statement = null;
+			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
 
-			java.util.Date NetStartTime = null;
-			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();
-
 			try {
-				statement = con.prepareCall("{call tpcc_delivery(?,?)}");
+				Date NetStartTime = new java.util.Date();
+
+				controlStatement = con.createStatement();
+				controlStatement
+						.execute("select tg_conservative('orders,new_order,order_line,customer')");
+
+				statement = con.prepareStatement("select tpcc_delivery(?,?)");
 
 				statement.setInt(1, Integer.parseInt((String) obj
 						.get("wid")));
 				statement.setInt(2, Integer.parseInt((String) obj
 						.get("crid")));
+				rs = statement.executeQuery();
+
+				if (rs.next()) {
+					cursor = (String) rs.getString(1);
+				}
+				rs.close();
+				rs = null;
+				statement.close();
+				statement = null;
+				statement = con.prepareStatement("fetch all in \"" + cursor
+						+ "\"");
 				rs = statement.executeQuery();
 
 				while (rs.next()) {
@@ -151,7 +181,8 @@ public class dbMSSql extends dbTPCCDatabase {
 				statement.close();
 				statement = null;
 
-				NetFinishTime = new java.util.Date();
+				Date NetFinishTime = new java.util.Date();
+
 				processLog(NetStartTime, NetFinishTime, "processing", "w",
 						"tx delivery");
 
@@ -189,21 +220,26 @@ public class dbMSSql extends dbTPCCDatabase {
 
 	protected HashSet OrderStatusDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
+
 		boolean resubmit = Boolean.parseBoolean((String) obj
 				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
-			CallableStatement statement = null;
+			PreparedStatement statement = null;
+			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
 
-			java.util.Date NetStartTime = null;
-			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();
-
 			try {
-				statement = con.prepareCall("{call tpcc_orderstatus(?,?,?,?)}");
+				Date NetStartTime = new java.util.Date();
+
+				controlStatement = con.createStatement();
+				controlStatement
+						.execute("select conservative ('orders,order_line,customer')");
+
+				statement = con
+						.prepareStatement("select tpcc_orderstatus(?,?,?,?)");
 
 				statement.setInt(1, Integer.parseInt((String) obj
 						.get("wid")));
@@ -214,6 +250,17 @@ public class dbMSSql extends dbTPCCDatabase {
 				statement.setString(4, (String) obj.get("lastname"));
 				rs = statement.executeQuery();
 
+				if (rs.next()) {
+					cursor = (String) rs.getString(1);
+				}
+				rs.close();
+				rs = null;
+				statement.close();
+				statement = null;
+				statement = con.prepareStatement("fetch all in \"" + cursor
+						+ "\"");
+				rs = statement.executeQuery();
+
 				while (rs.next()) {
 					dbtrace.add(rs.getString(1));
 				}
@@ -221,10 +268,10 @@ public class dbMSSql extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
-				NetFinishTime = new java.util.Date();
+
+				Date NetFinishTime = new java.util.Date();
 
 				String str = (String) (obj).get("cid");
-
 				if (str.equals("0")) {
 					processLog(NetStartTime, NetFinishTime, "processing", "r",
 							"tx orderstatus 01");
@@ -287,22 +334,26 @@ public class dbMSSql extends dbTPCCDatabase {
 
 	protected HashSet PaymentDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
+
 		boolean resubmit = Boolean.parseBoolean((String) obj
 				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
-			CallableStatement statement = null;
+			PreparedStatement statement = null;
+			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
 
-			java.util.Date NetStartTime = null;
-			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();
-
 			try {
+				Date NetStartTime = new java.util.Date();
+
+				controlStatement = con.createStatement();
+				controlStatement
+						.execute("select tg_conservative('warehouse,district,customer,history')");
+
 				statement = con
-						.prepareCall("{call tpcc_payment(?,?,?,?,?,?,?)}");
+						.prepareStatement("select tpcc_payment(?,?,cast(? as numeric(6,2)),?,?,?,cast(? as char(16)))");
 
 				statement.setInt(1, Integer.parseInt((String) obj
 						.get("wid")));
@@ -320,6 +371,17 @@ public class dbMSSql extends dbTPCCDatabase {
 
 				rs = statement.executeQuery();
 
+				if (rs.next()) {
+					cursor = (String) rs.getString(1);
+				}
+				rs.close();
+				rs = null;
+				statement.close();
+				statement = null;
+				statement = con.prepareStatement("fetch all in \"" + cursor
+						+ "\"");
+				rs = statement.executeQuery();
+
 				while (rs.next()) {
 					dbtrace.add(rs.getString(1));
 				}
@@ -327,6 +389,8 @@ public class dbMSSql extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
+
+				Date NetFinishTime = new java.util.Date();
 
 				String str = (String) (obj).get("cid");
 				if (str.equals("0")) {
@@ -336,10 +400,8 @@ public class dbMSSql extends dbTPCCDatabase {
 					processLog(NetStartTime, NetFinishTime, "processing", "w",
 							"tx payment 02");
 				}
-
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("Payment - SQL Exception " + sqlex.getMessage());
-
 				String str = (String) (obj).get("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
 						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
@@ -351,6 +413,7 @@ public class dbMSSql extends dbTPCCDatabase {
 					}
 
 					if (resubmit) {
+
 						if (str.equals("0")) {
 							InitTransaction(con, "tx payment 01", "w");
 						} else {
@@ -387,21 +450,26 @@ public class dbMSSql extends dbTPCCDatabase {
 
 	protected HashSet StockLevelDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
+
 		boolean resubmit = Boolean.parseBoolean((String) obj
 				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
-			CallableStatement statement = null;
+			PreparedStatement statement = null;
+			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
 
-			java.util.Date NetStartTime = null;
-			java.util.Date NetFinishTime = null;
-			NetStartTime = new java.util.Date();
-
 			try {
-				statement = con.prepareCall("{call tpcc_stocklevel(?,?,?)}");
+				Date NetStartTime = new java.util.Date();
+
+				controlStatement = con.createStatement();
+				controlStatement
+						.execute("select tg_conservative('district,stock,order_line')");
+
+				statement = con
+						.prepareStatement("select tpcc_stocklevel(?,?,?)");
 
 				statement.setInt(1, Integer.parseInt((String) obj
 						.get("wid")));
@@ -409,6 +477,17 @@ public class dbMSSql extends dbTPCCDatabase {
 						.get("did")));
 				statement.setInt(3, Integer.parseInt((String) obj
 						.get("threshhold")));
+				rs = statement.executeQuery();
+
+				if (rs.next()) {
+					cursor = (String) rs.getString(1);
+				}
+				rs.close();
+				rs = null;
+				statement.close();
+				statement = null;
+				statement = con.prepareStatement("fetch all in \"" + cursor
+						+ "\"");
 				rs = statement.executeQuery();
 
 				while (rs.next()) {
@@ -419,7 +498,8 @@ public class dbMSSql extends dbTPCCDatabase {
 				statement.close();
 				statement = null;
 
-				NetFinishTime = new java.util.Date();
+				Date NetFinishTime = new java.util.Date();
+
 				processLog(NetStartTime, NetFinishTime, "processing", "r",
 						"tx stocklevel");
 
@@ -457,16 +537,85 @@ public class dbMSSql extends dbTPCCDatabase {
 
 	protected void InitTransaction(Connection con, String strTrans,
 			String strAccess) throws java.sql.SQLException {
+		Statement statement = null;
+		try {
+			Date NetStartTime = new java.util.Date();
 
+			statement = con.createStatement();
+			statement.execute("begin transaction");
+			statement.execute("set transaction isolation level serializable");
+			statement.execute("select '" + strTrans + "'");
+
+			Date NetFinishTime = new java.util.Date();
+
+			processLog(NetStartTime, NetFinishTime, "beginning", strAccess,
+					strTrans);
+
+		} catch (java.lang.Exception ex) {
+			logger.fatal("Unexpected error. Something bad happend");
+			ex.printStackTrace(System.err);
+			System.exit(-1);
+		} finally {
+			if (statement != null) {
+				statement.close();
+			}
+		}
 	}
 
 	protected void CommitTransaction(Connection con, String strTrans,
 			String strAccess) throws java.sql.SQLException {
+		{
+			Statement statement = null;
+			try {
 
+				Date NetStartTime = new java.util.Date();
+
+				statement = con.createStatement();
+				statement.execute("commit transaction");
+
+				Date NetFinishTime = new java.util.Date();
+
+				processLog(NetStartTime, NetFinishTime, "committing",
+						strAccess, strTrans);
+
+			} catch (java.sql.SQLException sqlex) {
+				RollbackTransaction(con, sqlex, strTrans, strAccess);
+				throw sqlex;
+			} catch (java.lang.Exception ex) {
+				logger.fatal("Unexpected error. Something bad happend");
+				ex.printStackTrace(System.err);
+				System.exit(-1);
+			} finally {
+				if (statement != null) {
+					statement.close();
+				}
+			}
+		}
 	}
 
-	protected void RollbackTransaction(Connection con, Exception dump,
-			String strTrans, String strAccess) throws java.sql.SQLException {
+	protected void RollbackTransaction(Connection con,
+			java.lang.Exception dump, String strTrans, String strAccess)
+			throws java.sql.SQLException {
+		Statement statement = null;
+		try {
+			Date NetStartTime = new java.util.Date();
+
+			statement = con.createStatement();
+			statement.execute("rollback transaction");
+
+			Date NetFinishTime = new java.util.Date();
+
+			processLog(NetStartTime, NetFinishTime, "aborting", strAccess,
+					strTrans);
+		} catch (java.lang.Exception ex) {
+			logger.fatal("Unexpected error. Something bad happend");
+			ex.printStackTrace(System.err);
+			System.exit(-1);
+		} finally {
+			if (statement != null) {
+				statement.close();
+			}
+		}
 	}
 }
-// arch-tag: 96ed9699-68a0-4515-bd5f-be5a51f4c369
+// arch-tag: e3dade63-ee1f-4e59-847c-205abebe3048

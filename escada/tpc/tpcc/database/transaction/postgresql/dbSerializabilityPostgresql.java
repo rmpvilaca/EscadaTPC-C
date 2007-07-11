@@ -1,37 +1,3 @@
-/*
- * TPCC Client
- * Copyright (C) 2006 University of Minho
- * See http://gorda.di.uminho.pt/ for more information.
- *
- * Partially funded by the European Union Framework Programme for
- * Research and Technological Development, thematic priority
- * Information Society and Media, project GORDA (004758).
- * 
- * Contributors:
- *  - Rui Oliveira <rco@di.uminho.pt>
- *  - Jose Orlando Pereira <jop@di.uminho.pt>
- *  - Antonio Luis Sousa <als@di.uminho.pt>
- *  - Alfranio Tavares Correia Junior <alfranio@lsd.di.uminho.pt> 
- *  - Luis Soares <los@di.uminho.pt>
- *  - Ricardo Manuel Pereira Vilaca <rmvilaca@di.uminho.pt>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA.
- */
-
-
 package escada.tpc.tpcc.database.transaction.postgresql;
 
 import java.sql.Connection;
@@ -50,44 +16,38 @@ import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
  * It is an interface to a postgreSQL, which based is based on the the
  * distributions of the TPC-C.
  */
-public class dbPostgresqlConservative extends dbTPCCDatabase {
+public class dbSerializabilityPostgresql extends dbTPCCDatabase {
 
-	private static Logger logger = Logger
-			.getLogger(dbPostgresqlConservative.class);
+	private static Logger logger = Logger.getLogger(dbPostgresql.class);
 
 	protected HashSet NewOrderDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
 			PreparedStatement statement = null;
-			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
-
+			StringBuffer str = new StringBuffer();
 			try {
 
 				Date NetStartTime = new java.util.Date();
 
-				controlStatement = con.createStatement();
-				controlStatement
-						.execute("select tg_conservative ('district,stock,orders,new_order,order_line,item,warehouse,customer')");
-				System.exit(-1);
-
+				str.append(" select * from handleSelect('");
+				if (obj.get("wid") != null && obj.get("did") != null)
+					str.append(" select * from district where d_w_id = "
+							+ obj.get("wid") + " and d_id = " + obj.get("did")
+							+ ";"); 
+				
 				statement = con
 						.prepareCall("select tpcc_neworder (?,?,?,?,?,?,?,?)");
 
-				statement.setInt(1, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("did")));
-				statement.setInt(3, Integer.parseInt((String) obj
-						.get("cid")));
-				statement.setInt(4, Integer.parseInt((String) obj
-						.get("qtd")));
+				statement.setInt(1, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("did")));
+				statement.setInt(3, Integer.parseInt((String) obj.get("cid")));
+				statement.setInt(4, Integer.parseInt((String) obj.get("qtd")));
 				statement.setInt(5, Integer.parseInt((String) obj
 						.get("localwid")));
 
@@ -97,6 +57,15 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 				StringBuffer wid = new StringBuffer();
 				StringBuffer qtdi = new StringBuffer();
 				while (icont < qtd) {
+					if (obj.get("iid" + icont) != null) {
+						str.append(" select * from item where i_id = "
+								+ obj.get("iid" + icont) + ";");
+						if (obj.get("supwid" + icont) != null)
+							str.append(" select * from stock where s_i_id = "
+									+ obj.get("iid" + icont) + " and s_w_id = "
+									+ obj.get("supwid" + icont) + ";");
+					}
+
 					iid.append((String) obj.get("iid" + icont));
 					iid.append(",");
 					wid.append((String) obj.get("supwid" + icont));
@@ -105,6 +74,18 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 					qtdi.append(",");
 					icont++;
 				}
+
+				if (obj.get("cid") != null && obj.get("wid") != null
+						&& obj.get("did") != null)
+					str.append("select * from customer where c_id = "
+							+ obj.get("cid") + " and c_w_id = "
+							+ obj.get("wid") + " and c_d_id = "
+							+ obj.get("did") + ";");
+				if (obj.get("wid") != null)
+					str.append("select * from warehouse where w_id = "
+							+ obj.get("wid") + ";");
+				str.append("');");
+
 				statement.setString(6, iid.toString());
 				statement.setString(7, wid.toString());
 				statement.setString(8, qtdi.toString());
@@ -130,6 +111,8 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 				statement.close();
 				statement = null;
 
+				statement = con.prepareStatement(str.toString());
+				rs = statement.executeQuery();
 				Date NetFinishTime = new java.util.Date();
 
 				processLog(NetStartTime, NetFinishTime, "processing", "w",
@@ -170,30 +153,92 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 	protected HashSet DeliveryDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
-
+		StringBuffer str = new StringBuffer();
 		while (true) {
 
 			PreparedStatement statement = null;
-			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
 
 			try {
 				Date NetStartTime = new java.util.Date();
 
-				controlStatement = con.createStatement();
-				controlStatement
-						.execute("select tg_conservative('orders,new_order,order_line,customer')");
+				str.append("select * from handleSelect('");
 
+				for (int _d_id = 0; _d_id < 10; _d_id++) {
+
+					if (obj.get("wid") != null) {
+						str.append("select * from new_order where no_w_id = "
+								+ obj.get("wid") + " and no_d_id = " + _d_id
+								+ ";");
+						statement = con
+								.prepareStatement("select * from new_order where no_w_id = "
+										+ obj.get("wid")
+										+ " and no_d_id = "
+										+ _d_id
+										+ " order by no_o_id asc limit 1;");
+
+						rs = statement.executeQuery();
+						int _o_id = 0;
+						if (rs.next()) {
+							_o_id = rs.getInt("no_o_id");
+
+							str
+									.append("select * from new_order where no_w_id = "
+											+ obj.get("wid")
+											+ " and no_d_id = "
+											+ _d_id
+											+ " and no_o_id = " + _o_id + ";");
+
+							str.append("select * from orders where o_w_id = "
+									+ obj.get("wid") + " and o_d_id = " + _d_id
+									+ " and o_id = " + _o_id + ";");
+							statement = con
+									.prepareStatement("select * from new_order where no_w_id = "
+											+ obj.get("wid")
+											+ " and no_d_id = "
+											+ _d_id
+											+ " order by no_o_id asc limit 1;");
+							rs = statement
+									.executeQuery("select * from orders where o_w_id = "
+											+ obj.get("wid")
+											+ " and o_d_id = "
+											+ _d_id
+											+ " and o_id = "
+											+ _o_id
+											+ ";");
+
+						}
+
+						int _c_id = 0;
+						if (rs.next()) {
+							_c_id = rs.getInt("o_c_id");
+
+							str
+									.append("select * from order_line where ol_w_id = "
+											+ obj.get("wid")
+											+ " and ol_d_id = "
+											+ _d_id
+											+ " and ol_o_id = " + _o_id + ";");
+
+							str
+									.append("select * from order_line where c_w_id = "
+											+ obj.get("wid")
+											+ " and c_d_id = "
+											+ _d_id
+											+ " and c_id = "
+											+ _c_id
+											+ ";");
+						}
+					}
+				}
+				str.append("');");
 				statement = con.prepareStatement("select tpcc_delivery(?,?)");
 
-				statement.setInt(1, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("crid")));
+				statement.setInt(1, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("crid")));
 				rs = statement.executeQuery();
 
 				if (rs.next()) {
@@ -214,6 +259,8 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
+				statement = con.prepareStatement(str.toString());
+				rs = statement.executeQuery();
 
 				Date NetFinishTime = new java.util.Date();
 
@@ -255,32 +302,23 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 	protected HashSet OrderStatusDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
 			PreparedStatement statement = null;
-			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
 
 			try {
 				Date NetStartTime = new java.util.Date();
 
-				controlStatement = con.createStatement();
-				controlStatement
-						.execute("select conservative ('orders,order_line,customer')");
-
 				statement = con
 						.prepareStatement("select tpcc_orderstatus(?,?,?,?)");
 
-				statement.setInt(1, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("did")));
-				statement.setInt(3, Integer.parseInt((String) obj
-						.get("cid")));
+				statement.setInt(1, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("did")));
+				statement.setInt(3, Integer.parseInt((String) obj.get("cid")));
 				statement.setString(4, (String) obj.get("lastname"));
 				rs = statement.executeQuery();
 
@@ -369,38 +407,50 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 	protected HashSet PaymentDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
-
+		StringBuffer select = new StringBuffer();
 		while (true) {
 			PreparedStatement statement = null;
-			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
 
 			try {
 				Date NetStartTime = new java.util.Date();
 
-				controlStatement = con.createStatement();
-				controlStatement
-						.execute("select tg_conservative('warehouse,district,customer,history')");
+				select.append("select * from handleSelect('");
+				if (obj.get("lastname") != null && obj.get("cwid") != null
+						&& obj.get("cdid") != null) {
+					select.append("select * from customer where c_last = \\'"
+							+ obj.get("lastname") + "\\' and c_w_id = "
+							+ obj.get("cwid") + " and c_d_id = "
+							+ obj.get("cdid") + ";");
+				}
+				if (obj.get("cid") != null && obj.get("cwid") != null
+						&& obj.get("cid") != null)
+					select.append("select * from customer where c_id = "
+							+ obj.get("cid") + " and c_w_id = "
+							+ obj.get("cwid") + " and c_d_id = "
+							+ obj.get("cid") + ";");
+				if (obj.get("wid") != null && obj.get("did") != null)
+					select.append("select * from district where d_w_id = "
+							+ obj.get("wid") + " and d_id = " + obj.get("did")
+							+ ";");
+				if (obj.get("wid") != null)
+					select.append("select * from warehouse where w_id = "
+							+ obj.get("wid") + ";");
 
+				select.append("');");
 				statement = con
 						.prepareStatement("select tpcc_payment(?,?,cast(? as numeric(6,2)),?,?,?,cast(? as char(16)))");
 
-				statement.setInt(1, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("cwid")));
+				statement.setInt(1, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("cwid")));
 				statement.setFloat(3, Float.parseFloat((String) obj
 						.get("hamount")));
-				statement.setInt(4, Integer.parseInt((String) obj
-						.get("did")));
-				statement.setInt(5, Integer.parseInt((String) obj
-						.get("cdid")));
-				statement.setInt(6, Integer.parseInt((String) obj
-						.get("cid")));
+				statement.setInt(4, Integer.parseInt((String) obj.get("did")));
+				statement.setInt(5, Integer.parseInt((String) obj.get("cdid")));
+				statement.setInt(6, Integer.parseInt((String) obj.get("cid")));
 				statement.setString(7, (String) obj.get("lastname"));
 
 				rs = statement.executeQuery();
@@ -423,7 +473,8 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 				rs = null;
 				statement.close();
 				statement = null;
-
+				statement = con.prepareStatement(select.toString());
+				statement.executeQuery();
 				Date NetFinishTime = new java.util.Date();
 
 				String str = (String) (obj).get("cid");
@@ -447,7 +498,6 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 					}
 
 					if (resubmit) {
-
 						if (str.equals("0")) {
 							InitTransaction(con, "tx payment 01", "w");
 						} else {
@@ -482,33 +532,25 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 		return (dbtrace);
 	}
 
-	protected HashSet StockLevelDB(Properties obj, Connection con)
+	protected HashSet StockLevelDB(java.util.Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
 			PreparedStatement statement = null;
-			Statement controlStatement = null;
 			ResultSet rs = null;
 			String cursor = null;
 
 			try {
 				Date NetStartTime = new java.util.Date();
 
-				controlStatement = con.createStatement();
-				controlStatement
-						.execute("select tg_conservative('district,stock,order_line')");
-
 				statement = con
 						.prepareStatement("select tpcc_stocklevel(?,?,?)");
 
-				statement.setInt(1, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("did")));
+				statement.setInt(1, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("did")));
 				statement.setInt(3, Integer.parseInt((String) obj
 						.get("threshhold")));
 				rs = statement.executeQuery();
@@ -601,7 +643,6 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 		{
 			Statement statement = null;
 			try {
-
 				Date NetStartTime = new java.util.Date();
 
 				statement = con.createStatement();
@@ -642,9 +683,7 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 			processLog(NetStartTime, NetFinishTime, "aborting", strAccess,
 					strTrans);
 		} catch (java.lang.Exception ex) {
-			logger.fatal("Unexpected error. Something bad happend");
-			ex.printStackTrace(System.err);
-			System.exit(-1);
+			logger.warn("Error rolling back");
 		} finally {
 			if (statement != null) {
 				statement.close();
@@ -652,4 +691,5 @@ public class dbPostgresqlConservative extends dbTPCCDatabase {
 		}
 	}
 }
-// arch-tag: e3dade63-ee1f-4e59-847c-205abebe3048
+// arch-tag: 5e93fc99-eedb-49eb-af2a-bbdb57146184
+

@@ -1,7 +1,7 @@
-<project name="TPCCLoadGenerator" default="dist" basedir=".">
+<project name="TPCC Client" default="dist" basedir=".">
 
 	<!-- set global properties for this build -->
-	<property name="libs" location="../../lib/"/>
+	<property name="libs" location="./lib/"/>
 	<property name="escada-libs" location="${libs}/escada"/>
 	<property name="gorda-libs" location="${libs}/gorda"/>
 	<property name="build" location="./bin"/>
