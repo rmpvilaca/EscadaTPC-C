@@ -23,6 +23,7 @@ public class Populate
 			pstmt=conn.prepareStatement("insert into warehouse (w_id,w_name,w_street_1," +
 					"w_street_2,w_city,w_state,w_zip,w_tax,w_ytd) " +
 					"values (?,?,?,?,?,?,?,?,?)");
+			int cont = 0;
 			for(int j=1;j<(numWareh+1);j++)
 			{
 						pstmt.setInt(1,j);
@@ -36,9 +37,15 @@ public class Populate
 						pstmt.setInt(9,300000);
 						//pstmt.setInt(10,0);
 						pstmt.executeUpdate();
-				
+						cont++;
+						if (cont == 100) {
+							cont = 0;
+							conn.commit();
+						}
 			}
+			if (cont > 0)
 			conn.commit();
+			cont = 0;
 			
 			System.out.println("populating district...");
 			pstmt=conn.prepareStatement("insert into district (d_id,d_w_id,d_name," +
@@ -61,9 +68,16 @@ public class Populate
 						pstmt.setInt(11,3001);
 						//pstmt.setInt(12,0);
 						pstmt.executeUpdate();
+						cont++;
+						if (cont == 100) {
+			cont = 0;
+							conn.commit();
+						}
 						}
 				}
+			if (cont > 0)
 			conn.commit();
+			cont = 0;
 		
 			System.out.println("populating customer...");
 			pstmt=conn.prepareStatement("insert into customer (c_id,c_d_id,c_w_id,c_first," +
@@ -102,10 +116,17 @@ public class Populate
 							pstmt.setString(21, generateString(300));
 							//pstmt.setInt(22,0);
 							pstmt.executeUpdate();
+							cont++;
+							if (cont == 100) {
+			cont = 0;
+								conn.commit();
+							}
 					 }
 				 }
 			 }	
+			if (cont > 0)
 			 conn.commit();
+			cont = 0;
 			
 			 System.out.println("populating history...");
 			pstmt=conn.prepareStatement("insert into history " +
@@ -125,11 +146,18 @@ public class Populate
 						pstmt.setInt(7,10);
 						pstmt.setString(8,generateString(24));
 						pstmt.executeUpdate();
+						cont++;
+						if (cont == 100) {
+			cont = 0;
+							conn.commit();
+						}
 					}
 				}	
 				
 			}
+			if (cont > 0)
 			conn.commit();
+			cont = 0;
 			
 			System.out.println("populating orders...");
 			pstmt=conn.prepareStatement("insert into orders " +
@@ -155,10 +183,17 @@ public class Populate
 						 	if(b>3000)b=1;
 						 	//pstmt.setInt(9,0);
 						 	pstmt.executeUpdate();
+							cont++;
+							if (cont == 100) {
+			cont = 0;
+								conn.commit();
+							}
 					 	}
 					 }
 			}
+			if (cont > 0)
 			conn.commit();
+			cont = 0;
 	
 			System.out.println("populating new_order...");
 			pstmt=conn.prepareStatement("insert into new_order (no_o_id,no_d_id," +
@@ -171,11 +206,18 @@ public class Populate
 						 pstmt.setInt(3,i);
 						 //pstmt.setInt(4,0);
 						 pstmt.executeUpdate();
+						cont++;
+						if (cont == 100) {
+			cont = 0;
+							conn.commit();
+						}
 					 }
 					 }
 			}
 			
+			if (cont > 0)
 			conn.commit();
+			cont = 0;
 			
 			System.out.println("populating item...");
 			pstmt=conn.prepareStatement("insert into item (i_id,i_im_id,i_name," +
@@ -193,8 +235,15 @@ public class Populate
 					pstmt.setString(5,generateString(30));
 				//pstmt.setInt(6,0);
 				pstmt.executeUpdate();
+				cont++;
+				if (cont == 100) {
+			cont = 0;
+					conn.commit();
+				}
 			}
+			if (cont > 0)
 			conn.commit();
+			cont = 0;
 			
 			System.out.println("populating stock...");
 			pstmt=conn.prepareStatement("insert into stock " +
@@ -228,11 +277,17 @@ public class Populate
 							pstmt.setString(17,generateString(30));
 						//pstmt.setInt(18,0);
 						pstmt.executeUpdate();
-					
+						cont++;
+						if (cont == 100) {
+			cont = 0;
+							conn.commit();
+						}
 				}	
 				
 			}
+			if (cont > 0)
 			conn.commit();
+			cont = 0;
 			
 			System.out.println("populating order_line...");
 			pstmt=conn.prepareStatement("insert into order_line  (ol_o_id,ol_d_id,ol_w_id," +
@@ -259,12 +314,19 @@ public class Populate
 							 pstmt.setString(10,generateString(24));
 							 //pstmt.setInt(11,0);
 							 pstmt.executeUpdate();
+							cont++;
+							if (cont == 100) {
+			cont = 0;
+								conn.commit();
+							}
 						 }
 					 	}
 					 }
 			}
 			
+			if (cont > 0)
 			conn.commit();		
+			cont = 0;
 			pstmt.close();
 			conn.close();
 		}	

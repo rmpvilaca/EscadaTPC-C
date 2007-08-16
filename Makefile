@@ -1,4 +1,3 @@
-export projdir=$(shell pwd)/..
 include ./Makefile.vars
 
 ORACLE_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
