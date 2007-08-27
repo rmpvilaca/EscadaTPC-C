@@ -18,6 +18,24 @@ public class CLUSTEREmulation extends Emulation {
 
 	StateObject curTrans = null;
 
+	// Pausable implementation
+	private boolean paused = false;
+	
+	public void pause() {
+		this.paused = true;
+	}
+
+	public void unpause() {
+		this.paused = false;
+		synchronized (this) {
+			this.notify();
+		}
+	}
+	
+	public void stopit() {
+		setFinished(true);
+	}
+	
 	public void initialize() {
 	}
 
@@ -51,6 +69,17 @@ public class CLUSTEREmulation extends Emulation {
 				curTrans.requestProcess(this, hid);
 
 				curTrans.postProcess(this, hid);
+				
+				// check if should pause
+				synchronized (this) {
+					while (paused) {
+						try {
+							this.wait();
+						} catch (InterruptedException e) {
+							logger.error("Unable to wait on pause!", e);
+						}
+					}
+				}
 			}
 		} catch (java.lang.InterruptedException it) {
 		} catch (java.lang.Exception ex) {

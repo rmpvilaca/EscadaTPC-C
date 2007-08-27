@@ -4,7 +4,7 @@ import java.util.Random;
 
 import escada.tpc.common.database.DatabaseManager;
 
-public abstract class Emulation {
+public abstract class Emulation implements PausableEmulation {
 
 	private static boolean finished = false;
 

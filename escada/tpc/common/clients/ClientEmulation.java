@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 import org.apache.log4j.Logger;
 
 import escada.tpc.common.Emulation;
+import escada.tpc.common.PausableEmulation;
 import escada.tpc.common.StateTransition;
 import escada.tpc.common.database.DatabaseManager;
 
@@ -12,7 +13,7 @@ import escada.tpc.common.database.DatabaseManager;
  * It initializes the client Emulation instantiating the appropriate objects.
  * 
  */
-public class ClientEmulation extends Thread {
+public class ClientEmulation extends Thread implements PausableEmulation {
 	private static Logger logger = Logger.getLogger(ClientEmulation.class);
 
 	Emulation e = null;
@@ -109,6 +110,17 @@ public class ClientEmulation extends Thread {
 		e.process();
 	}
 
+	public void pause() {
+		e.pause();
+	}
+	
+	public void unpause() {
+		e.unpause();
+	}
+	
+	public void stopit() {
+		e.stopit();
+	}
 }
 
 // arch-tag: f05c77d8-2aeb-4e8a-a28f-f7bc8311b84a
