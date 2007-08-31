@@ -17,38 +17,55 @@ ORACLE_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -FRAG 1 \
 	     -RESUBMIT false
 
-MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
-	     -LOGconfig configuration.files/logger.xml \
+SEQUOIA_MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
+             -LOGconfig configuration.files/logger.xml \
              -KEY false \
              -CLI 1 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.mysql.dbTransactionMySql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
-             -DBpath jdbc:mysql://192.168.180.1/tpcc \
-             -DBdriver com.mysql.jdbc.Driver \
+             -DBpath jdbc:sequoia://localhost/tpcc \
+             -DBdriver org.continuent.sequoia.driver.Driver \
              -DBusr rmpvilaca \
              -DBpasswd 123456 \
              -POOL 1\
-             -MI 10 \
+             -MI 100 \
+             -FRAG 1 \
+             -RESUBMIT true
+
+MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
+	     -LOGconfig configuration.files/logger.xml \
+             -KEY false \
+             -CLI 10 \
+             -STclass escada.tpc.tpcc.TPCCStateTransition \
+             -DBclass escada.tpc.tpcc.database.transaction.mysql.dbTransactionMySql \
+             -TRACEFLAG TRACE \
+             -PREFIX TPC-C \
+             -DBpath jdbc:mysql://localhost/tpcc \
+             -DBdriver com.mysql.jdbc.Driver \
+             -DBusr rmpvilaca \
+             -DBpasswd 123456 \
+             -POOL 10\
+             -MI 1000 \
 	     -FRAG 1 \
              -RESUBMIT true
 
 PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -LOGconfig configuration.files/logger.xml \
              -KEY false \
-             -CLI $(CLI)\
+             -CLI 10\
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
-             -DBpath jdbc:postgresql://192.168.180.1:5430/tpcc \
+             -DBpath jdbc:postgresql://127.0.0.1:5432/tpcc \
              -DBdriver org.postgresql.Driver \
-             -DBusr rmpvilaca \
+             -DBusr tpcc \
              -DBpasswd 123456 \
-             -POOL $(CLI) \
+             -POOL 10 \
              -MI 10 \
-	     -FRAG $(FRAG) \
+	     -FRAG 0 \
 	     -RESUBMIT true
 
 PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
@@ -124,6 +141,9 @@ PGSQL_FLAGS05 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 
 real-oracle:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(ORACLE_FLAGS)
+
+real-sequoia-mysql:
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(SEQUOIA_MYSQL_FLAGS)
 
 real-mysql:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(MYSQL_FLAGS)

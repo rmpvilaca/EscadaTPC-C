@@ -179,6 +179,7 @@ public class ConnectionManager {
 					} else
 						con = DriverManager.getConnection(jdbcPath, user,
 								passwd);
+						con.setAutoCommit(false);
 					break;
 				} catch (java.sql.SQLException sqlex) {
 					logger.fatal("Unexpected error. Something bad happend.");

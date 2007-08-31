@@ -1033,7 +1033,6 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			try {
 
 				Date NetStartTime = new java.util.Date();
-
 				statement = con.createStatement();
 				statement.execute("commit");
 
@@ -1043,6 +1042,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 						strAccess, strTrans);
 
 			} catch (java.sql.SQLException sqlex) {
+				sqlex.printStackTrace();
 				RollbackTransaction(con, sqlex, strTrans, strAccess);
 				throw sqlex;
 			} catch (java.lang.Exception ex) {
