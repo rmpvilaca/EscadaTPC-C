@@ -534,7 +534,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 					statement.setInt(2, __w_id);
 					statement.setInt(3, __d_id);
 					rs = statement.executeQuery();
-
+					logger.debug(__c_last+";"+__w_id+";"+__d_id);
 					if (rs.next()) {
 						_c_id = rs.getInt("c_id");
 						_c_last = rs.getString("c_last");
@@ -1029,6 +1029,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 	protected void CommitTransaction(Connection con, String strTrans,
 			String strAccess) throws java.sql.SQLException {
 		{
+			boolean resubmit =false;
 			Statement statement = null;
 			try {
 
@@ -1042,9 +1043,22 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 						strAccess, strTrans);
 
 			} catch (java.sql.SQLException sqlex) {
-				sqlex.printStackTrace();
-				RollbackTransaction(con, sqlex, strTrans, strAccess);
-				throw sqlex;
+				 logger.warn("Commit "+strTrans+" - SQL Exception " + sqlex.getMessage());
+                                if ((sqlex.getMessage().indexOf("serialize") != -1)
+                                                || (sqlex.getMessage().indexOf("timeout") != -1)
+                                                || (sqlex.getMessage().indexOf("Deadlock") != -1)) {
+                                        RollbackTransaction(con, sqlex, strTrans, "r");
+                                        if (resubmit) {
+                                                InitTransaction(con, strTrans, "r");
+                                        } else {
+                                                throw sqlex;
+                                    }
+				}
+	                        else{
+					sqlex.printStackTrace();
+					RollbackTransaction(con, sqlex, strTrans, strAccess);
+					throw sqlex;
+				}
 			} catch (java.lang.Exception ex) {
 				logger.fatal("Unexpected error. Something bad happend");
 				ex.printStackTrace(System.err);
@@ -1070,6 +1084,9 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 
 			processLog(NetStartTime, NetFinishTime, "aborting", strAccess,
 					strTrans);
+		}catch(java.sql.SQLException e)
+		{
+			e.printStackTrace();
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend");
 			ex.printStackTrace(System.err);

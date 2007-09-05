@@ -20,7 +20,7 @@ ORACLE_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 SEQUOIA_MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -LOGconfig configuration.files/logger.xml \
              -KEY false \
-             -CLI 1 \
+             -CLI 10 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.mysql.dbTransactionMySql \
              -TRACEFLAG TRACE \
@@ -29,15 +29,15 @@ SEQUOIA_MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -DBdriver org.continuent.sequoia.driver.Driver \
              -DBusr rmpvilaca \
              -DBpasswd 123456 \
-             -POOL 1\
-             -MI 100 \
+             -POOL 10\
+             -MI 100000 \
              -FRAG 1 \
-             -RESUBMIT true
+             -RESUBMIT false
 
 MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -LOGconfig configuration.files/logger.xml \
              -KEY false \
-             -CLI 10 \
+             -CLI 2 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.mysql.dbTransactionMySql \
              -TRACEFLAG TRACE \
@@ -46,20 +46,20 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -DBdriver com.mysql.jdbc.Driver \
              -DBusr rmpvilaca \
              -DBpasswd 123456 \
-             -POOL 10\
+             -POOL 2\
              -MI 1000 \
 	     -FRAG 1 \
              -RESUBMIT true
 
 PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -LOGconfig configuration.files/logger.xml \
-             -KEY false \
+             -KEY true \
              -CLI 10\
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
-             -DBpath jdbc:postgresql://127.0.0.1:5432/tpcc \
+             -DBpath jdbc:postgresql://192.168.82.131:5432/tpcc \
              -DBdriver org.postgresql.Driver \
              -DBusr tpcc \
              -DBpasswd 123456 \

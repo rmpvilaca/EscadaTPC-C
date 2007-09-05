@@ -56,6 +56,8 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 		} catch (java.sql.SQLException sqlex) {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
+					&& (sqlex.getMessage().indexOf("timeout") == -1)
+					&& (sqlex.getMessage().indexOf("Deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
 					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
@@ -112,6 +114,8 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 		} catch (java.sql.SQLException sqlex) {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
+					&& (sqlex.getMessage().indexOf("timeout") == -1)
+					&& (sqlex.getMessage().indexOf("Deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
 					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
@@ -180,6 +184,8 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 		} catch (java.sql.SQLException sqlex) {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
+					&& (sqlex.getMessage().indexOf("timeout") == -1)
+					&& (sqlex.getMessage().indexOf("Deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
 					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
@@ -256,6 +262,8 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 		} catch (java.sql.SQLException sqlex) {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
+					&& (sqlex.getMessage().indexOf("timeout") == -1)
+					&& (sqlex.getMessage().indexOf("Deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
 					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
@@ -312,6 +320,8 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 		} catch (java.sql.SQLException sqlex) {
 			if ((sqlex.getMessage().indexOf("serialize") == -1)
 					&& (sqlex.getMessage().indexOf("deadlock") == -1)
+					&& (sqlex.getMessage().indexOf("timeout") == -1)
+					&& (sqlex.getMessage().indexOf("Deadlock") == -1)
 					&& (sqlex.getMessage().indexOf("not found") == -1)
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
 					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
