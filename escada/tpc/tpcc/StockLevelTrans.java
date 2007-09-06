@@ -16,7 +16,7 @@ import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
  */
 public class StockLevelTrans extends StateObject {
 	public void initProcess(Emulation em, String hid) throws SQLException {
-		int wid = (em.getEmulationId() / TPCConst.numMinClients) + 1; 
+		int wid = (em.getEmulationId() / TPCConst.getNumMinClients()) + 1; 
 		int did = 0;
 		int threshhold = 0;
 
@@ -28,12 +28,12 @@ public class StockLevelTrans extends StateObject {
 		outInfo.put("hid", hid);
 
 		outInfo.put("wid", Integer.toString(wid));
-		if (((em.getEmulationId() + 1) % TPCConst.numMinClients) == 0) {
-			outInfo.put("did", Integer.toString(TPCConst.numMinClients));
+		if (((em.getEmulationId() + 1) % TPCConst.getNumMinClients()) == 0) {
+			outInfo.put("did", Integer.toString(TPCConst.getNumMinClients()));
 		} else {
 			outInfo
 					.put("did", Integer
-							.toString((em.getEmulationId() + 1) % TPCConst.numMinClients));
+							.toString((em.getEmulationId() + 1) % TPCConst.getNumMinClients()));
 		}
 
 		threshhold = RandGen.nextInt(em.getRandom(),

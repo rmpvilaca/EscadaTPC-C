@@ -1,5 +1,8 @@
 package escada.tpc.tpcc.database.populate;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -7,8 +10,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 
+import escada.tpc.common.TPCConst;
 import escada.tpc.common.util.RandGen;
 import escada.tpc.tpcc.TPCCConst;
 import escada.tpc.tpcc.util.TPCCRandGen;
@@ -53,7 +58,7 @@ public class dbPopulate {
 							+ "d_street_1,d_street_2,d_city,d_state,d_zip,d_tax,"
 							+ "d_ytd,d_next_o_id) values (?,?,?,?,?,?,?,?,?,?,?)");
 
-			for (int j = 1; j < (TPCCConst.rngDistrict + 1); j++) {
+			for (int j = 1; j < (TPCCConst.getNumDistrict() + 1); j++) {
 				for (int k = 1; k < (numWareh + 1); k++) {
 					pstmt.setInt(1, j);
 					pstmt.setInt(2, k);
@@ -65,7 +70,7 @@ public class dbPopulate {
 					pstmt.setString(8, generateString(8));
 					pstmt.setFloat(9, (rg.nextFloat()) / 5);
 					pstmt.setInt(10, 30000);
-					pstmt.setInt(11, (TPCCConst.numENDCustomer + 1));
+					pstmt.setInt(11, (TPCCConst.getNumCustomer() + 1));
 					pstmt.executeUpdate();
 					cont++;
 					if (cont == 100) {
@@ -85,22 +90,23 @@ public class dbPopulate {
 							+ "c_since,c_credit,c_credit_lim,c_discount,c_balance,"
 							+ "c_ytd_payment,c_payment_cnt,c_delivery_cnt,c_data)"
 							+ " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-			
+
 			for (int i = 1; i < (numWareh + 1); i++) {
-				for (int j = 1; j < (TPCCConst.rngDistrict + 1); j++) {
-					for (int a = 1; a < (TPCCConst.numENDCustomer + 1); a++) {
+				for (int j = 1; j < (TPCCConst.getNumDistrict() + 1); j++) {
+					for (int a = 1; a < (TPCCConst.getNumCustomer() + 1); a++) {
 						pstmt.setInt(1, a);
 						pstmt.setInt(2, j);
 						pstmt.setInt(3, i);
 						pstmt.setString(4, generateString(16));
 						pstmt.setString(5, "OE");
-						
+
 						// pstmt.setString(6, generateString(0));
-								
-						pstmt.setString(6, TPCCRandGen.digSyl(RandGen.NURand(rg,
-								TPCCConst.LastNameA, TPCCConst.numINILastName,
-								TPCCConst.numENDLastName)));
-						
+
+						pstmt.setString(6, TPCCRandGen.digSyl(RandGen.NURand(
+								rg, TPCCConst.LastNameA,
+								TPCCConst.numINILastName, TPCCConst
+										.getNumLastName())));
+
 						pstmt.setString(7, generateString(20));
 						pstmt.setString(8, generateString(20));
 						pstmt.setString(9, generateString(20));
@@ -139,8 +145,8 @@ public class dbPopulate {
 					+ "(h_c_id,h_c_d_id,h_c_w_id,h_d_id,h_w_id,h_date,"
 					+ "h_amount,h_data) values (?,?,?,?,?,?,?,?)");
 			for (int j = 1; j < (numWareh + 1); j++) {
-				for (int i = 1; i < (TPCCConst.rngDistrict + 1); i++) {
-					for (int a = 1; a < (TPCCConst.numENDCustomer + 1); a++) {
+				for (int i = 1; i < (TPCCConst.getNumDistrict() + 1); i++) {
+					for (int a = 1; a < (TPCCConst.getNumCustomer() + 1); a++) {
 						pstmt.setInt(1, a);
 						pstmt.setInt(2, i);
 						pstmt.setInt(3, j);
@@ -170,8 +176,8 @@ public class dbPopulate {
 					+ "o_ol_cnt,o_all_local) values (?,?,?,?,?,?,?,?)");
 			int b = 1;
 			for (int i = 1; i < (numWareh + 1); i++) {
-				for (int j = 1; j < (TPCCConst.rngDistrict + 1); j++) {
-					for (int a = 1; a < (TPCCConst.numENDCustomer + 1); a++) {
+				for (int j = 1; j < (TPCCConst.getNumDistrict() + 1); j++) {
+					for (int a = 1; a < (TPCCConst.getNumCustomer() + 1); a++) {
 						pstmt.setInt(1, a);
 						pstmt.setInt(2, j);
 						pstmt.setInt(3, i);
@@ -207,8 +213,8 @@ public class dbPopulate {
 					.prepareStatement("insert into new_order (no_o_id,no_d_id,"
 							+ "no_w_id) values (?,?,?)");
 			for (int i = 1; i < (numWareh + 1); i++) {
-				for (int j = 1; j < (TPCCConst.rngDistrict + 1); j++) {
-					for (int a = 2101; a < (TPCCConst.numENDCustomer + 1); a++) {
+				for (int j = 1; j < (TPCCConst.getNumDistrict() + 1); j++) {
+					for (int a = 2101; a < (TPCCConst.getNumCustomer() + 1); a++) {
 						pstmt.setInt(1, a);
 						pstmt.setInt(2, j);
 						pstmt.setInt(3, i);
@@ -231,7 +237,7 @@ public class dbPopulate {
 					.prepareStatement("insert into item (i_id,i_im_id,i_name,"
 							+ "i_price,i_data) values (?,?,?,?,?)");
 
-			for (int i = 1; i < (TPCCConst.numENDItem + 1); i++) {
+			for (int i = 1; i < (TPCCConst.getNumItem() + 1); i++) {
 				pstmt.setInt(1, i);
 				int j = rg.nextInt(10000) + 1;
 				pstmt.setInt(2, j);
@@ -260,7 +266,7 @@ public class dbPopulate {
 							+ "s_dist_04,s_dist_05,s_dist_06,s_dist_07,s_dist_08,"
 							+ "s_dist_09,s_dist_10,s_ytd,s_order_cnt,s_remote_cnt,s_data) "
 							+ "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-			for (int j = 1; j < (TPCCConst.numENDItem + 1); j++) {
+			for (int j = 1; j < (TPCCConst.getNumItem() + 1); j++) {
 				for (int i = 1; i < numWareh + 1; i++) {
 
 					pstmt.setInt(1, j);
@@ -305,8 +311,8 @@ public class dbPopulate {
 							+ "ol_number,ol_i_id,ol_supply_w_id,ol_delivery_d,ol_quantity,ol_amount,"
 							+ "ol_dist_info) values (?,?,?,?,?,?,?,?,?,?)");
 			for (int i = 1; i < (numWareh + 1); i++) {
-				for (int j = 1; j < (TPCCConst.rngDistrict + 1); j++) {
-					for (int a = 1; a < (TPCCConst.numENDCustomer + 1); a++) {
+				for (int j = 1; j < (TPCCConst.getNumDistrict() + 1); j++) {
+					for (int a = 1; a < (TPCCConst.getNumCustomer() + 1); a++) {
 						int ol_cnt = rg.nextInt(10) + 5;
 						for (int c = 1; c < ol_cnt; c++) {
 							pstmt.setInt(1, a);
@@ -405,21 +411,47 @@ public class dbPopulate {
 		String jdbc = "jdbc:postgresql://localhost/tpcc";
 		String userName = "refmanager";
 		String password = "";
+		String file = null;
+
 		if (args.length >= 1) {
-			numberOfwarehouse = Integer.parseInt(args[0]);
-			if (args.length >= 2)
-				jdbc = args[1];
+			file = args[0];
+			numberOfwarehouse = Integer.parseInt(args[1]);
 			if (args.length >= 3)
-				userName = args[2];
+				jdbc = args[2];
 			if (args.length >= 4)
-				password = args[3];
+				userName = args[3];
 			if (args.length >= 5)
-				driver = args[4];
+				password = args[4];
+			if (args.length >= 6)
+				driver = args[5];
 		} else {
 			printUsage();
 		}
 
 		try {
+
+			try {
+				Properties props = new Properties();
+
+				props.load(new FileInputStream(file));
+
+				TPCConst.setNumMinClients(Integer.parseInt(props
+						.getProperty("tpcc.numclients")));
+				TPCCConst.setNumCustomer(Integer.parseInt(props
+						.getProperty("tpcc.numcustomers")));
+				TPCCConst.setNumDistrict(Integer.parseInt(props
+						.getProperty("tpcc.numdistricts")));
+				TPCCConst.setNumItem(Integer.parseInt(props
+						.getProperty("tpcc.numitems")));
+				TPCCConst.setNumLastName(Integer.parseInt(props
+						.getProperty("tpcc.numnames")));
+
+			} catch (FileNotFoundException e) {
+				System.out.println("Running with tpcc default parameters.");
+			} catch (IOException e) {
+				System.out.println("Running with tpcc default parameters.");
+			}
+
 			Class.forName(driver);
 			Connection conn = DriverManager.getConnection(jdbc, userName,
 					password);

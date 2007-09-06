@@ -1,6 +1,7 @@
 package escada.tpc.common.database;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Date;
 
 import escada.tpc.logger.PerformanceLogger;
@@ -113,7 +114,7 @@ public class DatabaseManager {
 	 * create a new one whenever the number of open connections does not exceed
 	 * the maximun configured value.
 	 */
-	public Connection getConnection() {
+	public Connection getConnection() throws SQLException {
 		if (!virtualdatabase)
 			if (!connectionpool)
 				return cn.createConnection();
@@ -123,7 +124,7 @@ public class DatabaseManager {
 		return (null);
 	}
 
-	public void releaseConnections() {
+	public void releaseConnections() throws SQLException{
 		cn.releaseConnections();
 	}
 

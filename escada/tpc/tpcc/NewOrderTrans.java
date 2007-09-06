@@ -16,7 +16,7 @@ import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
  */
 public class NewOrderTrans extends StateObject {
 	public void initProcess(Emulation em, String hid) throws SQLException {
-		int wid = (em.getEmulationId() / TPCConst.numMinClients) + 1;
+		int wid = (em.getEmulationId() / TPCConst.getNumMinClients()) + 1;
 		int did = 0;
 		int cid = 0;
 		int qtd = 0;
@@ -32,11 +32,11 @@ public class NewOrderTrans extends StateObject {
 
 		outInfo.put("wid", Integer.toString(wid));
 
-		did = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
+		did = RandGen.nextInt(em.getRandom(), 1, TPCCConst.getNumDistrict() + 1);
 		outInfo.put("did", Integer.toString(did));
 
 		cid = RandGen.NURand(em.getRandom(), TPCCConst.CustomerA,
-				TPCCConst.numINICustomer, TPCCConst.numENDCustomer);
+				TPCCConst.numINICustomer, TPCCConst.getNumCustomer());
 		outInfo.put("cid", Integer.toString(cid));
 
 		qtd = RandGen.nextInt(em.getRandom(), TPCCConst.qtdINIItem,
@@ -54,7 +54,7 @@ public class NewOrderTrans extends StateObject {
 		int supwid = 0;
 		while (i < qtd) {
 			iid = RandGen.NURand(em.getRandom(), TPCCConst.iidA,
-					TPCCConst.numINIItem, TPCCConst.numENDItem);
+					TPCCConst.numINIItem, TPCCConst.getNumItem());
 			qtdi = RandGen.nextInt(em.getRandom(), 1, TPCCConst.qtdItem + 1);
 			if ((error) && ((i + 1) >= qtd)) {
 				iid = 1;
@@ -64,11 +64,11 @@ public class NewOrderTrans extends StateObject {
 			outInfo.put("qtdi" + i, Integer.toString(qtdi));
 			if ((RandGen.nextInt(em.getRandom(),
 					TPCCConst.rngNewOrderLOCALWarehouse + 1) <= TPCCConst.probNewOrderLOCALWarehouse)
-					|| (Emulation.getNumberConcurrentEmulators() <= TPCConst.numMinClients)) {
+					|| (Emulation.getNumberConcurrentEmulators() <= TPCConst.getNumMinClients())) {
 				outInfo.put("supwid" + i, Integer.toString(wid));
 			} else {
 				supwid = RandGen.nextInt(em.getRandom(), 1, (Emulation
-						.getNumberConcurrentEmulators() / TPCConst.numMinClients) + 1);
+						.getNumberConcurrentEmulators() / TPCConst.getNumMinClients()) + 1);
 				outInfo.put("supwid" + i, Integer.toString(supwid));
 				localWarehouse = false;
 			}

@@ -61,7 +61,7 @@ public class ClientEmulation extends Thread implements PausableEmulation {
 			e = (Emulation) Class.forName(emParam).newInstance();
 			s = (StateTransition) Class.forName(stateParam).newInstance();
 
-			int temp = (ncli + ((nfrag - 1) * TPCConst.numMinClients));
+			int temp = (ncli + ((nfrag - 1) * TPCConst.getNumMinClients()));
 
 			e.initialize();
 			e.setEmulationId(temp);

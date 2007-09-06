@@ -16,7 +16,7 @@ import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
  */
 public class DeliveryTrans extends StateObject {
 	public void initProcess(Emulation em, String hid) throws SQLException {
-		int wid = (em.getEmulationId() / TPCConst.numMinClients) + 1;
+		int wid = (em.getEmulationId() / TPCConst.getNumMinClients()) + 1;
 		int crid = 0;
 
 		outInfo

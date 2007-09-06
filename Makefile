@@ -166,9 +166,9 @@ real-pgsql-05:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(PGSQL_FLAGS05)
 
 real-jmx:
-	$(JVM) -cp $(classpath) -Xmx1024M -Dcom.sun.management.jmxremote.port=5001 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false escada.tpc.common.clients.jmx.ClientEmulationStartup
+	$(JVM) -cp $(classpath) -Xmx1024M -Dcom.sun.management.jmxremote.port=5001 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false escada.tpc.common.clients.jmx.ClientEmulationStartup $(FILE)
 
 populate:
-	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.tpcc.database.populate.dbPopulate 1 "jdbc:postgresql://localhost/tpcc" tpcc
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.tpcc.database.populate.dbPopulate $(FILE) $(WAREHOUSE) $(DATABASE) $(USR)
 
 # arch-tag: 35a104c6-523c-493b-9afe-e85f72d9d865

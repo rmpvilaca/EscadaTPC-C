@@ -86,22 +86,16 @@ public class ConnectionManager {
 	 * create a new one whenever the number of open connections does not exceed
 	 * the maximun configured value.
 	 */
-	public synchronized Connection getConnection() {
+	public synchronized Connection getConnection() throws SQLException {
 		Connection con = null;
 		boolean acquiredResource = false;
 		while (!acquiredResource) {
 			if (availConn.size() > 0) {
 				con = (Connection) availConn.firstElement();
 				availConn.removeElementAt(0);
-				try {
-					if (con.isClosed()) {
-						totalConnections--;
-						continue;
-					}
-				} catch (SQLException sqlex) {
-					logger.fatal("Unexpected error. Something bad happend.");
-					sqlex.printStackTrace(System.err);
-					System.exit(-1);
+				if (con.isClosed()) {
+					totalConnections--;
+					continue;
 				}
 				acquiredResource = true;
 			} else if ((maxConn == 0) || (totalConnections < maxConn)) {
@@ -123,21 +117,17 @@ public class ConnectionManager {
 		return con;
 	}
 
-	public synchronized void releaseConnections() {
+	public synchronized void releaseConnections() throws SQLException {
 		Connection con;
 
 		while (availConn.size() > 0) {
 			con = (Connection) availConn.firstElement();
 			availConn.removeElementAt(0);
-			try {
+	
 				if (!con.isClosed()) {
 					con.close();
 				}
-			} catch (SQLException sqlex) {
-				logger.fatal("Unexpected error. Something bad happend.");
-				sqlex.printStackTrace(System.err);
-				System.exit(-1);
-			}
+	
 		}
 		checkedOut = 0;
 		totalConnections = 0;
@@ -164,12 +154,11 @@ public class ConnectionManager {
 	 * 
 	 * @return the new connection
 	 */
-	public synchronized Connection createConnection() {
+	public synchronized Connection createConnection() throws SQLException {
 		try {
 			Class.forName(driverName);
 			Connection con;
 			while (true) {
-				try {
 					if (jdbcPath.indexOf("oracle") != -1) {
 						OracleDataSource ods = new OracleDataSource();
 						ods.setURL(jdbcPath);
@@ -179,23 +168,15 @@ public class ConnectionManager {
 					} else
 						con = DriverManager.getConnection(jdbcPath, user,
 								passwd);
-						con.setAutoCommit(false);
+					con.setAutoCommit(false);
 					break;
-				} catch (java.sql.SQLException sqlex) {
-					logger.fatal("Unexpected error. Something bad happend.");
-					sqlex.printStackTrace(System.err);
-					System.exit(-1);
-				}
 			}
 			totalConnections++;
 			return con;
 		} catch (java.lang.Exception ex) {
-			logger.fatal("Unexpected error. Something bad happend.");
-			ex.printStackTrace(System.err);
-			System.exit(-1);
+			ex.printStackTrace();
+			throw new SQLException(ex.getMessage());
 		}
-
-		return null;
 	}
 
 	public synchronized void closeConnection(Connection con) {

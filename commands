@@ -1,1 +1,12 @@
+POPULATE
+
+/usr/local/pgsql/bin/psql -d tpcc -f clean.tpcc -U alfranio
+time make populate FILE=config.soft DATABASE=jdbc:postgresql://localhost/tpcc USR=alfranio WAREHOUSE=1
+
+START
+
+make real-jmx FILE=config.soft
+
 -EBclass escada.tpc.tpcc.TPCCEmulation -LOGconfig configuration.files/logger.xml -KEY false -CLI 1 -STclass escada.tpc.tpcc.TPCCStateTransition -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql -TRACEFLAG TRACE -PREFIX TPC-C -DBpath jdbc:postgresql://localhost/tpcc -DBdriver org.postgresql.Driver -DBusr alfranio -DBpasswd tpcc -POOL 20 -MI 5 -FRAG 1 -RESUBMIT false
+
+

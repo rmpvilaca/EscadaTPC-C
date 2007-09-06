@@ -8,7 +8,7 @@ public class TPCCConst {
 
 	public final static int numINICustomer = 1;
 
-	public final static int numENDCustomer = 100; // public final static int numENDCustomer = 3000;
+	public static int numENDCustomer = 3000;
 
 	public final static int qtdINIItem = 5;
 
@@ -20,11 +20,11 @@ public class TPCCConst {
 
 	public final static int numINIItem = 1;
 
-	public final static int numENDItem = 10; // public final static int numENDItem = 100000;
+	public static int numENDItem = 100000;
 
 	public final static int rngCarrier = 10;
 
-	public final static int rngDistrict = 5; // public final static int rngDistrict = 10;
+	public static int rngDistrict = 10;
 
 	public final static int probABORTNewOrder = 1;
 
@@ -42,11 +42,11 @@ public class TPCCConst {
 
 	public final static int rngLASTNAME = 100; 
 
-	public final static int LastNameA = 20; // public final static int LastNameA = 255;
+	public final static int LastNameA = 255; // 20
 
 	public final static int numINILastName = 0;
 
-	public final static int numENDLastName = 99; // public final static int numENDLastName = 999;
+	public static int numENDLastName = 999;
 
 	public final static int numINIAmount = 100;
 
@@ -59,5 +59,37 @@ public class TPCCConst {
 	public final static int numENDThreshHold = 20;
 
 	public final static int numState = 5;
+
+	public static void setNumCustomer(int numENDCustomer) {
+		TPCCConst.numENDCustomer = numENDCustomer;
+	}
+
+	public static int getNumCustomer() {
+		return numENDCustomer;
+	}
+
+	public static void setNumItem(int numENDItem) {
+		TPCCConst.numENDItem = numENDItem;
+	}
+
+	public static int getNumItem() {
+		return numENDItem;
+	}
+
+	public static void setNumDistrict(int rngDistrict) {
+		TPCCConst.rngDistrict = rngDistrict;
+	}
+
+	public static int getNumDistrict() {
+		return rngDistrict;
+	}
+
+	public static void setNumLastName(int numENDLastName) {
+		TPCCConst.numENDLastName = numENDLastName;
+	}
+
+	public static int getNumLastName() {
+		return numENDLastName;
+	}
 }
 // arch-tag: fe63e7a2-dd6e-4431-ad74-35de8fdb5bf1

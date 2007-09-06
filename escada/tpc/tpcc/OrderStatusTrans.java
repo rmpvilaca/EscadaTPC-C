@@ -17,7 +17,7 @@ import escada.tpc.tpcc.util.TPCCRandGen;
  */
 public class OrderStatusTrans extends StateObject {
 	public void initProcess(Emulation em, String hid) throws SQLException {
-		int wid = (em.getEmulationId() / TPCConst.numMinClients) + 1; 
+		int wid = (em.getEmulationId() / TPCConst.getNumMinClients()) + 1; 
 		int cid = 0;
 		int did = 0;
 		String lastname = null;
@@ -30,18 +30,18 @@ public class OrderStatusTrans extends StateObject {
 		outInfo.put("hid", hid);
 
 		outInfo.put("wid", Integer.toString(wid));
-		did = RandGen.nextInt(em.getRandom(), 1, TPCCConst.rngDistrict + 1);
+		did = RandGen.nextInt(em.getRandom(), 1, TPCCConst.getNumDistrict() + 1);
 		outInfo.put("did", Integer.toString(did));
 
 		if (RandGen.nextInt(em.getRandom(), TPCCConst.rngLASTNAME + 1) <= TPCCConst.probLASTNAME) {
 			lastname = TPCCRandGen.digSyl(RandGen.NURand(em.getRandom(),
 					TPCCConst.LastNameA, TPCCConst.numINILastName,
-					TPCCConst.numENDLastName));
+					TPCCConst.getNumLastName()));
 			outInfo.put("lastname", lastname);
 			outInfo.put("cid", "1");
 		} else {
 			cid = RandGen.NURand(em.getRandom(), TPCCConst.CustomerA,
-					TPCCConst.numINICustomer, TPCCConst.numENDCustomer)+1;
+					TPCCConst.numINICustomer, TPCCConst.getNumCustomer())+1;
 			outInfo.put("cid", Integer.toString(cid));
 			outInfo.put("lastname", "");
 		}
