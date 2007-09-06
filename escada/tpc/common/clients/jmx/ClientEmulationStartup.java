@@ -372,6 +372,9 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 					continue;
 				}
 			}
+			
+			logger.info("EBs finished.");
+			
 		} catch (Arg.Exception ae) {
 			logger.info("Error:");
 			logger.info(ae);

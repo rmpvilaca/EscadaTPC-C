@@ -154,6 +154,7 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 			db.parse(args);
 
 			DOMConfigurator.configure(log4jArg.s);
+
 			logger.info("Starting up the client application.");
 			logger.info("Remote Emulator for Database Benchmark ...");
 			logger
@@ -186,28 +187,25 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 
 			int i = 0;
 			for (i = 0; i < cli.num; i++) {
-				
+
 				e = new ClientEmulation();
-				
+
 				e.setFinished(false);
 				e.setTraceInformation(prefix.s);
 				e.setNumberConcurrentEmulators(cli.num);
 				e.setStatusThinkTime(key.flag);
 				e.setStatusReSubmit(resArg.flag);
-				
 				e.setDatabase(dbManager);
 				e.setEmulationName(prefix.s);
 				e.setHostId(Integer.toString(hostArg.num));
-				e.setNumberConcurrentEmulators(cli.num);
-				
-				e.create(ebArg.s, stArg.s, i, fragArg.num, this,null);				
-				
-				Thread t = new Thread();
+
+				e.create(ebArg.s, stArg.s, i, fragArg.num, this, null);
+
+				Thread t = new Thread(e);
 				t.setName(prefix.s + "-" + i);
-				t.start();
-				
 				e.setThread(t);
-				
+				t.start();
+
 				ebs.add(e);
 			}
 

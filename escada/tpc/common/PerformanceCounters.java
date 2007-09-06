@@ -73,15 +73,21 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 	}
 
 	public static synchronized void setIncommingRate() {
-		reference.inCommingCounter++;
+		if (reference != null) {
+			reference.inCommingCounter++;
+		}
 	}
 
 	public static synchronized void setAbortRate() {
-		reference.abortCounter++;
+		if (reference != null) {
+			reference.abortCounter++;
+		}
 	}
 
 	public static synchronized void setCommitRate() {
-		reference.commitCounter++;
+		if (reference != null) {
+			reference.commitCounter++;
+		}
 	}
 
 	public static PerformanceCounters getReference() {
