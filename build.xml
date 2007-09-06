@@ -1,7 +1,7 @@
-<project name="tpc" default="dist" basedir=".">
+<project name="TPCC Client" default="dist" basedir=".">
 
 	<!-- set global properties for this build -->
-	<property name="libs" location="lib/"/>
+	<property name="libs" location="./lib/"/>
 	<property name="escada-libs" location="${libs}/escada"/>
 	<property name="build" location="./,build"/>
 	<property name="dist"  location="./,dist"/>
@@ -19,7 +19,6 @@
 
 	<target name="escada" depends="init">
 		<path id="escada.classpath">
-                        <pathelement location="${libs}/lib/pg73jdbc3.jar"/>
                         <pathelement location="${libs}/ojdbc14.jar"/>
 			<pathelement location="${libs}/log4j-1.2.9.jar"/>
 		</path>

@@ -41,7 +41,7 @@ public class PaymentTrans extends StateObject {
 					TPCCConst.LastNameA, TPCCConst.numINILastName,
 					TPCCConst.numENDLastName));
 			outInfo.put("lastname", lastname);
-			outInfo.put("cid", "0");
+			outInfo.put("cid", "1");
 		} else {
 			cid = RandGen.NURand(em.getRandom(), TPCCConst.CustomerA,
 					TPCCConst.numINICustomer, TPCCConst.numENDCustomer);

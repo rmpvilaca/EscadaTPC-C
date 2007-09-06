@@ -24,7 +24,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 	protected HashSet NewOrderDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -91,11 +92,12 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				_commit_flag = 0;
 
 				while (_li_no < _o_ol_cnt) {
-					_li_id = Integer.parseInt((String) obj.get("iid" + _li_no));
+					_li_id = Integer.parseInt((String) obj.get("iid"
+							+ _li_no));
 					_li_s_w_id = Integer.parseInt((String) obj.get("supwid"
 							+ _li_no));
-					_li_qty = Integer.parseInt((String) obj
-							.get("qtdi" + _li_no));
+					_li_qty = Integer.parseInt((String) obj.get("qtdi"
+							+ _li_no));
 
 					statement = con
 							.prepareStatement("select i_price, i_name, i_data from item where i_id = ?");
@@ -185,7 +187,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 						statement.setInt(4, _li_no);
 						statement.setInt(5, _li_id);
 						statement.setInt(6, _li_s_w_id);
-						statement.setString(7, "dec 31, 1899");
+						statement.setString(7, "1899-12-31");
 						statement.setInt(8, _li_qty);
 						statement.setDouble(9, _i_price * _li_qty);
 						statement.setString(10, _s_dist);
@@ -259,7 +261,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("NewOrder - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
-						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
+						|| (sqlex.getMessage().indexOf("timeout") != -1) 
+						|| (sqlex.getMessage().indexOf("Deadlock") != -1)) {
 					RollbackTransaction(con, sqlex, "tx neworder", "w");
 					if (resubmit) {
 						InitTransaction(con, "tx neworder", "w");
@@ -291,7 +294,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 	protected HashSet DeliveryDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -305,7 +309,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 
 			try {
 				int _w_id = Integer.parseInt((String) obj.get("wid"));
-				int _o_carrier_id = Integer.parseInt((String) obj.get("crid"));
+				int _o_carrier_id = Integer.parseInt((String) obj
+						.get("crid"));
 
 				int _d_id;
 				int _o_id;
@@ -438,7 +443,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("Delivery - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
-						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
+						|| (sqlex.getMessage().indexOf("timeout") != -1) 
+						|| (sqlex.getMessage().indexOf("Deadlock") != -1)) {
 					RollbackTransaction(con, sqlex, "tx delivery", "w");
 					if (resubmit) {
 						InitTransaction(con, "tx delivery", "w");
@@ -470,7 +476,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 	protected HashSet OrderStatusDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -527,7 +534,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 					statement.setInt(2, __w_id);
 					statement.setInt(3, __d_id);
 					rs = statement.executeQuery();
-
+					logger.debug(__c_last+";"+__w_id+";"+__d_id);
 					if (rs.next()) {
 						_c_id = rs.getInt("c_id");
 						_c_last = rs.getString("c_last");
@@ -595,7 +602,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 								+ sqlex.getMessage());
 				String str = (String) (obj).get("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
-						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
+						|| (sqlex.getMessage().indexOf("timeout") != -1) 
+						|| (sqlex.getMessage().indexOf("Deadlock") != -1)) {
 					if (str.equals("0")) {
 						RollbackTransaction(con, sqlex, "tx orderstatus 01",
 								"r");
@@ -645,7 +653,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 	protected HashSet PaymentDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -660,8 +669,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			try {
 				int __w_id = Integer.parseInt((String) obj.get("wid"));
 				int __c_w_id = Integer.parseInt((String) obj.get("cwid"));
-				float __h_amount = Float
-						.parseFloat((String) obj.get("hamount"));
+				float __h_amount = Float.parseFloat((String) obj
+						.get("hamount"));
 				int __d_id = Integer.parseInt((String) obj.get("did"));
 				int __c_d_id = Integer.parseInt((String) obj.get("cdid"));
 				int __c_id = Integer.parseInt((String) obj.get("cid"));
@@ -739,7 +748,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				statement.setInt(3, __c_d_id);
 				statement.executeUpdate();
 				statement.close();
-
+				logger.debug("c_id:"+_c_id+";c_w_id:"+__c_w_id+";c_d_id:"+__c_d_id);
 				statement = con
 						.prepareStatement("select *  from customer  where c_id = ? and  c_w_id = ? and  c_d_id = ?");
 				statement.setInt(1, _c_id);
@@ -844,6 +853,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				rs = null;
 				statement = null;
 
+				NetFinishTime = new java.util.Date();
 				String str = (String) (obj).get("cid");
 				if (str.equals("0")) {
 					processLog(NetStartTime, NetFinishTime, "processing", "w",
@@ -856,7 +866,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				logger.warn("Payment - SQL Exception " + sqlex.getMessage());
 				String str = (String) (obj).get("cid");
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
-						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
+						|| (sqlex.getMessage().indexOf("timeout") != -1) 
+						|| (sqlex.getMessage().indexOf("Deadlock") != -1)) {
 					if (str.equals("0")) {
 						RollbackTransaction(con, sqlex, "tx payment 01", "w");
 					} else {
@@ -900,7 +911,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 	protected HashSet StockLevelDB(java.util.Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj
+				.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -957,7 +969,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			} catch (java.sql.SQLException sqlex) {
 				logger.warn("StockLevel - SQL Exception " + sqlex.getMessage());
 				if ((sqlex.getMessage().indexOf("serialize") != -1)
-						|| (sqlex.getMessage().indexOf("deadlock") != -1)) {
+						|| (sqlex.getMessage().indexOf("timeout") != -1) 
+						|| (sqlex.getMessage().indexOf("Deadlock") != -1)) {
 					RollbackTransaction(con, sqlex, "stocklevel", "r");
 					if (resubmit) {
 						InitTransaction(con, "tx stocklevel", "r");
@@ -1016,13 +1029,13 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 	protected void CommitTransaction(Connection con, String strTrans,
 			String strAccess) throws java.sql.SQLException {
 		{
+			boolean resubmit =false;
 			Statement statement = null;
 			try {
 
 				Date NetStartTime = new java.util.Date();
-
 				statement = con.createStatement();
-				statement.execute("commit transaction");
+				statement.execute("commit");
 
 				Date NetFinishTime = new java.util.Date();
 
@@ -1030,8 +1043,22 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 						strAccess, strTrans);
 
 			} catch (java.sql.SQLException sqlex) {
-				RollbackTransaction(con, sqlex, strTrans, strAccess);
-				throw sqlex;
+				 logger.warn("Commit "+strTrans+" - SQL Exception " + sqlex.getMessage());
+                                if ((sqlex.getMessage().indexOf("serialize") != -1)
+                                                || (sqlex.getMessage().indexOf("timeout") != -1)
+                                                || (sqlex.getMessage().indexOf("Deadlock") != -1)) {
+                                        RollbackTransaction(con, sqlex, strTrans, "r");
+                                        if (resubmit) {
+                                                InitTransaction(con, strTrans, "r");
+                                        } else {
+                                                throw sqlex;
+                                    }
+				}
+	                        else{
+					sqlex.printStackTrace();
+					RollbackTransaction(con, sqlex, strTrans, strAccess);
+					throw sqlex;
+				}
 			} catch (java.lang.Exception ex) {
 				logger.fatal("Unexpected error. Something bad happend");
 				ex.printStackTrace(System.err);
@@ -1051,12 +1078,15 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			Date NetStartTime = new java.util.Date();
 
 			statement = con.createStatement();
-			statement.execute("rollback transaction");
+			statement.execute("ROLLBACK");
 
 			Date NetFinishTime = new java.util.Date();
 
 			processLog(NetStartTime, NetFinishTime, "aborting", strAccess,
 					strTrans);
+		}catch(java.sql.SQLException e)
+		{
+			e.printStackTrace();
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend");
 			ex.printStackTrace(System.err);

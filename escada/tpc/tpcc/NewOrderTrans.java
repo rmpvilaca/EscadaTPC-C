@@ -49,7 +49,7 @@ public class NewOrderTrans extends StateObject {
 		}
 
 		int i = 0;
-		int iid = 0;
+		int iid = 1;
 		int qtdi = 0;
 		int supwid = 0;
 		while (i < qtd) {
@@ -57,7 +57,7 @@ public class NewOrderTrans extends StateObject {
 					TPCCConst.numINIItem, TPCCConst.numENDItem);
 			qtdi = RandGen.nextInt(em.getRandom(), 1, TPCCConst.qtdItem + 1);
 			if ((error) && ((i + 1) >= qtd)) {
-				iid = 0;
+				iid = 1;
 				outInfo.put("abort", Integer.toString(1));
 			}
 			outInfo.put("iid" + i, Integer.toString(iid));
