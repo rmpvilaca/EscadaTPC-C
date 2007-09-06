@@ -23,8 +23,7 @@ public class dbPostgresql extends dbTPCCDatabase {
 	protected HashSet NewOrderDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -39,14 +38,10 @@ public class dbPostgresql extends dbTPCCDatabase {
 				statement = con
 						.prepareCall("select tpcc_neworder (?,?,?,?,?,?,?,?)");
 
-				statement.setInt(1, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("did")));
-				statement.setInt(3, Integer.parseInt((String) obj
-						.get("cid")));
-				statement.setInt(4, Integer.parseInt((String) obj
-						.get("qtd")));
+				statement.setInt(1, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("did")));
+				statement.setInt(3, Integer.parseInt((String) obj.get("cid")));
+				statement.setInt(4, Integer.parseInt((String) obj.get("qtd")));
 				statement.setInt(5, Integer.parseInt((String) obj
 						.get("localwid")));
 
@@ -129,8 +124,7 @@ public class dbPostgresql extends dbTPCCDatabase {
 	protected HashSet DeliveryDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -144,10 +138,8 @@ public class dbPostgresql extends dbTPCCDatabase {
 
 				statement = con.prepareStatement("select tpcc_delivery(?,?)");
 
-				statement.setInt(1, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("crid")));
+				statement.setInt(1, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("crid")));
 				rs = statement.executeQuery();
 
 				if (rs.next()) {
@@ -189,10 +181,6 @@ public class dbPostgresql extends dbTPCCDatabase {
 					RollbackTransaction(con, sqlex, "tx delivery", "w");
 					throw sqlex;
 				}
-			} catch (java.lang.Exception ex) {
-				logger.fatal("Unexpected error. Something bad happend");
-				ex.printStackTrace(System.err);
-				System.exit(-1);
 			} finally {
 				if (rs != null) {
 					rs.close();
@@ -209,8 +197,7 @@ public class dbPostgresql extends dbTPCCDatabase {
 	protected HashSet OrderStatusDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -224,12 +211,9 @@ public class dbPostgresql extends dbTPCCDatabase {
 				statement = con
 						.prepareStatement("select tpcc_orderstatus(?,?,?,?)");
 
-				statement.setInt(1, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("did")));
-				statement.setInt(3, Integer.parseInt((String) obj
-						.get("cid")));
+				statement.setInt(1, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("did")));
+				statement.setInt(3, Integer.parseInt((String) obj.get("cid")));
 				statement.setString(4, (String) obj.get("lastname"));
 				rs = statement.executeQuery();
 
@@ -298,10 +282,6 @@ public class dbPostgresql extends dbTPCCDatabase {
 					}
 					throw sqlex;
 				}
-			} catch (java.lang.Exception ex) {
-				logger.fatal("Unexpected error. Something bad happend");
-				ex.printStackTrace(System.err);
-				System.exit(-1);
 			} finally {
 				if (rs != null) {
 					rs.close();
@@ -318,8 +298,7 @@ public class dbPostgresql extends dbTPCCDatabase {
 	protected HashSet PaymentDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -333,18 +312,13 @@ public class dbPostgresql extends dbTPCCDatabase {
 				statement = con
 						.prepareStatement("select tpcc_payment(?,?,cast(? as numeric(6,2)),?,?,?,cast(? as char(16)))");
 
-				statement.setInt(1, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("cwid")));
+				statement.setInt(1, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("cwid")));
 				statement.setFloat(3, Float.parseFloat((String) obj
 						.get("hamount")));
-				statement.setInt(4, Integer.parseInt((String) obj
-						.get("did")));
-				statement.setInt(5, Integer.parseInt((String) obj
-						.get("cdid")));
-				statement.setInt(6, Integer.parseInt((String) obj
-						.get("cid")));
+				statement.setInt(4, Integer.parseInt((String) obj.get("did")));
+				statement.setInt(5, Integer.parseInt((String) obj.get("cdid")));
+				statement.setInt(6, Integer.parseInt((String) obj.get("cid")));
 				statement.setString(7, (String) obj.get("lastname"));
 
 				rs = statement.executeQuery();
@@ -408,10 +382,6 @@ public class dbPostgresql extends dbTPCCDatabase {
 					}
 					throw sqlex;
 				}
-			} catch (java.lang.Exception ex) {
-				logger.fatal("Unexpected error. Something bad happend");
-				ex.printStackTrace(System.err);
-				System.exit(-1);
 			} finally {
 				if (rs != null) {
 					rs.close();
@@ -428,8 +398,7 @@ public class dbPostgresql extends dbTPCCDatabase {
 	protected HashSet StockLevelDB(java.util.Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -443,10 +412,8 @@ public class dbPostgresql extends dbTPCCDatabase {
 				statement = con
 						.prepareStatement("select tpcc_stocklevel(?,?,?)");
 
-				statement.setInt(1, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("did")));
+				statement.setInt(1, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("did")));
 				statement.setInt(3, Integer.parseInt((String) obj
 						.get("threshhold")));
 				rs = statement.executeQuery();
@@ -490,10 +457,6 @@ public class dbPostgresql extends dbTPCCDatabase {
 					RollbackTransaction(con, sqlex, "tx stocklevel", "r");
 					throw sqlex;
 				}
-			} catch (java.lang.Exception ex) {
-				logger.fatal("Unexpected error. Something bad happend");
-				ex.printStackTrace(System.err);
-				System.exit(-1);
 			} finally {
 				if (rs != null) {
 					rs.close();
@@ -523,10 +486,6 @@ public class dbPostgresql extends dbTPCCDatabase {
 			processLog(NetStartTime, NetFinishTime, "beginning", strAccess,
 					strTrans);
 
-		} catch (java.lang.Exception ex) {
-			logger.fatal("Unexpected error. Something bad happend");
-			ex.printStackTrace(System.err);
-			System.exit(-1);
 		} finally {
 			if (statement != null) {
 				statement.close();
@@ -552,10 +511,6 @@ public class dbPostgresql extends dbTPCCDatabase {
 			} catch (java.sql.SQLException sqlex) {
 				RollbackTransaction(con, sqlex, strTrans, strAccess);
 				throw sqlex;
-			} catch (java.lang.Exception ex) {
-				logger.fatal("Unexpected error. Something bad happend");
-				ex.printStackTrace(System.err);
-				System.exit(-1);
 			} finally {
 				if (statement != null) {
 					statement.close();

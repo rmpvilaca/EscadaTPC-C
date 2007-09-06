@@ -1,5 +1,6 @@
 package escada.tpc.common;
 
+import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -30,7 +31,8 @@ public abstract class StateObject {
 	 * @param String
 	 *            host to which the emulator is attached to
 	 */
-	public abstract Object requestProcess(Emulation em, String hid);
+	public abstract Object requestProcess(Emulation em, String hid)
+			throws SQLException;
 
 	/**
 	 * It executes something after the main processing, for example it could be
@@ -41,7 +43,8 @@ public abstract class StateObject {
 	 * @param String
 	 *            host to which the emulator is attached to
 	 */
-	public abstract void postProcess(Emulation em, String hid);
+	public abstract void postProcess(Emulation em, String hid)
+			throws SQLException;
 
 	/**
 	 * It is used in order to execute the process.
@@ -51,7 +54,8 @@ public abstract class StateObject {
 	 * @param String
 	 *            host to which the emulator is attached to
 	 */
-	public abstract void initProcess(Emulation em, String hid);
+	public abstract void initProcess(Emulation em, String hid)
+			throws SQLException;
 
 	/**
 	 * It executes something before the main processing, for example it could be
@@ -62,7 +66,8 @@ public abstract class StateObject {
 	 * @param String
 	 *            host to which the emulator is attached to
 	 */
-	public abstract void prepareProcess(Emulation em, String hid);
+	public abstract void prepareProcess(Emulation em, String hid)
+			throws SQLException;
 
 	/**
 	 * It defines if this state can leads the processing to the intial state,

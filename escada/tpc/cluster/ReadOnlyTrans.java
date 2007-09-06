@@ -14,8 +14,9 @@ import escada.tpc.common.util.RandGen;
 public class ReadOnlyTrans extends StateObject {
 
 	public void initProcess(Emulation em, String hid) {
-		outInfo.put("resubmit", Boolean.toString(Emulation
-				.getStatusReSubmit()));
+		outInfo
+				.put("resubmit", Boolean
+						.toString(Emulation.getStatusReSubmit()));
 		outInfo.put("trace", Emulation.getTraceInformation());
 		outInfo.put("abort", "0");
 		outInfo.put("hid", hid);

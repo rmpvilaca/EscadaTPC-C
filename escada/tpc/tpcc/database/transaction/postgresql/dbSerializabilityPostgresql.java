@@ -39,8 +39,8 @@ public class dbSerializabilityPostgresql extends dbTPCCDatabase {
 				if (obj.get("wid") != null && obj.get("did") != null)
 					str.append(" select * from district where d_w_id = "
 							+ obj.get("wid") + " and d_id = " + obj.get("did")
-							+ ";"); 
-				
+							+ ";");
+
 				statement = con
 						.prepareCall("select tpcc_neworder (?,?,?,?,?,?,?,?)");
 

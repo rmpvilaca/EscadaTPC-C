@@ -1,11 +1,9 @@
 package escada.tpc.common.database;
 
-import escada.tpc.logger.PerformanceLogger;
-
 import java.sql.Connection;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import escada.tpc.logger.PerformanceLogger;
 
 /**
  * It implements a generic database interface with connection control
@@ -13,15 +11,13 @@ import org.apache.log4j.Logger;
  */
 public class DatabaseManager {
 
-	private static ConnectionManager cn = new ConnectionManager();
+	private ConnectionManager cn = new ConnectionManager();
 
-	private static boolean connectionpool = true;
+	private boolean connectionpool = true;
 
-	private static boolean virtualdatabase = false;
+	private boolean virtualdatabase = false;
 
-	private static Logger logger = Logger.getLogger(DatabaseManager.class);
-
-	private static Date baseTime = new java.util.Date();
+	private Date baseTime = new java.util.Date();
 
 	/**
 	 * It instanciates the CommonDatabase class.
@@ -39,7 +35,7 @@ public class DatabaseManager {
 	 * 
 	 * TODO: SUMIR COM ESSA IDEIA DE BASE VIRTUAL
 	 */
-	public static void setVirtualDatabase(boolean v) {
+	public void setVirtualDatabase(boolean v) {
 		virtualdatabase = v;
 	}
 
@@ -52,7 +48,7 @@ public class DatabaseManager {
 	 * @param int
 	 *            the maximum number of connections
 	 */
-	public static void setMaxConnection(int mConn) {
+	public void setMaxConnection(int mConn) {
 		if (!virtualdatabase)
 			cn.setMaxConnection(mConn);
 	}
@@ -64,7 +60,7 @@ public class DatabaseManager {
 	 *            (true) enables the connection pool or (false) disables the
 	 *            connection pool
 	 */
-	public static void setConnectionPool(boolean pool) {
+	public void setConnectionPool(boolean pool) {
 		if (!virtualdatabase)
 			connectionpool = pool;
 	}
@@ -78,7 +74,7 @@ public class DatabaseManager {
 	 * @param String
 	 *            the driver
 	 */
-	public static void setDriverName(String dName) {
+	public void setDriverName(String dName) {
 		if (!virtualdatabase)
 			cn.setDriverName(dName);
 	}
@@ -91,7 +87,7 @@ public class DatabaseManager {
 	 * @param String
 	 *            the jdbc path
 	 */
-	public static void setjdbcPath(String jdbc) {
+	public void setjdbcPath(String jdbc) {
 		if (!virtualdatabase)
 			cn.setjdbcPath(jdbc);
 	}
@@ -105,7 +101,7 @@ public class DatabaseManager {
 	 * @param passwd
 	 *            the password used to connect
 	 */
-	public static void setUserInfo(String usr, String pass) {
+	public void setUserInfo(String usr, String pass) {
 		if (!virtualdatabase)
 			cn.setUserInfo(usr, pass);
 	}

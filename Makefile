@@ -41,7 +41,7 @@ PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
              -PREFIX TPC-C \
              -DBpath jdbc:postgresql://localhost:5432/tpcc \
              -DBdriver org.postgresql.Driver \
-             -DBusr tpcc \
+             -DBusr alfranio \
              -DBpasswd tpcc \
              -POOL 20 \
              -MI 300 \
@@ -124,6 +124,9 @@ real-pgsql-04:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(PGSQL_FLAGS04)
 
 real-jmx:
-	$(JVM) -cp $(classpath) -Xmx1024M -Dcom.sun.management.jmxremote.port=5000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false escada.tpc.common.clients.jmx.ClientEmulationStartup
+	$(JVM) -cp $(classpath) -Xmx1024M -Dcom.sun.management.jmxremote.port=5001 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false escada.tpc.common.clients.jmx.ClientEmulationStartup
+
+populate:
+	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.tpcc.database.populate.dbPopulate 1 "jdbc:postgresql://localhost/tpcc" tpcc
 
 # arch-tag: 35a104c6-523c-493b-9afe-e85f72d9d865

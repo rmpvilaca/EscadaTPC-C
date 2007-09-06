@@ -1,5 +1,7 @@
 package escada.tpc.tpcc;
 
+import java.sql.SQLException;
+
 import org.apache.log4j.Logger;
 
 import escada.tpc.common.Emulation;
@@ -20,7 +22,7 @@ public class TPCCEmulation extends Emulation {
 
 	// Pausable implementation
 	private boolean paused = false;
-	
+
 	public void pause() {
 		this.paused = true;
 	}
@@ -31,11 +33,11 @@ public class TPCCEmulation extends Emulation {
 			this.notify();
 		}
 	}
-	
+
 	public void stopit() {
 		setFinished(true);
 	}
-	
+
 	public void initialize() {
 	}
 
@@ -50,13 +52,15 @@ public class TPCCEmulation extends Emulation {
 		return (curTrans.getKeyingTime());
 	}
 
-	public void process(String hid) {
+	public void process(String hid) throws SQLException {
 		try {
 			while ((getMaxTransactions() == -1) || (getMaxTransactions() > 0)) {
+				
 				if (isFinished()) {
 					logger.info("Client is returning.");
 					return;
 				}
+				
 				curTrans = getStateTransition().nextState();
 
 				setKeyingTime(keyingTime());
@@ -69,7 +73,7 @@ public class TPCCEmulation extends Emulation {
 				curTrans.requestProcess(this, hid);
 
 				curTrans.postProcess(this, hid);
-				
+
 				// check if should pause
 				synchronized (this) {
 					while (paused) {
@@ -82,33 +86,24 @@ public class TPCCEmulation extends Emulation {
 				}
 			}
 		} catch (java.lang.InterruptedException it) {
-		} catch (java.lang.Exception ex) {
-			logger.fatal("Unexpected error. Something bad happend.");
-			ex.printStackTrace(System.err);
-			System.exit(-1);
 		}
 	}
 
-	public Object processIncrement(String hid) {
+	public Object processIncrement(String hid) throws SQLException {
 		Object trans = null;
-		try {
-			if (isFinished()) {
-				logger.info("Client is returning.");
-				return (trans);
-			}
-			curTrans = getStateTransition().nextState();
 
-			setKeyingTime(keyingTime());
-			setThinkTime(getKeyingTime() + thinkTime());
-
-			trans = curTrans.requestProcess(this, hid);
-
-			curTrans.postProcess(this, hid);
-		} catch (java.lang.Exception ex) {
-			logger.fatal("Unexpected error. Something bad happend.");
-			ex.printStackTrace(System.err);
-			System.exit(-1);
+		if (isFinished()) {
+			logger.info("Client is returning.");
+			return (trans);
 		}
+		curTrans = getStateTransition().nextState();
+
+		setKeyingTime(keyingTime());
+		setThinkTime(getKeyingTime() + thinkTime());
+
+		trans = curTrans.requestProcess(this, hid);
+
+		curTrans.postProcess(this, hid);
 
 		return (trans);
 	}

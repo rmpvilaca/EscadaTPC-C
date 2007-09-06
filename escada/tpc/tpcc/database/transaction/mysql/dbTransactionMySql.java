@@ -24,8 +24,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 	protected HashSet NewOrderDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -92,12 +91,11 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 				_commit_flag = 0;
 
 				while (_li_no < _o_ol_cnt) {
-					_li_id = Integer.parseInt((String) obj.get("iid"
-							+ _li_no));
+					_li_id = Integer.parseInt((String) obj.get("iid" + _li_no));
 					_li_s_w_id = Integer.parseInt((String) obj.get("supwid"
 							+ _li_no));
-					_li_qty = Integer.parseInt((String) obj.get("qtdi"
-							+ _li_no));
+					_li_qty = Integer.parseInt((String) obj
+							.get("qtdi" + _li_no));
 
 					statement = con
 							.prepareStatement("select i_price, i_name, i_data from item where i_id = ?");
@@ -293,8 +291,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 	protected HashSet DeliveryDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -308,8 +305,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 
 			try {
 				int _w_id = Integer.parseInt((String) obj.get("wid"));
-				int _o_carrier_id = Integer.parseInt((String) obj
-						.get("crid"));
+				int _o_carrier_id = Integer.parseInt((String) obj.get("crid"));
 
 				int _d_id;
 				int _o_id;
@@ -474,8 +470,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 	protected HashSet OrderStatusDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -650,8 +645,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 	protected HashSet PaymentDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -666,8 +660,8 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 			try {
 				int __w_id = Integer.parseInt((String) obj.get("wid"));
 				int __c_w_id = Integer.parseInt((String) obj.get("cwid"));
-				float __h_amount = Float.parseFloat((String) obj
-						.get("hamount"));
+				float __h_amount = Float
+						.parseFloat((String) obj.get("hamount"));
 				int __d_id = Integer.parseInt((String) obj.get("did"));
 				int __c_d_id = Integer.parseInt((String) obj.get("cdid"));
 				int __c_id = Integer.parseInt((String) obj.get("cid"));
@@ -906,8 +900,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 	protected HashSet StockLevelDB(java.util.Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {

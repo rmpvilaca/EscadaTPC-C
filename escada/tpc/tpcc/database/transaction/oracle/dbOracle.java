@@ -23,8 +23,7 @@ public class dbOracle extends dbTPCCDatabase {
 	protected HashSet NewOrderDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -49,15 +48,11 @@ public class dbOracle extends dbTPCCDatabase {
 				statement.registerOutParameter(1,
 						oracle.jdbc.driver.OracleTypes.CURSOR);
 
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("wid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("wid")));
 
-				statement.setInt(3, Integer.parseInt((String) obj
-						.get("did")));
-				statement.setInt(4, Integer.parseInt((String) obj
-						.get("cid")));
-				statement.setInt(5, Integer.parseInt((String) obj
-						.get("qtd")));
+				statement.setInt(3, Integer.parseInt((String) obj.get("did")));
+				statement.setInt(4, Integer.parseInt((String) obj.get("cid")));
+				statement.setInt(5, Integer.parseInt((String) obj.get("qtd")));
 				statement.setInt(6, Integer.parseInt((String) obj
 						.get("localwid")));
 
@@ -129,8 +124,7 @@ public class dbOracle extends dbTPCCDatabase {
 	protected HashSet DeliveryDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -148,10 +142,8 @@ public class dbOracle extends dbTPCCDatabase {
 				statement = con.prepareCall(query);
 				statement.registerOutParameter(1,
 						oracle.jdbc.driver.OracleTypes.CURSOR);
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(3, Integer.parseInt((String) obj
-						.get("crid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(3, Integer.parseInt((String) obj.get("crid")));
 
 				statement.execute();
 
@@ -204,8 +196,7 @@ public class dbOracle extends dbTPCCDatabase {
 	protected HashSet OrderStatusDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -222,12 +213,9 @@ public class dbOracle extends dbTPCCDatabase {
 				statement = con.prepareCall(query);
 				statement.registerOutParameter(1,
 						oracle.jdbc.driver.OracleTypes.CURSOR);
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(3, Integer.parseInt((String) obj
-						.get("did")));
-				statement.setInt(4, Integer.parseInt((String) obj
-						.get("cid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(3, Integer.parseInt((String) obj.get("did")));
+				statement.setInt(4, Integer.parseInt((String) obj.get("cid")));
 				statement.setString(5, (String) obj.get("lastname") + "%");
 
 				statement.execute();
@@ -309,8 +297,7 @@ public class dbOracle extends dbTPCCDatabase {
 	protected HashSet PaymentDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -328,20 +315,14 @@ public class dbOracle extends dbTPCCDatabase {
 				statement = con.prepareCall(query);
 				statement.registerOutParameter(1,
 						oracle.jdbc.driver.OracleTypes.CURSOR);
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(3, Integer.parseInt((String) obj
-						.get("cwid")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(3, Integer.parseInt((String) obj.get("cwid")));
 				statement.setFloat(4, Float.parseFloat((String) obj
 						.get("hamount")));
-				statement.setInt(5, Integer.parseInt((String) obj
-						.get("did")));
-				statement.setInt(6, Integer.parseInt((String) obj
-						.get("cdid")));
-				statement.setInt(7, Integer.parseInt((String) obj
-						.get("cid")));
-				statement
-						.setString(8, ((String) obj.get("lastname")) + "%");
+				statement.setInt(5, Integer.parseInt((String) obj.get("did")));
+				statement.setInt(6, Integer.parseInt((String) obj.get("cdid")));
+				statement.setInt(7, Integer.parseInt((String) obj.get("cid")));
+				statement.setString(8, ((String) obj.get("lastname")) + "%");
 
 				statement.execute();
 
@@ -417,8 +398,7 @@ public class dbOracle extends dbTPCCDatabase {
 	protected HashSet StockLevelDB(Properties obj, Connection con)
 			throws java.sql.SQLException {
 
-		boolean resubmit = Boolean.parseBoolean((String) obj
-				.get("resubmit"));
+		boolean resubmit = Boolean.parseBoolean((String) obj.get("resubmit"));
 		HashSet dbtrace = new HashSet();
 
 		while (true) {
@@ -437,10 +417,8 @@ public class dbOracle extends dbTPCCDatabase {
 				statement.registerOutParameter(1,
 						oracle.jdbc.driver.OracleTypes.CURSOR);
 
-				statement.setInt(2, Integer.parseInt((String) obj
-						.get("wid")));
-				statement.setInt(3, Integer.parseInt((String) obj
-						.get("did")));
+				statement.setInt(2, Integer.parseInt((String) obj.get("wid")));
+				statement.setInt(3, Integer.parseInt((String) obj.get("did")));
 				statement.setInt(4, Integer.parseInt((String) obj
 						.get("threshhold")));
 

@@ -1,5 +1,6 @@
 package escada.tpc.common.clients;
 
+import java.lang.reflect.Constructor;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -16,7 +17,7 @@ import escada.tpc.common.args.StringArg;
 import escada.tpc.common.database.DatabaseManager;
 import escada.tpc.common.util.Pad;
 
-public class ClientEmulationStartup {
+public class ClientEmulationStartup implements ClientEmulationMaster {
 
 	private double slowDown;
 
@@ -39,7 +40,7 @@ public class ClientEmulationStartup {
 	}
 
 	public ClientEmulationStartup(String args[]) {
-		Vector ebs = new Vector(0);
+		Vector<ClientEmulation> ebs = new Vector<ClientEmulation>(0);
 		ClientEmulation e = null;
 		ArgDB db = new ArgDB();
 
@@ -161,11 +162,27 @@ public class ClientEmulationStartup {
 
 			Usage(args, db);
 
-			DatabaseManager.setConnectionPool(true);
-			DatabaseManager.setMaxConnection(poolArg.num);
-			DatabaseManager.setDriverName(driverArg.s);
-			DatabaseManager.setjdbcPath(pathArg.s);
-			DatabaseManager.setUserInfo(usrArg.s, passwdArg.s);
+			DatabaseManager dbManager = null;
+
+			Class cl = null;
+			Constructor co = null;
+			cl = Class.forName(dbArg.s);
+			try {
+				co = cl.getConstructor(new Class[] { Integer.TYPE });
+			} catch (Exception ex) {
+			}
+			if (co == null) {
+				dbManager = (DatabaseManager) cl.newInstance();
+			} else {
+				dbManager = (DatabaseManager) co
+						.newInstance(new Object[] { new Integer(cli.num) });
+			}
+
+			dbManager.setConnectionPool(true);
+			dbManager.setMaxConnection(poolArg.num);
+			dbManager.setDriverName(driverArg.s);
+			dbManager.setjdbcPath(pathArg.s);
+			dbManager.setUserInfo(usrArg.s, passwdArg.s);
 
 			Emulation.setFinished(false);
 			Emulation.setTraceInformation(prefix.s);
@@ -175,8 +192,9 @@ public class ClientEmulationStartup {
 
 			int i = 0;
 			for (i = 0; i < cli.num; i++) {
-				e = new ClientEmulation(ebArg.s, stArg.s, dbArg.s, cli.num, i,
-						prefix.s, Integer.toString(hostArg.num), fragArg.num);
+				e = new ClientEmulation(ebArg.s, stArg.s, cli.num, i, prefix.s,
+						Integer.toString(hostArg.num), fragArg.num, dbManager,
+						this);
 				e.setName(prefix.s + "-" + i);
 				ebs.add(e);
 				e.start();
@@ -230,8 +248,9 @@ public class ClientEmulationStartup {
 	private void waitForRampDown(int start, int term) {
 		try {
 			waitForStart(start);
-			if (term < 0)
+			if (term < 0) {
 				return;
+			}
 			Thread.sleep(term * 60 * 1000); // TODO: It must be changed to a
 			// constant.
 		} catch (InterruptedException ie) {
@@ -247,5 +266,8 @@ public class ClientEmulationStartup {
 		// constant.
 	}
 
+	public synchronized void notifyThreadsCompletion() {
+		notifyAll();
+	}
 }
 // arch-tag: d7a75e9a-a418-4fae-877c-72938e7dadc9

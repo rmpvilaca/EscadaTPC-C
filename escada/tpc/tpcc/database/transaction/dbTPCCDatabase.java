@@ -60,14 +60,12 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
 					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
 					&& (sqlex.getMessage().indexOf("connection") == -1)) {
-				logger.fatal("Unexpected error. Something bad happend");
-				sqlex.printStackTrace(System.err);
-				System.exit(-1);
+				if (con != null) {
+					con.close();
+				}
+				throw sqlex;
+				
 			}
-		} catch (java.lang.Exception ex) {
-			logger.fatal("Unexpected error. Something bad happend");
-			ex.printStackTrace(System.err);
-			System.exit(-1);
 		} finally {
 			returnConnection(con);
 		}
@@ -116,14 +114,11 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
 					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
 					&& (sqlex.getMessage().indexOf("connection") == -1)) {
-				logger.fatal("Unexpected error. Something bad happend");
-				sqlex.printStackTrace(System.err);
-				System.exit(-1);
+				if (con != null) {
+					con.close();
+				}				
+				throw sqlex;
 			}
-		} catch (java.lang.Exception ex) {
-			logger.fatal("Unexpected error. Something bad happend");
-			ex.printStackTrace(System.err);
-			System.exit(-1);
 		} finally {
 			returnConnection(con);
 		}
@@ -184,14 +179,11 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
 					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
 					&& (sqlex.getMessage().indexOf("connection") == -1)) {
-				logger.fatal("Unexpected error. Something bad happend");
-				sqlex.printStackTrace(System.err);
-				System.exit(-1);
+				if (con != null) {
+					con.close();
+				}				
+				throw sqlex;
 			}
-		} catch (java.lang.Exception ex) {
-			logger.fatal("Unexpected error. Something bad happend");
-			ex.printStackTrace(System.err);
-			System.exit(-1);
 		} finally {
 			returnConnection(con);
 		}
@@ -260,14 +252,11 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
 					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
 					&& (sqlex.getMessage().indexOf("connection") == -1)) {
-				logger.fatal("Unexpected error. Something bad happend");
-				sqlex.printStackTrace(System.err);
-				System.exit(-1);
+				if (con != null) {
+					con.close();
+				}				
+				throw sqlex;
 			}
-		} catch (java.lang.Exception ex) {
-			logger.fatal("Unexpected error. Something bad happend");
-			ex.printStackTrace(System.err);
-			System.exit(-1);
 		} finally {
 			returnConnection(con);
 		}
@@ -316,14 +305,11 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
 					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
 					&& (sqlex.getMessage().indexOf("connection") == -1)) {
-				logger.fatal("Unexpected error. Something bad happend");
-				sqlex.printStackTrace(System.err);
-				System.exit(-1);
+				if (con != null) {
+					con.close();
+				}				
+				throw sqlex;
 			}
-		} catch (java.lang.Exception ex) {
-			logger.fatal("Unexpected error. Something bad happend");
-			ex.printStackTrace(System.err);
-			System.exit(-1);
 		} finally {
 			returnConnection(con);
 		}

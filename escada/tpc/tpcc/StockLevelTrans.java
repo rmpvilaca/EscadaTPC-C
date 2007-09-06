@@ -1,7 +1,10 @@
 package escada.tpc.tpcc;
 
+import java.sql.SQLException;
+
 import escada.tpc.common.Emulation;
 import escada.tpc.common.StateObject;
+import escada.tpc.common.TPCConst;
 import escada.tpc.common.util.RandGen;
 import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
 
@@ -12,24 +15,25 @@ import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
  * value used to log traces or not and the trace file.
  */
 public class StockLevelTrans extends StateObject {
-	public void initProcess(Emulation em, String hid) {
-		int wid = (em.getEmulationId() / 10) + 1; // TODO -- Change to
-		// constant...
+	public void initProcess(Emulation em, String hid) throws SQLException {
+		int wid = (em.getEmulationId() / TPCConst.numMinClients) + 1; 
 		int did = 0;
 		int threshhold = 0;
 
-		outInfo.put("resubmit", Boolean.toString(Emulation
-				.getStatusReSubmit()));
+		outInfo
+				.put("resubmit", Boolean
+						.toString(Emulation.getStatusReSubmit()));
 		outInfo.put("trace", Emulation.getTraceInformation());
 		outInfo.put("abort", "0");
 		outInfo.put("hid", hid);
 
 		outInfo.put("wid", Integer.toString(wid));
-		if (((em.getEmulationId() + 1) % 10) == 0) {
-			outInfo.put("did", Integer.toString(10));
+		if (((em.getEmulationId() + 1) % TPCConst.numMinClients) == 0) {
+			outInfo.put("did", Integer.toString(TPCConst.numMinClients));
 		} else {
-			outInfo.put("did", Integer
-					.toString((em.getEmulationId() + 1) % 10));
+			outInfo
+					.put("did", Integer
+							.toString((em.getEmulationId() + 1) % TPCConst.numMinClients));
 		}
 
 		threshhold = RandGen.nextInt(em.getRandom(),
@@ -39,19 +43,16 @@ public class StockLevelTrans extends StateObject {
 		outInfo.put("file", em.getEmulationName());
 	}
 
-	public void prepareProcess(Emulation em, String hid) {
+	public void prepareProcess(Emulation em, String hid) throws SQLException {
 
 	}
 
-	public Object requestProcess(Emulation em, String hid) {
+	public Object requestProcess(Emulation em, String hid) throws SQLException {
 		Object requestProcess = null;
 		dbTPCCDatabase db = (dbTPCCDatabase) em.getDatabase();
-		try {
-			initProcess(em, hid);
-			requestProcess = db.TraceStockLevelDB(outInfo, hid);
-		} catch (Exception ex) {
-			ex.printStackTrace(System.err);
-		}
+		initProcess(em, hid);
+		requestProcess = db.TraceStockLevelDB(outInfo, hid);
+
 		return (requestProcess);
 	}
 

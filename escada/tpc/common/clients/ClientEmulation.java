@@ -1,12 +1,13 @@
 package escada.tpc.common.clients;
 
-import java.lang.reflect.Constructor;
+import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
 import escada.tpc.common.Emulation;
 import escada.tpc.common.PausableEmulation;
 import escada.tpc.common.StateTransition;
+import escada.tpc.common.TPCConst;
 import escada.tpc.common.database.DatabaseManager;
 
 /**
@@ -16,7 +17,9 @@ import escada.tpc.common.database.DatabaseManager;
 public class ClientEmulation extends Thread implements PausableEmulation {
 	private static Logger logger = Logger.getLogger(ClientEmulation.class);
 
-	Emulation e = null;
+	private ClientEmulationMaster master;
+
+	private Emulation e = null;
 
 	/**
 	 * It initializes the client Emulation instantiating the appropriate
@@ -46,13 +49,11 @@ public class ClientEmulation extends Thread implements PausableEmulation {
 	 * @param hid
 	 *            the host to which the client belongs
 	 */
-	public ClientEmulation(String emParam, String stateParam, String dbParam,
-			int totalCli, int ncli, String trace, String hid, int nfrag) {
+	public ClientEmulation(String emParam, String stateParam, int totalCli,
+			int ncli, String trace, String hid, int nfrag,
+			DatabaseManager dbManager, ClientEmulationMaster master) {
 
 		StateTransition s = null;
-		DatabaseManager d = null;
-		Class cl = null;
-		Constructor co = null;
 
 		logger.info("Starting " + ncli + " Ems.");
 
@@ -60,25 +61,16 @@ public class ClientEmulation extends Thread implements PausableEmulation {
 			e = (Emulation) Class.forName(emParam).newInstance();
 			s = (StateTransition) Class.forName(stateParam).newInstance();
 
-			cl = Class.forName(dbParam);
-			try {
-				co = cl.getConstructor(new Class[] { Integer.TYPE });
-			} catch (Exception ex) {
-			}
-			if (co == null)
-				d = (DatabaseManager) cl.newInstance();
-			else
-				d = (DatabaseManager) co
-						.newInstance(new Object[] { new Integer(totalCli) });
-
-			int temp = (ncli + ((nfrag - 1) * 10));
+			int temp = (ncli + ((nfrag - 1) * TPCConst.numMinClients));
 
 			e.initialize();
 			e.setEmulationId(temp);
 			e.setEmulationName(trace + "-" + temp);
 			e.setStateTransition(s);
-			e.setDatabase(d);
+			e.setDatabase(dbManager);
 			e.setHostId(hid);
+
+			this.master = master;
 
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend.");
@@ -91,7 +83,15 @@ public class ClientEmulation extends Thread implements PausableEmulation {
 	 * This function calls the appropriate emulation.
 	 */
 	public void run() {
-		e.process();
+		try {
+			e.process();
+		} catch (SQLException ex) {
+			logger
+					.error(
+							"Notifying the master thread to finish execution since something went wrong with this thread.",
+							ex);
+			master.notifyThreadsCompletion();
+		}
 	}
 
 	/**
@@ -99,27 +99,28 @@ public class ClientEmulation extends Thread implements PausableEmulation {
 	 * 
 	 * @return Object it returns an object Transaction
 	 */
-	public Object processIncrement() {
+	public Object processIncrement() throws SQLException {
 		return (e.processIncrement());
 	}
 
 	/**
 	 * This function calls the producer.
 	 */
-	public void process() {
+	public void process() throws SQLException {
 		e.process();
 	}
 
 	public void pause() {
 		e.pause();
 	}
-	
+
 	public void unpause() {
 		e.unpause();
 	}
-	
+
 	public void stopit() {
 		e.stopit();
+		master.notifyThreadsCompletion();
 	}
 }
 

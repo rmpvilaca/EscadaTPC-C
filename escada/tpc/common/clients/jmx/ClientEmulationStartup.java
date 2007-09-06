@@ -1,6 +1,8 @@
 package escada.tpc.common.clients.jmx;
 
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,91 +21,116 @@ import escada.tpc.common.args.DoubleArg;
 import escada.tpc.common.args.IntArg;
 import escada.tpc.common.args.StringArg;
 import escada.tpc.common.clients.ClientEmulation;
+import escada.tpc.common.clients.ClientEmulationMaster;
 import escada.tpc.common.database.DatabaseManager;
 import escada.tpc.common.util.Pad;
 
-public class ClientEmulationStartup implements ClientEmulationStartupMBean {
-	private final ExecutorService executor = Executors.newFixedThreadPool(2);	
-	private Stage stage = Stage.INIT;
-	
-	private final static Logger logger = Logger.getLogger(ClientEmulationStartup.class);
-	
-	private final Vector<ClientEmulation> ebs = new Vector<ClientEmulation>(0);
-	
+public class ClientEmulationStartup implements ClientEmulationStartupMBean,
+		ClientEmulationMaster {
+	private final ExecutorService executor = Executors.newFixedThreadPool(2);
+
+	private HashMap<String, Stage> stagem = new HashMap<String, Stage>();
+
+	private final static Logger logger = Logger
+			.getLogger(ClientEmulationStartup.class);
+
+	private final HashMap<String, Vector<ClientEmulation>> server = new HashMap<String, Vector<ClientEmulation>>();
+
 	private synchronized void init() {
 		try {
-			// register jmx bean
-			ObjectName name = new ObjectName("escada.tpc.common.clients.jmx:type=ClientEmulationStartup");
-			ManagementFactory.getPlatformMBeanServer().registerMBean(this, name);
-			
-			// wait for start
-			while ( !this.stage.equals(Stage.STOPPED) )
-				this.wait();
-		} catch (Throwable t) {
-			t.printStackTrace();
+			ObjectName name = new ObjectName(
+					"escada.tpc.common.clients.jmx:type=ClientEmulationStartup");
+			ManagementFactory.getPlatformMBeanServer()
+					.registerMBean(this, name);
+			System.out.println("Started jmx server.");
+			while (true) {
+				wait();
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
 			System.exit(1);
 		}
 	}
-	
-	public void start(String arg) throws InvalidTransactionException {
-		if ( this.stage.equals(Stage.INIT) ) {
-			this.setStage(Stage.RUNNING);
-			
+
+	public synchronized void start(String key, String arg)
+			throws InvalidTransactionException {
+
+		if (this.stagem.get(key) == null) {
+
+			this.stagem.put(key, Stage.RUNNING);
+
 			String[] args = arg.split("[ ]+");
-			this.executor.submit(new Start(args));
+
+			this.executor.submit(new Start(key, args));
+		} else {
+			throw new InvalidTransactionException(key + " start on "
+					+ this.stagem.get(key));
 		}
-		else
-			throw new InvalidTransactionException("start on "+this.stage);
-	}
-	
-	class Start implements Runnable {
-		private String[] args;
-		
-		public Start(String[] args) {
-			this.args = args;
-		}
-		
-		public void run() {
-			startClientEmulation(this.args);
-		}
-	}
-	
-	public void pause() throws InvalidTransactionException {
-		if ( this.stage.equals(Stage.RUNNING) ) {
-			this.setStage(Stage.PAUSED);
-			
-			for ( ClientEmulation e:ebs ) {
-				e.pause();
-			}
-		}
-		else
-			throw new InvalidTransactionException("pause on "+this.stage);
-	}
-	
-	public void unpause() throws InvalidTransactionException {
-		if ( this.stage.equals(Stage.PAUSED) ) {
-			this.setStage(Stage.RUNNING);
-			
-			for ( ClientEmulation e:ebs ) {
-				e.unpause();
-			}
-		}
-		else
-			throw new InvalidTransactionException("unpause on "+this.stage);
 	}
 
-	public void stop() throws InvalidTransactionException {
-		if ( this.stage.equals(Stage.RUNNING) || this.stage.equals(Stage.PAUSED) ) {
-			this.setStage(Stage.STOPPED);
-			
-			for ( ClientEmulation e:ebs ) {
+	class Start implements Runnable {
+		private String[] args;
+
+		private String key;
+
+		public Start(String key, String[] args) {
+			this.key = key;
+			this.args = args;
+		}
+
+		public void run() {
+			startClientEmulation(this.key, this.args);
+		}
+	}
+
+	public synchronized void pause(String key)
+			throws InvalidTransactionException {
+		if (this.stagem.get(key) != null
+				&& this.stagem.get(key).equals(Stage.RUNNING)) {
+
+			this.stagem.put(key, Stage.PAUSED);
+
+			for (ClientEmulation e : server.get(key)) {
+				e.pause();
+			}
+		} else {
+			throw new InvalidTransactionException(key + " pause on "
+					+ this.stagem.get(key));
+		}
+	}
+
+	public synchronized void unpause(String key)
+			throws InvalidTransactionException {
+		if (this.stagem.get(key) != null
+				&& this.stagem.get(key).equals(Stage.PAUSED)) {
+
+			this.stagem.put(key, Stage.RUNNING);
+
+			for (ClientEmulation e : server.get(key)) {
+				e.unpause();
+			}
+		} else {
+			throw new InvalidTransactionException(key + " unpause on "
+					+ this.stagem.get(key));
+		}
+	}
+
+	public synchronized void stop(String key)
+			throws InvalidTransactionException {
+		if (this.stagem.get(key) != null
+				&& (this.stagem.get(key).equals(Stage.RUNNING) || this.stagem
+						.get(key).equals(Stage.PAUSED))) {
+
+			for (ClientEmulation e : server.get(key)) {
 				e.stopit();
 			}
-			
-			this.executor.submit(new Kill());
+
+			this.server.remove(key);
+			this.stagem.remove(key);
+		} else {
+			throw new InvalidTransactionException(key + " stop on "
+					+ this.stagem.get(key));
 		}
-		else
-			throw new InvalidTransactionException("stop on "+this.stage);
 	}
 
 	public void kill() {
@@ -116,18 +143,12 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean {
 		}
 	}
 
-	private synchronized void setStage(Stage stage) {
-		logger.debug("setStage("+stage+")");
-		this.stage = stage;
-		this.notify();
-	}
-	
 	public static void main(String[] args) {
 		ClientEmulationStartup ces = new ClientEmulationStartup();
 		ces.init();
 	}
-	
-	private void startClientEmulation(String[] args) {
+
+	private void startClientEmulation(String keyArgs, String[] args) {
 		ClientEmulation e = null;
 		ArgDB db = new ArgDB();
 
@@ -249,11 +270,27 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean {
 
 			Usage(args, db);
 
-			DatabaseManager.setConnectionPool(true);
-			DatabaseManager.setMaxConnection(poolArg.num);
-			DatabaseManager.setDriverName(driverArg.s);
-			DatabaseManager.setjdbcPath(pathArg.s);
-			DatabaseManager.setUserInfo(usrArg.s, passwdArg.s);
+			DatabaseManager dbManager = null;
+
+			Class cl = null;
+			Constructor co = null;
+			cl = Class.forName(dbArg.s);
+			try {
+				co = cl.getConstructor(new Class[] { Integer.TYPE });
+			} catch (Exception ex) {
+			}
+			if (co == null) {
+				dbManager = (DatabaseManager) cl.newInstance();
+			} else {
+				dbManager = (DatabaseManager) co
+						.newInstance(new Object[] { new Integer(cli.num) });
+			}
+
+			dbManager.setConnectionPool(true);
+			dbManager.setMaxConnection(poolArg.num);
+			dbManager.setDriverName(driverArg.s);
+			dbManager.setjdbcPath(pathArg.s);
+			dbManager.setUserInfo(usrArg.s, passwdArg.s);
 
 			Emulation.setFinished(false);
 			Emulation.setTraceInformation(prefix.s);
@@ -261,21 +298,26 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean {
 			Emulation.setStatusThinkTime(key.flag);
 			Emulation.setStatusReSubmit(resArg.flag);
 
+			Vector<ClientEmulation> ebs = new Vector<ClientEmulation>();
+
 			int i = 0;
 			for (i = 0; i < cli.num; i++) {
-				e = new ClientEmulation(ebArg.s, stArg.s, dbArg.s, cli.num, i,
-						prefix.s, Integer.toString(hostArg.num), fragArg.num);
+				e = new ClientEmulation(ebArg.s, stArg.s, cli.num, i, prefix.s,
+						Integer.toString(hostArg.num), fragArg.num, dbManager,
+						this);
 				e.setName(prefix.s + "-" + i);
 				ebs.add(e);
 				e.start();
 			}
+
+			server.put(keyArgs, ebs);
 
 			logger.info("Running simulation for " + mi.num + " minute(s).");
 
 			waitForRampDown(0, mi.num);
 
 			Emulation.setFinished(true);
-			
+
 			for (i = 0; i < cli.num; i++) {
 				e = (ClientEmulation) ebs.elementAt(i);
 				logger.info("Waiting for the eb " + i + " to finish its job..");
@@ -286,18 +328,17 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean {
 					continue;
 				}
 			}
-
-			logger.info("EBs finished.");
-			System.exit(0);
-
 		} catch (Arg.Exception ae) {
 			logger.info("Error:");
 			logger.info(ae);
 			Usage(args, db);
 			return;
 		} catch (Exception ex) {
-			logger.fatal("Error: Invalid parameters.");
-			System.exit(-1);
+			logger.info("Error while creating clients: ", ex);
+		} finally {
+			this.server.remove(keyArgs);
+			this.stagem.remove(keyArgs);
+			logger.info("Ebs finished their jobs..");
 		}
 	}
 
@@ -316,23 +357,35 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean {
 		db.print();
 	}
 
-	private void waitForRampDown(int start, int term) {
+	public synchronized void notifyThreadsCompletion() {
+		notifyAll();
+	}
+
+	private synchronized void waitForRampDown(int start, int term) {
 		try {
+			if (logger.isInfoEnabled()) {
+				logger.info("Start time " + start + " completion time " + term);
+			}
+
 			waitForStart(start);
-			if (term < 0)
+
+			if (term < 0) {
 				return;
-			Thread.sleep(term * 60 * 1000); // TODO: It must be changed to a
-			// constant.
+			}
+
+			wait(term * 60 * 1000); // TODO: It must be changed to a
+
 		} catch (InterruptedException ie) {
 			logger.error("In waitforrampdown, caught interrupted exception");
 		}
 	}
 
 	private void waitForStart(int start) throws InterruptedException {
-		if (start < 0)
+		if (start < 0) {
 			return;
+		}
 
 		Thread.sleep(start * 60 * 1000); // TODO - It must be changed to a
 		// constant.
-	} 
+	}
 }

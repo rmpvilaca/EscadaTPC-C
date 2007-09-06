@@ -1,0 +1,9 @@
+truncate warehouse;
+truncate district;
+truncate customer;
+truncate item;
+truncate stock;
+truncate orders;
+truncate order_line;
+truncate history;
+truncate new_order;

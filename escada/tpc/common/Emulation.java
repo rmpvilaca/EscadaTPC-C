@@ -1,5 +1,6 @@
 package escada.tpc.common;
 
+import java.sql.SQLException;
 import java.util.Random;
 
 import escada.tpc.common.database.DatabaseManager;
@@ -325,7 +326,7 @@ public abstract class Emulation implements PausableEmulation {
 	 *            host to which the emulator is attached to.
 	 * @see run,processIncrement
 	 */
-	public abstract void process(String hid);
+	public abstract void process(String hid) throws SQLException;
 
 	/**
 	 * It proceeds with the emulation according to the host to which it belongs
@@ -333,7 +334,7 @@ public abstract class Emulation implements PausableEmulation {
 	 * 
 	 * @see run,processIncrement
 	 */
-	public void process() {
+	public void process() throws SQLException {
 		process(hid);
 	}
 
@@ -346,7 +347,7 @@ public abstract class Emulation implements PausableEmulation {
 	 *            host to which the emulator is attached to.
 	 * @see run,process
 	 */
-	public abstract Object processIncrement(String hid);
+	public abstract Object processIncrement(String hid) throws SQLException;
 
 	/**
 	 * In contrast to the process method, it executes just one transaction per
@@ -355,7 +356,7 @@ public abstract class Emulation implements PausableEmulation {
 	 * 
 	 * @see run,process
 	 */
-	public Object processIncrement() {
+	public Object processIncrement() throws SQLException {
 		return (processIncrement(hid));
 	}
 

@@ -5,13 +5,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 import oracle.jdbc.pool.OracleDataSource;
+
+import org.apache.log4j.Logger;
 
 public class ConnectionManager {
 	private static Logger logger = Logger.getLogger(ConnectionManager.class);
-	
+
 	private static Vector availConn = new Vector(0);
 
 	private static int checkedOut = 0;
@@ -36,7 +36,7 @@ public class ConnectionManager {
 	 * 
 	 * @param int the maximum number of connections
 	 */
-	public static void setMaxConnection(int mConn) {
+	public void setMaxConnection(int mConn) {
 		maxConn = mConn;
 	}
 
@@ -49,7 +49,7 @@ public class ConnectionManager {
 	 * @param String
 	 *            the driver
 	 */
-	public static void setDriverName(String dName) {
+	public void setDriverName(String dName) {
 		driverName = dName;
 	}
 
@@ -61,7 +61,7 @@ public class ConnectionManager {
 	 * @param String
 	 *            the jdbc path
 	 */
-	public static void setjdbcPath(String jdbc) {
+	public void setjdbcPath(String jdbc) {
 		jdbcPath = jdbc;
 	}
 
@@ -74,7 +74,7 @@ public class ConnectionManager {
 	 * @param passwd
 	 *            the password used to connect
 	 */
-	public static void setUserInfo(String usr, String pass) {
+	public void setUserInfo(String usr, String pass) {
 		user = usr;
 		passwd = pass;
 	}
@@ -122,26 +122,26 @@ public class ConnectionManager {
 
 		return con;
 	}
-	
+
 	public synchronized void releaseConnections() {
-			Connection con;
-			
-			while (availConn.size() > 0) {
-				con = (Connection) availConn.firstElement();
-				availConn.removeElementAt(0);
-				try {
-					if (! con.isClosed()) {
-						con.close();
-					}
-				} catch (SQLException sqlex) {
-					logger.fatal("Unexpected error. Something bad happend.");
-					sqlex.printStackTrace(System.err);
-					System.exit(-1);
+		Connection con;
+
+		while (availConn.size() > 0) {
+			con = (Connection) availConn.firstElement();
+			availConn.removeElementAt(0);
+			try {
+				if (!con.isClosed()) {
+					con.close();
 				}
+			} catch (SQLException sqlex) {
+				logger.fatal("Unexpected error. Something bad happend.");
+				sqlex.printStackTrace(System.err);
+				System.exit(-1);
 			}
-			checkedOut = 0;
-			totalConnections = 0;
-	}	
+		}
+		checkedOut = 0;
+		totalConnections = 0;
+	}
 
 	/**
 	 * It returns the connection to the pool in order to improve performance,
@@ -199,7 +199,8 @@ public class ConnectionManager {
 
 	public synchronized void closeConnection(Connection con) {
 		try {
-			if (con != null) con.close();
+			if (con != null)
+				con.close();
 			totalConnections--;
 
 		} catch (Exception ex) {
