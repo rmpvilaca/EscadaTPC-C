@@ -485,7 +485,7 @@ public class dbPostgresql extends dbTPCCDatabase {
 
 			processLog(NetStartTime, NetFinishTime, "beginning", strAccess,
 					strTrans);
-
+			
 		} finally {
 			if (statement != null) {
 				statement.close();

@@ -12,21 +12,21 @@ import org.apache.log4j.Logger;
 public class ConnectionManager {
 	private static Logger logger = Logger.getLogger(ConnectionManager.class);
 
-	private static Vector availConn = new Vector(0);
+	private Vector availConn = new Vector(0);
 
-	private static int checkedOut = 0;
+	private int checkedOut = 0;
 
-	private static int totalConnections = 0;
+	private int totalConnections = 0;
 
-	private static String user = "tpcc";
+	private String user = "tpcc";
 
-	private static String passwd = null;
+	private String passwd = null;
 
-	private static String driverName = "org.postgresql.Driver";
+	private String driverName = "org.postgresql.Driver";
 
-	private static String jdbcPath = "jdbc:postgresql://localhost:5432/tpcc";
+	private String jdbcPath = "jdbc:postgresql://localhost:5432/tpcc";
 
-	private static int maxConn = 1;
+	private int maxConn = 1;
 
 	/*
 	 * It defines the maximum number of available connections. This information
@@ -114,6 +114,9 @@ public class ConnectionManager {
 		if (con != null)
 			checkedOut++;
 
+		logger.info("Connection " + this.jdbcPath + " for thread "
+				+ Thread.currentThread().getName());
+
 		return con;
 	}
 
@@ -123,11 +126,11 @@ public class ConnectionManager {
 		while (availConn.size() > 0) {
 			con = (Connection) availConn.firstElement();
 			availConn.removeElementAt(0);
-	
-				if (!con.isClosed()) {
-					con.close();
-				}
-	
+
+			if (!con.isClosed()) {
+				con.close();
+			}
+
 		}
 		checkedOut = 0;
 		totalConnections = 0;
@@ -159,17 +162,16 @@ public class ConnectionManager {
 			Class.forName(driverName);
 			Connection con;
 			while (true) {
-					if (jdbcPath.indexOf("oracle") != -1) {
-						OracleDataSource ods = new OracleDataSource();
-						ods.setURL(jdbcPath);
-						ods.setUser(user);
-						ods.setPassword(passwd);
-						con = ods.getConnection();
-					} else
-						con = DriverManager.getConnection(jdbcPath, user,
-								passwd);
-					con.setAutoCommit(false);
-					break;
+				if (jdbcPath.indexOf("oracle") != -1) {
+					OracleDataSource ods = new OracleDataSource();
+					ods.setURL(jdbcPath);
+					ods.setUser(user);
+					ods.setPassword(passwd);
+					con = ods.getConnection();
+				} else
+					con = DriverManager.getConnection(jdbcPath, user, passwd);
+				con.setAutoCommit(false);
+				break;
 			}
 			totalConnections++;
 			return con;
@@ -181,8 +183,9 @@ public class ConnectionManager {
 
 	public synchronized void closeConnection(Connection con) {
 		try {
-			if (con != null)
+			if (con != null) {
 				con.close();
+			}
 			totalConnections--;
 
 		} catch (Exception ex) {

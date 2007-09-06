@@ -66,7 +66,7 @@ public class TPCCEmulation extends Emulation {
 				setKeyingTime(keyingTime());
 				setThinkTime(getKeyingTime() + thinkTime());
 
-				if (Emulation.getStatusThinkTime()) {
+				if (getStatusThinkTime()) {
 					Thread.sleep(getThinkTime());
 				}
 

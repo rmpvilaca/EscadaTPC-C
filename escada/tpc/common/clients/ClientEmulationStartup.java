@@ -184,33 +184,43 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 			dbManager.setjdbcPath(pathArg.s);
 			dbManager.setUserInfo(usrArg.s, passwdArg.s);
 
-			Emulation.setFinished(false);
-			Emulation.setTraceInformation(prefix.s);
-			Emulation.setNumberConcurrentEmulators(cli.num);
-			Emulation.setStatusThinkTime(key.flag);
-			Emulation.setStatusReSubmit(resArg.flag);
-
 			int i = 0;
 			for (i = 0; i < cli.num; i++) {
-				e = new ClientEmulation(ebArg.s, stArg.s, cli.num, i, prefix.s,
-						Integer.toString(hostArg.num), fragArg.num, dbManager,
-						this);
-				e.setName(prefix.s + "-" + i);
+				
+				e = new ClientEmulation();
+				
+				e.setFinished(false);
+				e.setTraceInformation(prefix.s);
+				e.setNumberConcurrentEmulators(cli.num);
+				e.setStatusThinkTime(key.flag);
+				e.setStatusReSubmit(resArg.flag);
+				
+				e.setDatabase(dbManager);
+				e.setEmulationName(prefix.s);
+				e.setHostId(Integer.toString(hostArg.num));
+				e.setNumberConcurrentEmulators(cli.num);
+				
+				e.create(ebArg.s, stArg.s, i, fragArg.num, this,null);				
+				
+				Thread t = new Thread();
+				t.setName(prefix.s + "-" + i);
+				t.start();
+				
+				e.setThread(t);
+				
 				ebs.add(e);
-				e.start();
 			}
 
 			logger.info("Running simulation for " + mi.num + " minute(s).");
 
 			waitForRampDown(0, mi.num);
 
-			Emulation.setFinished(true);
-
 			for (i = 0; i < cli.num; i++) {
 				e = (ClientEmulation) ebs.elementAt(i);
 				logger.info("Waiting for the eb " + i + " to finish its job..");
 				try {
-					e.join();
+					e.setCompletion(true);
+					e.getThread().join();
 				} catch (InterruptedException inte) {
 					inte.printStackTrace();
 					continue;
@@ -266,7 +276,7 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 		// constant.
 	}
 
-	public synchronized void notifyThreadsCompletion() {
+	public synchronized void notifyThreadsCompletion(String key) {
 		notifyAll();
 	}
 }

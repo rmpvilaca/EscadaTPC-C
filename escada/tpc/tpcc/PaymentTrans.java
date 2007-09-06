@@ -25,10 +25,10 @@ public class PaymentTrans extends StateObject {
 		String lastname = null;
 		float hamount = 0;
 
-		outInfo.put("trace", Emulation.getTraceInformation());
+		outInfo.put("trace", em.getTraceInformation());
 		outInfo
 				.put("resubmit", Boolean
-						.toString(Emulation.getStatusReSubmit()));
+						.toString(em.getStatusReSubmit()));
 		outInfo.put("abort", "0");
 		outInfo.put("hid", hid);
 
@@ -51,14 +51,14 @@ public class PaymentTrans extends StateObject {
 
 		if ((RandGen.nextInt(em.getRandom(),
 				TPCCConst.rngPaymentLOCALWarehouse + 1) <= TPCCConst.probPaymentLOCALWarehouse)
-				|| (Emulation.getNumberConcurrentEmulators() <= TPCConst.getNumMinClients())) {
+				|| (em.getNumberConcurrentEmulators() <= TPCConst.getNumMinClients())) {
 			outInfo.put("cwid", Integer.toString(wid));
 			outInfo.put("cdid", Integer.toString(did));
 		} else {
 			cdid = RandGen
 					.nextInt(em.getRandom(), 1, TPCCConst.getNumDistrict() + 1);
 			outInfo.put("cdid", Integer.toString(cdid));
-			cwid = RandGen.nextInt(em.getRandom(), 1, (Emulation
+			cwid = RandGen.nextInt(em.getRandom(), 1, (em
 					.getNumberConcurrentEmulators() / TPCConst.getNumMinClients()) + 1);
 			outInfo.put("cwid", Integer.toString(cwid));
 		}

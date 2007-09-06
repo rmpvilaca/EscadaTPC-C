@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
 
+import escada.tpc.common.PerformanceCounters;
 import escada.tpc.logger.PerformanceLogger;
 
 /**
@@ -124,7 +125,7 @@ public class DatabaseManager {
 		return (null);
 	}
 
-	public void releaseConnections() throws SQLException{
+	public void releaseConnections() throws SQLException {
 		cn.releaseConnections();
 	}
 
@@ -147,6 +148,21 @@ public class DatabaseManager {
 			String transAccess, String transName) {
 
 		if (PerformanceLogger.isPerformanceLoggerEnabled()) {
+
+			if (transResult.equalsIgnoreCase("beginning")) {
+
+				PerformanceCounters.setIncommingRate();
+
+			} else if (transResult.equalsIgnoreCase("committing")) {
+
+				PerformanceCounters.setCommitRate();
+
+			} else if (transResult.equalsIgnoreCase("aborting")) {
+
+				PerformanceCounters.setAbortRate();
+
+			}
+
 			PerformanceLogger.info((startTime.getTime() - baseTime.getTime())
 					+ ":0:" + (finishTime.getTime() - baseTime.getTime()) + ":"
 					+ (finishTime.getTime() - startTime.getTime()) + ":"

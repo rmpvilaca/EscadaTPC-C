@@ -53,12 +53,12 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -LOGconfig configuration.files/logger.xml \
              -KEY true \
-             -CLI 10\
+             -CLI 20\
              -STclass escada.tpc.tpcc.TPCCStateTransition \
              -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql \
              -TRACEFLAG TRACE \
              -PREFIX TPC-C \
-             -DBpath jdbc:postgresql://192.168.82.131:5432/tpcc \
+             -DBpath jdbc:postgresql://localhost:5432/tpcc \
              -DBdriver org.postgresql.Driver \
              -DBusr alfranio \
              -DBpasswd tpcc \

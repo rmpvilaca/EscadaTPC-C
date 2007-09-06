@@ -25,8 +25,8 @@ public class NewOrderTrans extends StateObject {
 
 		outInfo
 				.put("resubmit", Boolean
-						.toString(Emulation.getStatusReSubmit()));
-		outInfo.put("trace", Emulation.getTraceInformation());
+						.toString(em.getStatusReSubmit()));
+		outInfo.put("trace", em.getTraceInformation());
 		outInfo.put("abort", Integer.toString(0));
 		outInfo.put("hid", hid);
 
@@ -64,10 +64,10 @@ public class NewOrderTrans extends StateObject {
 			outInfo.put("qtdi" + i, Integer.toString(qtdi));
 			if ((RandGen.nextInt(em.getRandom(),
 					TPCCConst.rngNewOrderLOCALWarehouse + 1) <= TPCCConst.probNewOrderLOCALWarehouse)
-					|| (Emulation.getNumberConcurrentEmulators() <= TPCConst.getNumMinClients())) {
+					|| (em.getNumberConcurrentEmulators() <= TPCConst.getNumMinClients())) {
 				outInfo.put("supwid" + i, Integer.toString(wid));
 			} else {
-				supwid = RandGen.nextInt(em.getRandom(), 1, (Emulation
+				supwid = RandGen.nextInt(em.getRandom(), 1, (em
 						.getNumberConcurrentEmulators() / TPCConst.getNumMinClients()) + 1);
 				outInfo.put("supwid" + i, Integer.toString(supwid));
 				localWarehouse = false;

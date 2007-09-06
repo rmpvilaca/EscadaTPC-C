@@ -16,7 +16,7 @@ import javax.management.ObjectName;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 
-import escada.tpc.common.Emulation;
+import escada.tpc.common.PerformanceCounters;
 import escada.tpc.common.TPCConst;
 import escada.tpc.common.args.Arg;
 import escada.tpc.common.args.ArgDB;
@@ -63,16 +63,22 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 				System.out.println("Running with tpcc default parameters.");
 			} catch (IOException e) {
 				System.out.println("Running with tpcc default parameters.");
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				System.out.println("Running with tpcc default parameters.");
 			}
 			ObjectName name = new ObjectName(
-					"escada.tpc.common.clients.jmx:type=ClientEmulationStartup");
+					"escada.tpc.common.clients.jmx:type=ClientControl");
 			ManagementFactory.getPlatformMBeanServer()
 					.registerMBean(this, name);
+
+			name = new ObjectName(
+					"escada.tpc.common.clients.jmx:type=ClientPerformance");
+
+			ManagementFactory.getPlatformMBeanServer().registerMBean(
+					PerformanceCounters.getReference(), name);
+
 			System.out.println("Started jmx server.");
-			
+
 			while (true) {
 				wait();
 			}
@@ -292,7 +298,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			db.parse(args);
 
 			DOMConfigurator.configure(log4jArg.s);
-			
+
 			logger.info("Starting up the client application.");
 			logger.info("Remote Emulator for Database Benchmark ...");
 			logger
@@ -323,37 +329,44 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			dbManager.setjdbcPath(pathArg.s);
 			dbManager.setUserInfo(usrArg.s, passwdArg.s);
 
-			Emulation.setFinished(false);
-			Emulation.setTraceInformation(prefix.s);
-			Emulation.setNumberConcurrentEmulators(cli.num);
-			Emulation.setStatusThinkTime(key.flag);
-			Emulation.setStatusReSubmit(resArg.flag);
-
 			Vector<ClientEmulation> ebs = new Vector<ClientEmulation>();
 
 			int i = 0;
 			for (i = 0; i < cli.num; i++) {
-				e = new ClientEmulation(ebArg.s, stArg.s, cli.num, i, prefix.s,
-						Integer.toString(hostArg.num), fragArg.num, dbManager,
-						this);
-				e.setName(prefix.s + "-" + i);
+
+				e = new ClientEmulation();
+
+				e.setFinished(false);
+				e.setTraceInformation(prefix.s);
+				e.setNumberConcurrentEmulators(cli.num);
+				e.setStatusThinkTime(key.flag);
+				e.setStatusReSubmit(resArg.flag);
+				e.setDatabase(dbManager);
+				e.setEmulationName(prefix.s);
+				e.setHostId(Integer.toString(hostArg.num));
+
+				e.create(ebArg.s, stArg.s, i, fragArg.num, this, keyArgs);
+
+				Thread t = new Thread(e);
+				t.setName(prefix.s + "-" + i);
+				e.setThread(t);
+				t.start();
+
 				ebs.add(e);
-				e.start();
 			}
 
 			server.put(keyArgs, ebs);
 
 			logger.info("Running simulation for " + mi.num + " minute(s).");
 
-			waitForRampDown(0, mi.num);
-
-			Emulation.setFinished(true);
+			waitForRampDown(keyArgs, 0, mi.num);
 
 			for (i = 0; i < cli.num; i++) {
 				e = (ClientEmulation) ebs.elementAt(i);
 				logger.info("Waiting for the eb " + i + " to finish its job..");
 				try {
-					e.join();
+					e.setCompletion(true);
+					e.getThread().join();
 				} catch (InterruptedException inte) {
 					inte.printStackTrace();
 					continue;
@@ -388,11 +401,12 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		db.print();
 	}
 
-	public synchronized void notifyThreadsCompletion() {
+	public synchronized void notifyThreadsCompletion(String key) {
+		this.stagem.put(key, Stage.STOPPED);
 		notifyAll();
 	}
 
-	private synchronized void waitForRampDown(int start, int term) {
+	private synchronized void waitForRampDown(String key, int start, int term) {
 		try {
 			if (logger.isInfoEnabled()) {
 				logger.info("Start time " + start + " completion time " + term);
@@ -404,8 +418,30 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 				return;
 			}
 
-			wait(term * 60 * 1000); // TODO: It must be changed to a
+			long ini = System.currentTimeMillis();
+			long end = 0;
+			long remaining = term * 60 * 1000; // TODO: It must be changed to a
+			// constant
 
+			while (remaining > 0 && this.stagem.get(key) != null
+					&& !this.stagem.get(key).equals(Stage.STOPPED)) {
+				wait(remaining);
+
+				end = System.currentTimeMillis();
+
+				if (logger.isInfoEnabled()) {
+					logger.info("Start remain " + remaining + " ini " + ini
+							+ " end " + end);
+				}
+
+				remaining = remaining - (end - ini);
+				ini = end;
+
+				if (logger.isInfoEnabled()) {
+					logger.info("Start remain " + remaining + " ini " + ini
+							+ " end " + end);
+				}
+			}
 		} catch (InterruptedException ie) {
 			logger.error("In waitforrampdown, caught interrupted exception");
 		}
@@ -418,5 +454,9 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 		Thread.sleep(start * 60 * 1000); // TODO - It must be changed to a
 		// constant.
+	}
+
+	public void configureCluster(String replicas)
+			throws InvalidTransactionException {
 	}
 }

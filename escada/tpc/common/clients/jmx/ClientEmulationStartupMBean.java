@@ -13,6 +13,8 @@ public interface ClientEmulationStartupMBean {
 	public void unpause(String key) throws InvalidTransactionException;
 
 	public void stop(String key) throws InvalidTransactionException;
+	
+	public void configureCluster(String replicas) throws InvalidTransactionException;
 
 	public void kill();
 }

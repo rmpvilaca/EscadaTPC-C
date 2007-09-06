@@ -24,8 +24,8 @@ public class OrderStatusTrans extends StateObject {
 
 		outInfo
 				.put("resubmit", Boolean
-						.toString(Emulation.getStatusReSubmit()));
-		outInfo.put("trace", Emulation.getTraceInformation());
+						.toString(em.getStatusReSubmit()));
+		outInfo.put("trace", em.getTraceInformation());
 		outInfo.put("abort", "0");
 		outInfo.put("hid", hid);
 

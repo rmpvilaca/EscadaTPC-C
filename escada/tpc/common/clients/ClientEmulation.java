@@ -5,21 +5,24 @@ import java.sql.SQLException;
 import org.apache.log4j.Logger;
 
 import escada.tpc.common.Emulation;
+import escada.tpc.common.EmulationConfiguration;
 import escada.tpc.common.PausableEmulation;
 import escada.tpc.common.StateTransition;
 import escada.tpc.common.TPCConst;
-import escada.tpc.common.database.DatabaseManager;
 
 /**
  * It initializes the client Emulation instantiating the appropriate objects.
  * 
  */
-public class ClientEmulation extends Thread implements PausableEmulation {
+public class ClientEmulation extends EmulationConfiguration implements
+		PausableEmulation, Runnable {
 	private static Logger logger = Logger.getLogger(ClientEmulation.class);
 
 	private ClientEmulationMaster master;
 
 	private Emulation e = null;
+
+	private String controlKey = null;
 
 	/**
 	 * It initializes the client Emulation instantiating the appropriate
@@ -49,9 +52,8 @@ public class ClientEmulation extends Thread implements PausableEmulation {
 	 * @param hid
 	 *            the host to which the client belongs
 	 */
-	public ClientEmulation(String emParam, String stateParam, int totalCli,
-			int ncli, String trace, String hid, int nfrag,
-			DatabaseManager dbManager, ClientEmulationMaster master) {
+	public void create(String emParam, String stateParam, int ncli, int nfrag,
+			ClientEmulationMaster master, String controlKey) {
 
 		StateTransition s = null;
 
@@ -65,12 +67,22 @@ public class ClientEmulation extends Thread implements PausableEmulation {
 
 			e.initialize();
 			e.setEmulationId(temp);
-			e.setEmulationName(trace + "-" + temp);
+			e.setEmulationName(this.getEmulationName() + "-" + temp);
 			e.setStateTransition(s);
-			e.setDatabase(dbManager);
-			e.setHostId(hid);
+			e.setDatabase(this.getDatabase());
+			e.setHostId(this.getHostId());
+
+			e.setFinished(this.isFinished());
+			e.setTraceInformation(this.getTraceInformation());
+			e.setNumberConcurrentEmulators(this.getNumberConcurrentEmulators());
+			e.setStatusThinkTime(this.getStatusThinkTime());
+			e.setStatusReSubmit(this.getStatusReSubmit());
+			e.setDatabase(this.getDatabase());
+			e.setEmulationName(this.getEmulationName());
+			e.setHostId(this.getHostId());
 
 			this.master = master;
+			this.controlKey = controlKey;
 
 		} catch (java.lang.Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend.");
@@ -90,7 +102,7 @@ public class ClientEmulation extends Thread implements PausableEmulation {
 					.error(
 							"Notifying the master thread to finish execution since something went wrong with this thread.",
 							ex);
-			master.notifyThreadsCompletion();
+			master.notifyThreadsCompletion(controlKey);
 		}
 	}
 
@@ -120,7 +132,12 @@ public class ClientEmulation extends Thread implements PausableEmulation {
 
 	public void stopit() {
 		e.stopit();
-		master.notifyThreadsCompletion();
+		master.notifyThreadsCompletion(controlKey);
+	}
+
+	public void setCompletion(boolean fin) {
+		setFinished(fin);
+		e.setFinished(fin);
 	}
 }
 
