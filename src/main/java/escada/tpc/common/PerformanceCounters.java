@@ -2,9 +2,7 @@ package escada.tpc.common;
 
 public class PerformanceCounters implements PerformanceCountersMBean {
 
-	public float MINIMUM_VALUE = 0.05F;
-
-	public long MINIMUM_REFRESH_INTERVAL = 1000;
+	private long performanceRefreshInterval = DEFAULT_REFRESH_INTERVAL;
 
 	private float inCommingRate = 0F;
 
@@ -29,7 +27,7 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 		long diff = current - lastComputationAbort;
 		float t = abortRate;
 
-		if (diff > MINIMUM_REFRESH_INTERVAL && diff > 0) {
+		if (diff > performanceRefreshInterval && diff > 0) {
 			t = ((float) abortCounter / (float) (diff)) * 1000;
 			t = (t < MINIMUM_VALUE ? 0 : t);
 			lastComputationAbort = current;
@@ -45,7 +43,7 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 		long diff = current - lastComputationCommit;
 		float t = commitRate;
 
-		if (diff > MINIMUM_REFRESH_INTERVAL && diff > 0) {
+		if (diff > performanceRefreshInterval && diff > 0) {
 			t = ((float) commitCounter / (float) (diff)) * 1000;
 			t = (t < MINIMUM_VALUE ? 0 : t);
 			lastComputationCommit = current;
@@ -61,7 +59,7 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 		long diff = current - lastComputationInComming;
 		float t = inCommingRate;
 
-		if (diff > MINIMUM_REFRESH_INTERVAL && diff > 0) {
+		if (diff > performanceRefreshInterval && diff > 0) {
 			t = ((float) inCommingCounter / (float) (diff)) * 1000;
 			t = (t < MINIMUM_VALUE ? 0 : t);
 			lastComputationInComming = current;
@@ -98,4 +96,12 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 	}
 
 	private static PerformanceCounters reference;
+
+	public long getPerformanceRefreshInterval() {
+		return this.performanceRefreshInterval;
+	}
+
+	public void setPerformanceRefreshInterval(long refreshInterval) {
+		this.performanceRefreshInterval = refreshInterval;
+	}
 }
