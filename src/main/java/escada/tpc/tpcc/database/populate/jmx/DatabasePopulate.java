@@ -57,10 +57,15 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 		}
 		
 		if(logger.isInfoEnabled()) {
-			logger.info("Starting populating:");
+			logger.info("Starting POPULATE process!");
 		}
 
 		new dbPopulate(conn, workloadResources.getNumberOfWarehouses());
+		
+		if(logger.isInfoEnabled()) {
+			logger.info("POPULATE process ENDED!");
+		}
+
 	}
 
 	public synchronized DatabaseResources getDatabaseResources() {
