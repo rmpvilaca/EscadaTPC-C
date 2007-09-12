@@ -10,22 +10,22 @@ import escada.tpc.common.TPCConst;
 import escada.tpc.tpcc.TPCCConst;
 import escada.tpc.tpcc.database.populate.jmx.DatabasePopulate;
 
-public class TPCResources {
+public class WorkloadResources implements WorkloadResourcesMBean {
 
-	private static final Logger logger = Logger.getLogger(TPCResources.class);
+	private static final Logger logger = Logger.getLogger(WorkloadResources.class);
 	
 	public final static String DEFAULT_NUMBER_OF_WAREHOUSES = "4";
 	
 	private int numberOfWarehouses = Integer.parseInt(DEFAULT_NUMBER_OF_WAREHOUSES);
 	
-	public TPCResources() {
+	public WorkloadResources() {
 		
-		InputStream inStream = DatabasePopulate.class.getResourceAsStream("/tpcc-config.properties");
+		InputStream inStream = DatabasePopulate.class.getResourceAsStream("/workload-config.properties");
 		Properties props = new Properties();
 		try {
 			props.load(inStream);
 		} catch (IOException e) {
-			logger.fatal("Unable to load properties from file (tpcc-config.properties). Using defaults!", e);
+			logger.fatal("Unable to load properties from file (workload-config.properties). Using defaults!", e);
 		}
 
 		TPCConst.setNumMinClients(Integer.parseInt(props.getProperty("tpcc.numclients", Integer.toString(TPCCConst.getCliWareHouse()))));
@@ -43,6 +43,14 @@ public class TPCResources {
 
 	public synchronized int getNumberOfWarehouses() {
 		return numberOfWarehouses;
+	}
+
+	public int getNumMinClients() {
+		return TPCConst.getNumMinClients();
+	}
+
+	public void setNumMinClients(int i) {
+		TPCConst.setNumMinClients(i);
 	}
 	
 }

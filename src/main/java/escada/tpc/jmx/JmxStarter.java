@@ -22,14 +22,20 @@ public class JmxStarter {
 	public static void main(String[] args) {
 		
 		try {			
+			
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			factory.setValidating(false);
+			
             DOMConfigurator.configure(
-            		DocumentBuilderFactory.newInstance().
-            			newDocumentBuilder().parse(
+            		factory.newDocumentBuilder().parse(
             					JmxStarter.class.getResourceAsStream("/log4j.xml"))
             		.getDocumentElement());
             
 		} catch (Exception e) {
 			logger.warn("Unable to initialize log4j. Continuing with default init.", e);
+			if(logger.isDebugEnabled()) {
+				logger.debug(e.getLocalizedMessage(), e);
+			}
 		}
 		
 		new MBeansRegister().run();
@@ -50,6 +56,13 @@ public class JmxStarter {
 				
 				ObjectName name = new ObjectName("escada.tpc.common.clients.jmx:type=ClientControl");
 				ManagementFactory.getPlatformMBeanServer().registerMBean(this.ces, name);
+				
+				name = new ObjectName("escada.tpc.common.clients.jmx:type=ClientEmulationDatabaseProperties");
+				ManagementFactory.getPlatformMBeanServer().registerMBean(this.ces.getDatabaseResources(), name);
+				
+				name = new ObjectName("escada.tpc.common.clients.jmx:type=ClientEmulationWorkloadProperties");
+				ManagementFactory.getPlatformMBeanServer().registerMBean(this.ces.getWorkloadResources(), name);
+
 
 				if(logger.isInfoEnabled()) {
 					logger.info("Registering Performance MBean!");
@@ -61,9 +74,17 @@ public class JmxStarter {
 				if(logger.isInfoEnabled()) {
 					logger.info("Registering Populate MBean!");
 				}
+				
+				// Populate
 
 				name = new ObjectName("escada.tpc.tpcc.database.populate.jmx:type=PopulateControl");
 				ManagementFactory.getPlatformMBeanServer().registerMBean(this.dbPopulate, name);
+				
+				name = new ObjectName("escada.tpc.tpcc.database.populate.jmx:type=PopulateDatabaseProperties");
+				ManagementFactory.getPlatformMBeanServer().registerMBean(this.dbPopulate.getDatabaseResources(), name);
+				
+				name = new ObjectName("escada.tpc.tpcc.database.populate.jmx:type=PopulateWorkloadProperties");
+				ManagementFactory.getPlatformMBeanServer().registerMBean(this.dbPopulate.getWorkloadResources(), name);
 
 				if(logger.isInfoEnabled()) {
 					logger.info("Started jmx server.");

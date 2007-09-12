@@ -11,8 +11,9 @@ import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
 import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
+
 
 import escada.tpc.common.args.Arg;
 import escada.tpc.common.args.ArgDB;
@@ -25,14 +26,17 @@ import escada.tpc.common.clients.ClientEmulation;
 import escada.tpc.common.clients.ClientEmulationMaster;
 import escada.tpc.common.database.DatabaseManager;
 
-import escada.tpc.common.resources.TPCResources;
+import escada.tpc.common.resources.DatabaseResources;
+import escada.tpc.common.resources.WorkloadResources;
 import escada.tpc.common.util.Pad;
 
 
 public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		ClientEmulationMaster {
 	private final ExecutorService executor = Executors.newCachedThreadPool();
-
+	private DatabaseResources databaseResources;
+	private WorkloadResources workloadResources;
+	
 	private HashMap<String, Stage> stagem = new HashMap<String, Stage>();
 
 	private final static Logger logger = Logger
@@ -40,14 +44,18 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	private final HashMap<String, Vector<ClientEmulation>> server = new HashMap<String, Vector<ClientEmulation>>();
 
-	public synchronized void start(String key, String arg)
-			throws InvalidTransactionException {
-
+	public ClientEmulationStartup() {
 		if(logger.isInfoEnabled()) {
 			logger.info("Loading resources!");
 		}
 				
-		new TPCResources();
+		databaseResources = new DatabaseResources();
+		workloadResources = new WorkloadResources();
+
+	}
+	
+	public synchronized void start(String key, String arg)
+			throws InvalidTransactionException {
 		
 		if (this.stagem.get(key) == null) {
 
@@ -257,7 +265,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			db.parse(args);
 
-			DOMConfigurator.configure(log4jArg.s);
+//			DOMConfigurator.configure(log4jArg.s);
 
 			logger.info("Starting up the client application.");
 			logger.info("Remote Emulator for Database Benchmark ...");
@@ -421,5 +429,23 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	public void configureCluster(String replicas)
 			throws InvalidTransactionException {
+	}
+
+	public synchronized DatabaseResources getDatabaseResources() {
+		return databaseResources;
+	}
+
+	public synchronized void setDatabaseResources(
+			DatabaseResources databaseResources) {
+		this.databaseResources = databaseResources;
+	}
+
+	public synchronized WorkloadResources getWorkloadResources() {
+		return workloadResources;
+	}
+
+	public synchronized void setWorkloadResources(
+			WorkloadResources workloadResources) {
+		this.workloadResources = workloadResources;
 	}
 }

@@ -27,7 +27,7 @@
       <outputDirectory>/etc</outputDirectory>
     </file>
     <file>
-      <source>src/main/resources/tpcc-config.properties</source>
+      <source>src/main/resources/workload-config.properties</source>
       <outputDirectory>/etc</outputDirectory>
     </file>
   </files>
