@@ -10,14 +10,17 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 
 	private float abortRate = 0F;
 
+	private double latencyRate=0F;
+	
 	private int inCommingCounter = 0;
 
 	private int abortCounter = 0;
 
 	private int commitCounter = 0;
 
-	private long lastComputationInComming, lastComputationAbort,
-			lastComputationCommit = 0;
+	private long lastComputationInComming, lastComputationAbort, lastComputationCommit = 0, lastComputationLatency=0;
+	
+	private double latencyAccumulator = 0;
 
 	private PerformanceCounters() {
 	}
@@ -69,6 +72,25 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 
 		return (inCommingRate);
 	}
+	
+	public synchronized double getAverageLatency() {
+		
+		long current = System.currentTimeMillis();
+		long diff = current - lastComputationLatency;
+		double t = this.latencyRate;
+
+		if (diff > performanceRefreshInterval && diff > 0) {
+			t = ((double)this.latencyAccumulator) / ((double)this.latencyCounter);
+			t = (t < MINIMUM_VALUE ? 0 : t);
+			
+			this.lastComputationLatency = current;
+			this.latencyCounter = 0;
+			this.latencyAccumulator = 0;			
+		}
+		latencyRate = t;
+		
+		return this.latencyRate;
+	}
 
 	public static synchronized void setIncommingRate() {
 		if (reference != null) {
@@ -93,6 +115,14 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 			reference = new PerformanceCounters();
 		}
 		return (reference);
+	}
+		
+	private double latencyCounter = 0;
+	public static synchronized void setLatency(double latency) {
+		if (reference != null) {
+			reference.latencyAccumulator += latency;
+			reference.latencyCounter++;
+		}
 	}
 
 	private static PerformanceCounters reference;
