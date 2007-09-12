@@ -33,7 +33,7 @@ import escada.tpc.tpcc.TPCCConst;
 
 public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		ClientEmulationMaster {
-	private final ExecutorService executor = Executors.newFixedThreadPool(2);
+	private final ExecutorService executor = Executors.newCachedThreadPool();
 
 	private HashMap<String, Stage> stagem = new HashMap<String, Stage>();
 
@@ -97,7 +97,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			String[] args = arg.split("[ ]+");
 
-			this.executor.submit(new Start(key, args));
+			this.executor.execute(new Start(key, args));
 		} else {
 			throw new InvalidTransactionException(key + " start on "
 					+ this.stagem.get(key));
@@ -126,8 +126,11 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			this.stagem.put(key, Stage.PAUSED);
 
-			for (ClientEmulation e : server.get(key)) {
-				e.pause();
+			if (server.get(key) != null) {
+				for (ClientEmulation e : server.get(key)) {
+					e.pause();
+				}
+
 			}
 		} else {
 			throw new InvalidTransactionException(key + " pause on "
@@ -142,8 +145,10 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			this.stagem.put(key, Stage.RUNNING);
 
-			for (ClientEmulation e : server.get(key)) {
-				e.unpause();
+			if (server.get(key) != null) {
+				for (ClientEmulation e : server.get(key)) {
+					e.unpause();
+				}
 			}
 		} else {
 			throw new InvalidTransactionException(key + " unpause on "
@@ -157,8 +162,10 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 				&& (this.stagem.get(key).equals(Stage.RUNNING) || this.stagem
 						.get(key).equals(Stage.PAUSED))) {
 
-			for (ClientEmulation e : server.get(key)) {
-				e.stopit();
+			if (server.get(key) != null) {
+				for (ClientEmulation e : server.get(key)) {
+					e.stopit();
+				}
 			}
 
 			this.server.remove(key);
@@ -372,9 +379,9 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 					continue;
 				}
 			}
-			
+
 			logger.info("EBs finished.");
-			
+
 		} catch (Arg.Exception ae) {
 			logger.info("Error:");
 			logger.info(ae);

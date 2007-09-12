@@ -1,0 +1,5 @@
+tpcc.numclients = 10
+tpcc.numcustomers = 3000
+tpcc.numitems = 100000
+tpcc.numdistricts = 10
+tpcc.numnames = 999
