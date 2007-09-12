@@ -80,7 +80,7 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 		double t = this.latencyRate;
 
 		if (diff > performanceRefreshInterval && diff > 0) {
-			if(this.latencyCounter > 0 && this.latencyAccumulator > 0) {
+			if(this.latencyCounter > 0) {
 				t = ((double)this.latencyAccumulator) / ((double)this.latencyCounter);
 				t = (t < MINIMUM_VALUE ? 0 : t);
 			}

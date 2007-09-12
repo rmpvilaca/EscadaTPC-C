@@ -156,6 +156,9 @@ public class DatabaseManager {
 			} else if (transResult.equalsIgnoreCase("committing")) {
 
 				PerformanceCounters.setCommitRate();
+				
+				// register latency time
+				PerformanceCounters.setLatency(finishTime.getTime() - startTime.getTime());
 
 			} else if (transResult.equalsIgnoreCase("aborting")) {
 
