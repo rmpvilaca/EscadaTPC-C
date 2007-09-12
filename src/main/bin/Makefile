@@ -166,7 +166,7 @@ real-pgsql-05:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(PGSQL_FLAGS05)
 
 real-jmx:
-	$(JVM) -cp $(classpath) -Xmx1024M -Dcom.sun.management.jmxremote.port=5001 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false escada.tpc.common.clients.jmx.ClientEmulationStartup $(FILE)
+	$(JVM) -cp $(classpath) -Xmx1024M -Dcom.sun.management.jmxremote.port=5001 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false escada.tpc.jmx.JmxStarter $(FILE)
 
 populate:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.tpcc.database.populate.dbPopulate $(FILE) $(WAREHOUSE) $(DATABASE) $(USR)

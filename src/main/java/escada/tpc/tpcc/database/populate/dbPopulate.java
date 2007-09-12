@@ -26,6 +26,43 @@ public class dbPopulate {
 		Timestamp tStamp;
 		try {
 			System.out.println("populating warehouse...");
+			
+			pstmt = conn.prepareStatement("truncate warehouse");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate district");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate customer");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate item");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate stock");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate orders");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate order_line");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate history");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate new_order");
+			pstmt.execute();
+			conn.commit();
+			
 			pstmt = conn
 					.prepareStatement("insert into warehouse (w_id,w_name,w_street_1,"
 							+ "w_street_2,w_city,w_state,w_zip,w_tax,w_ytd) "

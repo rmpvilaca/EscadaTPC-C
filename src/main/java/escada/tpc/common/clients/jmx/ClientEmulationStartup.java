@@ -11,13 +11,9 @@ import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.management.ObjectName;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 
-import escada.tpc.common.PerformanceCounters;
-import escada.tpc.common.TPCConst;
 import escada.tpc.common.args.Arg;
 import escada.tpc.common.args.ArgDB;
 import escada.tpc.common.args.BooleanArg;
@@ -28,8 +24,10 @@ import escada.tpc.common.args.StringArg;
 import escada.tpc.common.clients.ClientEmulation;
 import escada.tpc.common.clients.ClientEmulationMaster;
 import escada.tpc.common.database.DatabaseManager;
+
+import escada.tpc.common.resources.TPCResources;
 import escada.tpc.common.util.Pad;
-import escada.tpc.tpcc.TPCCConst;
+
 
 public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		ClientEmulationMaster {
@@ -42,55 +40,15 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	private final HashMap<String, Vector<ClientEmulation>> server = new HashMap<String, Vector<ClientEmulation>>();
 
-	private synchronized void init(String file) {
-		try {
-			Properties props = new Properties();
-			try {
-				props.load(new FileInputStream(file));
-
-				TPCConst.setNumMinClients(Integer.parseInt(props
-						.getProperty("tpcc.numclients")));
-				TPCCConst.setNumCustomer(Integer.parseInt(props
-						.getProperty("tpcc.numcustomers")));
-				TPCCConst.setNumDistrict(Integer.parseInt(props
-						.getProperty("tpcc.numdistricts")));
-				TPCCConst.setNumItem(Integer.parseInt(props
-						.getProperty("tpcc.numitems")));
-				TPCCConst.setNumLastName(Integer.parseInt(props
-						.getProperty("tpcc.numnames")));
-
-			} catch (FileNotFoundException e) {
-				System.out.println("Running with tpcc default parameters.");
-			} catch (IOException e) {
-				System.out.println("Running with tpcc default parameters.");
-			} catch (Exception ex) {
-				System.out.println("Running with tpcc default parameters.");
-			}
-			ObjectName name = new ObjectName(
-					"escada.tpc.common.clients.jmx:type=ClientControl");
-			ManagementFactory.getPlatformMBeanServer()
-					.registerMBean(this, name);
-
-			name = new ObjectName(
-					"escada.tpc.common.clients.jmx:type=ClientPerformance");
-
-			ManagementFactory.getPlatformMBeanServer().registerMBean(
-					PerformanceCounters.getReference(), name);
-
-			System.out.println("Started jmx server.");
-
-			while (true) {
-				wait();
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			System.exit(1);
-		}
-	}
-
 	public synchronized void start(String key, String arg)
 			throws InvalidTransactionException {
 
+		if(logger.isInfoEnabled()) {
+			logger.info("Loading resources!");
+		}
+				
+		new TPCResources();
+		
 		if (this.stagem.get(key) == null) {
 
 			this.stagem.put(key, Stage.RUNNING);
@@ -184,11 +142,6 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		public void run() {
 			System.exit(0);
 		}
-	}
-
-	public static void main(String[] args) {
-		ClientEmulationStartup ces = new ClientEmulationStartup();
-		ces.init((args.length == 1 ? args[0] : null));
 	}
 
 	private void startClientEmulation(String keyArgs, String[] args) {
