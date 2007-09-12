@@ -3,7 +3,7 @@
   <packaging>jar</packaging>
 
   <groupId>escada</groupId>
-  <artifactId>workloads</artifactId>
+  <artifactId>escada-workloads</artifactId>
   <name>escada-workloads</name>
   <version>0.1-SNAPSHOT</version>
 
@@ -17,7 +17,23 @@
           <target>1.5</target>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/test.xml</descriptor>
+          </descriptors>
+        </configuration>
+      </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>**/log4j.xml</exclude>
+        </excludes>
+      </resource>
+     </resources>
   </build>
 
   <dependencies>
