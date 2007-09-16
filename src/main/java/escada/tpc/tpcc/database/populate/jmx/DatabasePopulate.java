@@ -11,6 +11,7 @@ import escada.tpc.common.resources.DatabaseResources;
 import escada.tpc.common.resources.WorkloadResources;
 
 import escada.tpc.tpcc.database.populate.dbPopulate;
+import escada.tpc.tpcc.database.populate.jmx.DatabasePopulateMBean;
 
 public class DatabasePopulate implements DatabasePopulateMBean {
 	
@@ -26,14 +27,12 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 		
 		databaseResources = new DatabaseResources();
 		workloadResources = new WorkloadResources();
-
 	}
 	
 	public void kill() {
 		if(logger.isInfoEnabled()) {
 			logger.info("Kill action called. Terminating DatabasePopulate!");
 		}
-		
 		System.exit(0);
 	}
 
@@ -50,10 +49,8 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 			conn.setAutoCommit(false);
 		} catch (ClassNotFoundException e) {
 			logger.error("Unable to load database driver!", e);
-			System.exit(1);
 		} catch (SQLException e) {
 			logger.error("Exception caught while talking (SQL) to the database!", e);
-			System.exit(1);
 		}
 		
 		if(logger.isInfoEnabled()) {
@@ -66,6 +63,15 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 			logger.info("POPULATE process ENDED!");
 		}
 
+	}
+	
+	public void startScenario(String scenario) throws InvalidTransactionException {
+		if (configureScenario(scenario)) {
+			start();
+		}
+		else {
+			logger.info("Scenario was not found...");
+		}
 	}
 
 	public synchronized DatabaseResources getDatabaseResources() {
@@ -85,5 +91,18 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 			WorkloadResources workloadResources) {
 		this.workloadResources = workloadResources;
 	}
-
+	
+	private boolean configureScenario(String scenario) {
+		boolean ret = false;
+		
+		if (scenario.equalsIgnoreCase("light")) {
+			databaseResources.setDriver("org.postgresql.Driver");
+			databaseResources.setUserName("tpcc");
+			databaseResources.setConnectionString("jdbc:postgresql://192.168.180.32/tpcc");
+			databaseResources.setPassword("tpcc");
+			workloadResources.setNumberOfWarehouses(4);
+			ret = true;
+		}
+		return (ret);
+	}
 }

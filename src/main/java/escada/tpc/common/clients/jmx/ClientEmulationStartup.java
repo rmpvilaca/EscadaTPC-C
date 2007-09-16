@@ -1,19 +1,12 @@
 package escada.tpc.common.clients.jmx;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
 import org.apache.log4j.Logger;
-
 
 import escada.tpc.common.args.Arg;
 import escada.tpc.common.args.ArgDB;
@@ -25,18 +18,18 @@ import escada.tpc.common.args.StringArg;
 import escada.tpc.common.clients.ClientEmulation;
 import escada.tpc.common.clients.ClientEmulationMaster;
 import escada.tpc.common.database.DatabaseManager;
-
 import escada.tpc.common.resources.DatabaseResources;
 import escada.tpc.common.resources.WorkloadResources;
 import escada.tpc.common.util.Pad;
 
-
 public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		ClientEmulationMaster {
 	private final ExecutorService executor = Executors.newCachedThreadPool();
+
 	private DatabaseResources databaseResources;
+
 	private WorkloadResources workloadResources;
-	
+
 	private HashMap<String, Stage> stagem = new HashMap<String, Stage>();
 
 	private final static Logger logger = Logger
@@ -45,18 +38,18 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	private final HashMap<String, Vector<ClientEmulation>> server = new HashMap<String, Vector<ClientEmulation>>();
 
 	public ClientEmulationStartup() {
-		if(logger.isInfoEnabled()) {
+		if (logger.isInfoEnabled()) {
 			logger.info("Loading resources!");
 		}
-				
+
 		databaseResources = new DatabaseResources();
 		workloadResources = new WorkloadResources();
 
 	}
-	
+
 	public synchronized void start(String key, String arg)
 			throws InvalidTransactionException {
-		
+
 		if (this.stagem.get(key) == null) {
 
 			this.stagem.put(key, Stage.RUNNING);
@@ -68,6 +61,13 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			throw new InvalidTransactionException(key + " start on "
 					+ this.stagem.get(key));
 		}
+	}
+
+	public synchronized void startScenario(String key, String scenario)
+			throws InvalidTransactionException {
+		StringBuilder str = new StringBuilder();
+		configureScenario(scenario, str);
+		start(key, str.toString());
 	}
 
 	class Start implements Runnable {
@@ -104,7 +104,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		}
 	}
 
-	public synchronized void unpause(String key)
+	public synchronized void resume(String key)
 			throws InvalidTransactionException {
 		if (this.stagem.get(key) != null
 				&& this.stagem.get(key).equals(Stage.PAUSED)) {
@@ -265,7 +265,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			db.parse(args);
 
-//			DOMConfigurator.configure(log4jArg.s);
+			// DOMConfigurator.configure(log4jArg.s);
 
 			logger.info("Starting up the client application.");
 			logger.info("Remote Emulator for Database Benchmark ...");
@@ -427,10 +427,6 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		// constant.
 	}
 
-	public void configureCluster(String replicas)
-			throws InvalidTransactionException {
-	}
-
 	public synchronized DatabaseResources getDatabaseResources() {
 		return databaseResources;
 	}
@@ -447,5 +443,34 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	public synchronized void setWorkloadResources(
 			WorkloadResources workloadResources) {
 		this.workloadResources = workloadResources;
+	}
+
+	private boolean configureScenario(String scenario, StringBuilder str) {
+		boolean ret = false;
+
+		if (scenario.toLowerCase().startsWith("light")) {
+			String info[] = scenario.split("-");
+			int replica = Integer.parseInt(info[1]);
+			int address = 31 + replica;
+
+			str
+					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
+							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI 5 "
+							+ "-STclass escada.tpc.tpcc.TPCCStateTransition "
+							+ "-DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
+							+ "-TRACEFLAG TRACE -PREFIX "
+							+ scenario
+							+ " "
+							+ "-DBpath jdbc:postgresql://192.168.180."
+							+ address
+							+ "/tpcc "
+							+ "-DBdriver org.postgresql.Driver "
+							+ "-DBusr tpcc -DBpasswd tpcc -POOL 20 -MI 2000 -FRAG "
+							+ replica + " " + "-RESUBMIT false");
+
+			workloadResources.setNumberOfWarehouses(4);
+			ret = true;
+		}
+		return (ret);
 	}
 }

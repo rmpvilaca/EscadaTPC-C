@@ -100,7 +100,5 @@ public class DatabaseResources implements DatabaseResourcesMBean {
 		this.driver = props.getProperty("db.driver", DEFAULT_DRIVER);
 		this.userName = props.getProperty("db.username", DEFAULT_USER_NAME);
 		this.password = props.getProperty("db.password", DEFAULT_PASSWORD);
-		
 	}
-	
 }

@@ -6,6 +6,8 @@ public interface DatabasePopulateMBean {
 
 	public void start() throws InvalidTransactionException;
 
+	public void startScenario(String scenario) throws InvalidTransactionException;
+
 	public void kill();
 
 }
