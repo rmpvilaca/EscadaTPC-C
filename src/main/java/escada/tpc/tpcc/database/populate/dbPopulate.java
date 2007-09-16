@@ -13,19 +13,61 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
+import org.apache.log4j.Logger;
+
 import escada.tpc.common.TPCConst;
 import escada.tpc.common.util.RandGen;
 import escada.tpc.tpcc.TPCCConst;
 import escada.tpc.tpcc.util.TPCCRandGen;
 
 public class dbPopulate {
+	
+	private static final Logger logger = Logger.getLogger(dbPopulate.class);
+	
 	public dbPopulate(Connection conn, int numWareh) {
 
 		PreparedStatement pstmt = null;
 		Random rg = new Random(71830);
 		Timestamp tStamp;
 		try {
-			System.out.println("populating warehouse...");
+			logger.debug("populating warehouse...");
+			
+			pstmt = conn.prepareStatement("truncate warehouse");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate district");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate customer");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate item");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate stock");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate orders");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate order_line");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate history");
+			pstmt.execute();
+			conn.commit();
+			
+			pstmt = conn.prepareStatement("truncate new_order");
+			pstmt.execute();
+			conn.commit();
+			
 			pstmt = conn
 					.prepareStatement("insert into warehouse (w_id,w_name,w_street_1,"
 							+ "w_street_2,w_city,w_state,w_zip,w_tax,w_ytd) "
@@ -52,7 +94,7 @@ public class dbPopulate {
 				conn.commit();
 			cont = 0;
 
-			System.out.println("populating district...");
+			logger.debug("populating district...");
 			pstmt = conn
 					.prepareStatement("insert into district (d_id,d_w_id,d_name,"
 							+ "d_street_1,d_street_2,d_city,d_state,d_zip,d_tax,"
@@ -83,7 +125,7 @@ public class dbPopulate {
 				conn.commit();
 			cont = 0;
 
-			System.out.println("populating customer...");
+			logger.debug("populating customer...");
 			pstmt = conn
 					.prepareStatement("insert into customer (c_id,c_d_id,c_w_id,c_first,"
 							+ "c_middle,c_last,c_street_1,c_street_2,c_city,c_state,c_zip,c_phone,"
@@ -140,7 +182,7 @@ public class dbPopulate {
 				conn.commit();
 			cont = 0;
 
-			System.out.println("populating history...");
+			logger.debug("populating history...");
 			pstmt = conn.prepareStatement("insert into history "
 					+ "(h_c_id,h_c_d_id,h_c_w_id,h_d_id,h_w_id,h_date,"
 					+ "h_amount,h_data) values (?,?,?,?,?,?,?,?)");
@@ -170,7 +212,7 @@ public class dbPopulate {
 				conn.commit();
 			cont = 0;
 
-			System.out.println("populating orders...");
+			logger.debug("populating orders...");
 			pstmt = conn.prepareStatement("insert into orders "
 					+ "(o_id,o_d_id,o_w_id,o_c_id,o_entry_d,o_carrier_id,"
 					+ "o_ol_cnt,o_all_local) values (?,?,?,?,?,?,?,?)");
@@ -208,7 +250,7 @@ public class dbPopulate {
 				conn.commit();
 			cont = 0;
 
-			System.out.println("populating new_order...");
+			logger.debug("populating new_order...");
 			pstmt = conn
 					.prepareStatement("insert into new_order (no_o_id,no_d_id,"
 							+ "no_w_id) values (?,?,?)");
@@ -232,7 +274,7 @@ public class dbPopulate {
 				conn.commit();
 			cont = 0;
 
-			System.out.println("populating item...");
+			logger.debug("populating item...");
 			pstmt = conn
 					.prepareStatement("insert into item (i_id,i_im_id,i_name,"
 							+ "i_price,i_data) values (?,?,?,?,?)");
@@ -259,7 +301,7 @@ public class dbPopulate {
 				conn.commit();
 			cont = 0;
 
-			System.out.println("populating stock...");
+			logger.debug("populating stock...");
 			pstmt = conn
 					.prepareStatement("insert into stock "
 							+ "(s_i_id,s_w_id,s_quantity,s_dist_01,s_dist_02,s_dist_03,"
@@ -305,7 +347,7 @@ public class dbPopulate {
 				conn.commit();
 			cont = 0;
 
-			System.out.println("populating order_line...");
+			logger.debug("populating order_line...");
 			pstmt = conn
 					.prepareStatement("insert into order_line  (ol_o_id,ol_d_id,ol_w_id,"
 							+ "ol_number,ol_i_id,ol_supply_w_id,ol_delivery_d,ol_quantity,ol_amount,"
@@ -447,18 +489,18 @@ public class dbPopulate {
 						.getProperty("tpcc.numnames")));
 
 			} catch (FileNotFoundException e) {
-				System.out.println("Running with tpcc default parameters.");
+				logger.debug("Running with tpcc default parameters.");
 			} catch (IOException e) {
-				System.out.println("Running with tpcc default parameters.");
+				logger.debug("Running with tpcc default parameters.");
 			}
 
 			Class.forName(driver);
 			Connection conn = DriverManager.getConnection(jdbc, userName,
 					password);
 			conn.setAutoCommit(false);
-			System.out.println("Starting populating:");
+			logger.debug("Starting populating:");
 			new dbPopulate(conn, numberOfwarehouse);
-			System.out.println("done! ");
+			logger.debug("done! ");
 		} catch (SQLException e) {
 			System.err.println("getConnection error");
 			e.printStackTrace();

@@ -2,9 +2,7 @@ package escada.tpc.common;
 
 public class PerformanceCounters implements PerformanceCountersMBean {
 
-	public float MINIMUM_VALUE = 0.05F;
-
-	public long MINIMUM_REFRESH_INTERVAL = 1000;
+	private long performanceRefreshInterval = DEFAULT_REFRESH_INTERVAL;
 
 	private float inCommingRate = 0F;
 
@@ -12,14 +10,17 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 
 	private float abortRate = 0F;
 
+	private double latencyRate=0F;
+	
 	private int inCommingCounter = 0;
 
 	private int abortCounter = 0;
 
 	private int commitCounter = 0;
 
-	private long lastComputationInComming, lastComputationAbort,
-			lastComputationCommit = 0;
+	private long lastComputationInComming, lastComputationAbort, lastComputationCommit = 0, lastComputationLatency=0;
+	
+	private double latencyAccumulator = 0;
 
 	private PerformanceCounters() {
 	}
@@ -29,7 +30,7 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 		long diff = current - lastComputationAbort;
 		float t = abortRate;
 
-		if (diff > MINIMUM_REFRESH_INTERVAL && diff > 0) {
+		if (diff > performanceRefreshInterval && diff > 0) {
 			t = ((float) abortCounter / (float) (diff)) * 1000;
 			t = (t < MINIMUM_VALUE ? 0 : t);
 			lastComputationAbort = current;
@@ -45,7 +46,7 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 		long diff = current - lastComputationCommit;
 		float t = commitRate;
 
-		if (diff > MINIMUM_REFRESH_INTERVAL && diff > 0) {
+		if (diff > performanceRefreshInterval && diff > 0) {
 			t = ((float) commitCounter / (float) (diff)) * 1000;
 			t = (t < MINIMUM_VALUE ? 0 : t);
 			lastComputationCommit = current;
@@ -61,7 +62,7 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 		long diff = current - lastComputationInComming;
 		float t = inCommingRate;
 
-		if (diff > MINIMUM_REFRESH_INTERVAL && diff > 0) {
+		if (diff > performanceRefreshInterval && diff > 0) {
 			t = ((float) inCommingCounter / (float) (diff)) * 1000;
 			t = (t < MINIMUM_VALUE ? 0 : t);
 			lastComputationInComming = current;
@@ -70,6 +71,27 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 		inCommingRate = t;
 
 		return (inCommingRate);
+	}
+	
+	public synchronized double getAverageLatency() {
+		
+		long current = System.currentTimeMillis();
+		long diff = current - lastComputationLatency;
+		double t = this.latencyRate;
+
+		if (diff > performanceRefreshInterval && diff > 0) {
+			if(this.latencyCounter > 0) {
+				t = ((double)this.latencyAccumulator) / ((double)this.latencyCounter);
+				t = (t < MINIMUM_VALUE ? 0 : t);
+			}
+
+			this.lastComputationLatency = current;
+			this.latencyCounter = 0;
+			this.latencyAccumulator = 0;			
+		}
+		latencyRate = t;
+		
+		return this.latencyRate;
 	}
 
 	public static synchronized void setIncommingRate() {
@@ -96,6 +118,22 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 		}
 		return (reference);
 	}
+		
+	private double latencyCounter = 0;
+	public static synchronized void setLatency(double latency) {
+		if (reference != null) {
+			reference.latencyAccumulator += latency;
+			reference.latencyCounter++;
+		}
+	}
 
 	private static PerformanceCounters reference;
+
+	public long getPerformanceRefreshInterval() {
+		return this.performanceRefreshInterval;
+	}
+
+	public void setPerformanceRefreshInterval(long refreshInterval) {
+		this.performanceRefreshInterval = refreshInterval;
+	}
 }

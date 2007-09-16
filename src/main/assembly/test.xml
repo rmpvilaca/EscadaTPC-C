@@ -1,0 +1,42 @@
+<assembly>
+  <id>test</id>
+  <formats>
+    <format>dir</format>
+  </formats>
+ 
+  <includeBaseDirectory>false</includeBaseDirectory>
+
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>/lib</outputDirectory>     
+      <unpack>false</unpack>
+    </dependencySet>
+  </dependencySets>
+
+  <files>
+    <file>
+      <source>target/${project.name}-${project.version}.jar</source>
+      <outputDirectory>/lib</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/resources/log4j.xml</source>
+      <outputDirectory>/etc</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/resources/database-config.properties</source>
+      <outputDirectory>/etc</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/resources/workload-config.properties</source>
+      <outputDirectory>/etc</outputDirectory>
+    </file>
+  </files>
+
+  <fileSets>
+    <fileSet>
+      <outputDirectory>/</outputDirectory>
+      <directory>src/main/bin</directory>
+    </fileSet>
+  </fileSets>
+
+</assembly>

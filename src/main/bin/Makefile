@@ -17,7 +17,7 @@ ORACLE_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -RESUBMIT false
 
 SEQUOIA_MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
-             -LOGconfig configuration.files/logger.xml \
+             -LOGconfig etc/log4j.xml \
              -KEY false \
              -CLI 10 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
@@ -34,7 +34,7 @@ SEQUOIA_MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -RESUBMIT false
 
 MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
-	     -LOGconfig configuration.files/logger.xml \
+	     -LOGconfig etc/log4j.xml \
              -KEY false \
              -CLI 2 \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
@@ -51,7 +51,7 @@ MYSQL_FLAGS=-EBclass escada.tpc.tpcc.TPCCEmulation \
              -RESUBMIT true
 
 PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
-	     -LOGconfig configuration.files/logger.xml \
+	     -LOGconfig etc/log4j.xml \
              -KEY true \
              -CLI 20\
              -STclass escada.tpc.tpcc.TPCCStateTransition \
@@ -68,7 +68,7 @@ PGSQL_FLAGS01 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 	     -RESUBMIT false
 
 PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
-	     -LOGconfig configuration.files/logger.xml \
+	     -LOGconfig etc/log4j.xml \
              -KEY true \
              -CLI $(CLI) \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
@@ -86,7 +86,7 @@ PGSQL_FLAGS02 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 
 
 PGSQL_FLAGS03 =-EBclass escada.tpc.tpcc.TPCCEmulation \
-             -LOGconfig configuration.files/logger.xml \
+             -LOGconfig etc/log4j.xml \
              -KEY true \
              -CLI $(CLI) \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
@@ -104,7 +104,7 @@ PGSQL_FLAGS03 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 
 
 PGSQL_FLAGS04 =-EBclass escada.tpc.tpcc.TPCCEmulation \
-             -LOGconfig configuration.files/logger.xml \
+             -LOGconfig etc/log4j.xml \
              -KEY true \
              -CLI $(CLI) \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
@@ -122,7 +122,7 @@ PGSQL_FLAGS04 =-EBclass escada.tpc.tpcc.TPCCEmulation \
 
 
 PGSQL_FLAGS05 =-EBclass escada.tpc.tpcc.TPCCEmulation \
-             -LOGconfig configuration.files/logger.xml \
+             -LOGconfig etc/log4j.xml \
              -KEY true \
              -CLI $(CLI) \
              -STclass escada.tpc.tpcc.TPCCStateTransition \
@@ -166,7 +166,7 @@ real-pgsql-05:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.common.clients.ClientEmulationStartup $(PGSQL_FLAGS05)
 
 real-jmx:
-	$(JVM) -cp $(classpath) -Xmx1024M -Dcom.sun.management.jmxremote.port=5001 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false escada.tpc.common.clients.jmx.ClientEmulationStartup $(FILE)
+	$(JVM) -cp $(classpath) -Xmx1024M -Dcom.sun.management.jmxremote.port=5001 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false escada.tpc.jmx.JmxStarter $(FILE)
 
 populate:
 	$(JVM) -cp $(classpath) -Xmx1024M escada.tpc.tpcc.database.populate.dbPopulate $(FILE) $(WAREHOUSE) $(DATABASE) $(USR)

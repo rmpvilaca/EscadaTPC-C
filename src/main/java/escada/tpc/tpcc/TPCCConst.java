@@ -1,9 +1,12 @@
 package escada.tpc.tpcc;
 
+import escada.tpc.common.TPCConst;
+
 /**
  * It defines important constants used in the simulation of the TPC-C.
  */
 public class TPCCConst {
+	
 	public final static int CustomerA = 1023;
 
 	public final static int numINICustomer = 1;
@@ -90,6 +93,10 @@ public class TPCCConst {
 
 	public static int getNumLastName() {
 		return numENDLastName;
+	}
+
+	public static int getCliWareHouse() {
+		return TPCConst.getNumMinClients();
 	}
 }
 // arch-tag: fe63e7a2-dd6e-4431-ad74-35de8fdb5bf1
