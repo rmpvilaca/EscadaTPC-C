@@ -471,6 +471,31 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			workloadResources.setNumberOfWarehouses(4);
 			ret = true;
 		}
+		
+		if (scenario.toLowerCase().startsWith("heavy")) {
+			String info[] = scenario.split("-");
+			int replica = Integer.parseInt(info[1]);
+			int address = 31 + replica;
+			replica = 1 + ((replica - 1) * 3);
+
+			str
+					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
+							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI 30 "
+							+ "-STclass escada.tpc.tpcc.TPCCStateTransition "
+							+ "-DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
+							+ "-TRACEFLAG TRACE -PREFIX "
+							+ scenario
+							+ " "
+							+ "-DBpath jdbc:postgresql://192.168.180."
+							+ address
+							+ "/tpcc "
+							+ "-DBdriver org.postgresql.Driver "
+							+ "-DBusr tpcc -DBpasswd tpcc -POOL 20 -MI 2000 -FRAG "
+							+ replica + " " + "-RESUBMIT false");
+
+			workloadResources.setNumberOfWarehouses(12);
+			ret = true;
+		}
 		return (ret);
 	}
 }
