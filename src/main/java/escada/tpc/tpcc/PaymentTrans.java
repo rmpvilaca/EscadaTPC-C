@@ -24,6 +24,8 @@ public class PaymentTrans extends StateObject {
 		int cdid = 0;
 		String lastname = null;
 		float hamount = 0;
+		
+		System.out.println("Accessing warehouse " + wid);
 
 		outInfo.put("trace", em.getTraceInformation());
 		outInfo

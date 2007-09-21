@@ -19,6 +19,8 @@ public class StockLevelTrans extends StateObject {
 		int wid = (em.getEmulationId() / TPCConst.getNumMinClients()) + 1; 
 		int did = 0;
 		int threshhold = 0;
+		
+		System.out.println("Accessing warehouse " + wid);
 
 		outInfo
 				.put("resubmit", Boolean

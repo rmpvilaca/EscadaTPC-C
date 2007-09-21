@@ -8,7 +8,7 @@ public interface ClientEmulationStartupMBean {
 	public void start(String key, String arg)
 			throws InvalidTransactionException;
 	
-	public void startScenario(String key, String arg)
+	public void startScenario(String key, String scenario)
 	throws InvalidTransactionException;
 
 	public void pause(String key) throws InvalidTransactionException;

@@ -22,6 +22,8 @@ public class NewOrderTrans extends StateObject {
 		int qtd = 0;
 		boolean error = false;
 		boolean localWarehouse = false;
+		
+		System.out.println("Accessing warehouse " + wid);
 
 		outInfo
 				.put("resubmit", Boolean
@@ -43,7 +45,7 @@ public class NewOrderTrans extends StateObject {
 				TPCCConst.qtdENDItem + 1);
 
 		outInfo.put("qtd", Integer.toString(qtd));
-
+		
 		if (RandGen.nextInt(em.getRandom(), TPCCConst.rngABORTNewOrder + 1) == TPCCConst.probABORTNewOrder) {
 			error = true;
 		}

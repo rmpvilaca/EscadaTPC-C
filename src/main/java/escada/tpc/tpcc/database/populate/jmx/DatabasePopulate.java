@@ -6,10 +6,12 @@ import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
+import escada.tpc.common.TPCConst;
 import escada.tpc.common.clients.jmx.InvalidTransactionException;
 import escada.tpc.common.resources.DatabaseResources;
 import escada.tpc.common.resources.WorkloadResources;
 
+import escada.tpc.tpcc.TPCCConst;
 import escada.tpc.tpcc.database.populate.dbPopulate;
 import escada.tpc.tpcc.database.populate.jmx.DatabasePopulateMBean;
 
@@ -101,6 +103,11 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 			databaseResources.setConnectionString("jdbc:postgresql://192.168.180.32/tpcc");
 			databaseResources.setPassword("tpcc");
 			workloadResources.setNumberOfWarehouses(4);
+			TPCConst.setNumMinClients(5);
+			TPCCConst.setNumCustomer(100);
+			TPCCConst.setNumDistrict(5);
+			TPCCConst.setNumItem(10);
+			TPCCConst.setNumLastName(99);				
 			ret = true;
 		}
 		return (ret);

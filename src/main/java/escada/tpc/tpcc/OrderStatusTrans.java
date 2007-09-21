@@ -21,6 +21,8 @@ public class OrderStatusTrans extends StateObject {
 		int cid = 0;
 		int did = 0;
 		String lastname = null;
+		
+		System.out.println("Accessing warehouse " + wid);
 
 		outInfo
 				.put("resubmit", Boolean

@@ -19,6 +19,9 @@ public class DeliveryTrans extends StateObject {
 		int wid = (em.getEmulationId() / TPCConst.getNumMinClients()) + 1;
 		int crid = 0;
 
+		
+		System.out.println("Accessing warehouse " + wid);
+		
 		outInfo
 				.put("resubmit", Boolean
 						.toString(em.getStatusReSubmit()));

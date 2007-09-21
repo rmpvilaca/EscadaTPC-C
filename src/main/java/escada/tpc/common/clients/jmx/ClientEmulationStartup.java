@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 
+import escada.tpc.common.TPCConst;
 import escada.tpc.common.args.Arg;
 import escada.tpc.common.args.ArgDB;
 import escada.tpc.common.args.BooleanArg;
@@ -21,6 +22,7 @@ import escada.tpc.common.database.DatabaseManager;
 import escada.tpc.common.resources.DatabaseResources;
 import escada.tpc.common.resources.WorkloadResources;
 import escada.tpc.common.util.Pad;
+import escada.tpc.tpcc.TPCCConst;
 
 public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		ClientEmulationMaster {
@@ -66,7 +68,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	public synchronized void startScenario(String key, String scenario)
 			throws InvalidTransactionException {
 		StringBuilder str = new StringBuilder();
-		configureScenario(scenario, str);
+		configureScenario(scenario, key, str);
 		start(key, str.toString());
 	}
 
@@ -445,11 +447,12 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		this.workloadResources = workloadResources;
 	}
 
-	private boolean configureScenario(String scenario, StringBuilder str) {
+	private boolean configureScenario(String scenario, String key,
+			StringBuilder str) {
 		boolean ret = false;
 
-		if (scenario.toLowerCase().startsWith("light")) {
-			String info[] = scenario.split("-");
+		if (scenario.equals("light")) {
+			String info[] = key.split("-");
 			int replica = Integer.parseInt(info[1]);
 			int address = 31 + replica;
 
@@ -459,7 +462,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 							+ "-STclass escada.tpc.tpcc.TPCCStateTransition "
 							+ "-DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
 							+ "-TRACEFLAG TRACE -PREFIX "
-							+ scenario
+							+ key
 							+ " "
 							+ "-DBpath jdbc:postgresql://192.168.180."
 							+ address
@@ -469,11 +472,16 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 							+ replica + " " + "-RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(4);
+			TPCConst.setNumMinClients(5);
+			TPCCConst.setNumCustomer(100);
+			TPCCConst.setNumDistrict(5);
+			TPCCConst.setNumItem(10);
+			TPCCConst.setNumLastName(99);
 			ret = true;
 		}
-		
-		if (scenario.toLowerCase().startsWith("heavy")) {
-			String info[] = scenario.split("-");
+
+		if (scenario.equals("heavy")) {
+			String info[] = key.split("-");
 			int replica = Integer.parseInt(info[1]);
 			int address = 31 + replica;
 			replica = 1 + ((replica - 1) * 3);
@@ -484,16 +492,21 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 							+ "-STclass escada.tpc.tpcc.TPCCStateTransition "
 							+ "-DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
 							+ "-TRACEFLAG TRACE -PREFIX "
-							+ scenario
+							+ key
 							+ " "
 							+ "-DBpath jdbc:postgresql://192.168.180."
 							+ address
 							+ "/tpcc "
 							+ "-DBdriver org.postgresql.Driver "
-							+ "-DBusr tpcc -DBpasswd tpcc -POOL 20 -MI 2000 -FRAG "
+							+ "-DBusr tpcc -DBpasswd tpcc -POOL 30 -MI 2000 -FRAG "
 							+ replica + " " + "-RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(12);
+			TPCConst.setNumMinClients(10);
+			TPCCConst.setNumCustomer(3000);
+			TPCCConst.setNumDistrict(10);
+			TPCCConst.setNumItem(100000);
+			TPCCConst.setNumLastName(999);
 			ret = true;
 		}
 		return (ret);
