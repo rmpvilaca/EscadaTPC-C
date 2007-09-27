@@ -379,7 +379,8 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		} finally {
 
 			try {
-				if (server.getClientStage(keyArgs).equals(Stage.FAILOVER) &&  isFailOverEnabled == true) {
+				if (server.getClientStage(keyArgs).equals(Stage.FAILOVER)
+						&& isFailOverEnabled == true) {
 					int cont = 0;
 					int contAvailability = 0;
 					int load = 0;
@@ -723,65 +724,94 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			ret = true;
 		}
 
+		if (clients > 0 && scenario.equals("heavy")) {
+			int frag = (fixedFrag == 0 ? replicas.get(machine) : fixedFrag);
+			frag = 1 + ((frag - 1) * 5);
+
+			str
+					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
+							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
+							+ clients
+							+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
+							+ " -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
+							+ " -TRACEFLAG TRACE -PREFIX "
+							+ key
+							+ " "
+							+ " -DBpath "
+							+ machine
+							+ " -DBdriver org.postgresql.Driver "
+							+ " -DBusr tpcc -DBpasswd tpcc -POOL 20 -MI 2000 -FRAG "
+							+ frag + " -RESUBMIT false");
+
+			workloadResources.setNumberOfWarehouses(15);
+			TPCConst.setNumMinClients(10);
+			TPCCConst.setNumCustomer(3000);
+			TPCCConst.setNumDistrict(10);
+			TPCCConst.setNumItem(100000);
+			TPCCConst.setNumLastName(999);
+			ret = true;
+		}
+
 		return (ret);
 	}
 
 	private void configure() throws InvalidTransactionException {
 		server
-				.addServer("jdbc:postgresql://localhost:5432/tpcc?user=alfranio&password=123456");
+				.addServer("jdbc:postgresql://lhufa:5432/tpcc?user=tpcc&password=123456");
 		server
-		.addServer("jdbc:postgresql://localhost:5433/tpcc?user=alfranio&password=123456");
+				.addServer("jdbc:postgresql://lhona:5432/tpcc?user=tpcc&password=123456");
 		server
-		.addServer("jdbc:postgresql://localhost:5434/tpcc?user=alfranio&password=123456");
-		server
-		.addServer("jdbc:postgresql://localhost:5435/tpcc?user=alfranio&password=123456");
-		
-		server
-				.addServer("jdbc:postgresql://192.168.180.32/tpcc?user=tpcc&password=123456");
-		server
-				.addServer("jdbc:postgresql://192.168.180.33/tpcc?user=tpcc&password=123456");
-		server
-				.addServer("jdbc:postgresql://192.168.180.34/tpcc?user=tpcc&password=123456");
-		server
-				.addServer("jdbc:postgresql://192.168.180.35/tpcc?user=tpcc&password=123456");
+				.addServer("jdbc:postgresql://ucha:5432/tpcc?user=tpcc&password=123456");
 
-		replicas
-				.put(
-						"jdbc:postgresql://localhost:5432/tpcc?user=alfranio&password=123456",
-						1);
+		replicas.put(
+				"jdbc:postgresql://lhufa:5432/tpcc?user=tpcc&password=123456",
+				1);
 
-		replicas
-		.put(
-				"jdbc:postgresql://localhost:5433/tpcc?user=alfranio&password=123456",
+		replicas.put(
+				"jdbc:postgresql://lhona:5432/tpcc?user=tpcc&password=123456",
 				2);
 
 		replicas
-		.put(
-				"jdbc:postgresql://localhost:5434/tpcc?user=alfranio&password=123456",
-				3);
-
-		replicas
-		.put(
-				"jdbc:postgresql://localhost:5435/tpcc?user=alfranio&password=123456",
-				4);
-
-
-		replicas
 				.put(
-						"jdbc:postgresql://192.168.180.32/tpcc?user=tpcc&password=123456",
-						1);
-		replicas
-				.put(
-						"jdbc:postgresql://192.168.180.33/tpcc?user=tpcc&password=123456",
-						2);
-		replicas
-				.put(
-						"jdbc:postgresql://192.168.180.34/tpcc?user=tpcc&password=123456",
+						"jdbc:postgresql://ucha:5432/tpcc?user=tpcc&password=123456",
 						3);
-		replicas
-				.put(
-						"jdbc:postgresql://192.168.180.35/tpcc?user=tpcc&password=123456",
-						4);
+
+		/*
+		 * server
+		 * .addServer("jdbc:postgresql://192.168.180.32/tpcc?user=tpcc&password=123456");
+		 * server
+		 * .addServer("jdbc:postgresql://192.168.180.33/tpcc?user=tpcc&password=123456");
+		 * server
+		 * .addServer("jdbc:postgresql://192.168.180.34/tpcc?user=tpcc&password=123456");
+		 * server
+		 * .addServer("jdbc:postgresql://192.168.180.35/tpcc?user=tpcc&password=123456");
+		 * 
+		 * replicas .put(
+		 * "jdbc:postgresql://192.168.82.132:5432/tpcc?user=alfranio&password=123456",
+		 * 1);
+		 * 
+		 * replicas .put(
+		 * "jdbc:postgresql://192.168.82.132:5433/tpcc?user=alfranio&password=123456",
+		 * 2);
+		 * 
+		 * replicas .put(
+		 * "jdbc:postgresql://192.168.82.132:5434/tpcc?user=alfranio&password=123456",
+		 * 3);
+		 * 
+		 * replicas .put(
+		 * "jdbc:postgresql://192.168.82.132:5435/tpcc?user=alfranio&password=123456",
+		 * 4);
+		 * 
+		 * replicas .put(
+		 * "jdbc:postgresql://192.168.180.32/tpcc?user=tpcc&password=123456",
+		 * 1); replicas .put(
+		 * "jdbc:postgresql://192.168.180.33/tpcc?user=tpcc&password=123456",
+		 * 2); replicas .put(
+		 * "jdbc:postgresql://192.168.180.34/tpcc?user=tpcc&password=123456",
+		 * 3); replicas .put(
+		 * "jdbc:postgresql://192.168.180.35/tpcc?user=tpcc&password=123456",
+		 * 4);
+		 */
 
 		tables = new String[] { "warehouse", "district", "item", "stock",
 				"customer", "orders", "order_line", "new_order", "history" };
