@@ -51,6 +51,8 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	private String tables[];
 
+	private boolean isFailOverEnabled = false;
+
 	public ClientEmulationStartup() throws InvalidTransactionException {
 		if (logger.isInfoEnabled()) {
 			logger.info("Loading resources!");
@@ -377,7 +379,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		} finally {
 
 			try {
-				if (server.getClientStage(keyArgs).equals(Stage.FAILOVER)) {
+				if (server.getClientStage(keyArgs).equals(Stage.FAILOVER) &&  isFailOverEnabled == true) {
 					int cont = 0;
 					int contAvailability = 0;
 					int load = 0;
@@ -653,7 +655,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 				}
 			}
 
-			if (contAvailability > 1) {
+			if (contAvailability > 1 && isFailOverEnabled == true) {
 				int contClient = server.getNumberOfClients("*");
 				int mean = (contClient / contAvailability)
 						/ TPCConst.getNumMinClients();
