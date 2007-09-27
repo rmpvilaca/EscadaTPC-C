@@ -51,7 +51,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	private String tables[];
 
-	private boolean isFailOverEnabled = false;
+	private boolean isFailOverEnabled = true;
 
 	public ClientEmulationStartup() throws InvalidTransactionException {
 		if (logger.isInfoEnabled()) {
@@ -728,7 +728,14 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	private void configure() throws InvalidTransactionException {
 		server
-				.addServer("jdbc:postgresql://localhost/tpcc?user=alfranio&password=123456");
+				.addServer("jdbc:postgresql://localhost:5432/tpcc?user=alfranio&password=123456");
+		server
+		.addServer("jdbc:postgresql://localhost:5433/tpcc?user=alfranio&password=123456");
+		server
+		.addServer("jdbc:postgresql://localhost:5434/tpcc?user=alfranio&password=123456");
+		server
+		.addServer("jdbc:postgresql://localhost:5435/tpcc?user=alfranio&password=123456");
+		
 		server
 				.addServer("jdbc:postgresql://192.168.180.32/tpcc?user=tpcc&password=123456");
 		server
@@ -740,8 +747,25 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 		replicas
 				.put(
-						"jdbc:postgresql://localhost/tpcc?user=alfranio&password=123456",
+						"jdbc:postgresql://localhost:5432/tpcc?user=alfranio&password=123456",
 						1);
+
+		replicas
+		.put(
+				"jdbc:postgresql://localhost:5433/tpcc?user=alfranio&password=123456",
+				2);
+
+		replicas
+		.put(
+				"jdbc:postgresql://localhost:5434/tpcc?user=alfranio&password=123456",
+				3);
+
+		replicas
+		.put(
+				"jdbc:postgresql://localhost:5435/tpcc?user=alfranio&password=123456",
+				4);
+
+
 		replicas
 				.put(
 						"jdbc:postgresql://192.168.180.32/tpcc?user=tpcc&password=123456",
