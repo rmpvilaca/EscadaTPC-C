@@ -126,8 +126,8 @@ public class ClientEmulation extends EmulationConfiguration implements
 		e.pause();
 	}
 
-	public void unpause() {
-		e.unpause();
+	public void resume() {
+		e.resume();
 	}
 
 	public void stopit() {

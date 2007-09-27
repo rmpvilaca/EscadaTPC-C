@@ -1,10 +1,19 @@
 package escada.tpc.common.clients.jmx;
 
 import java.lang.reflect.Constructor;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
@@ -26,50 +35,94 @@ import escada.tpc.tpcc.TPCCConst;
 
 public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		ClientEmulationMaster {
-	private final ExecutorService executor = Executors.newCachedThreadPool();
+
+	private final static Logger logger = Logger
+			.getLogger(ClientEmulationStartup.class);
+
+	private ExecutorService executor = Executors.newCachedThreadPool();
 
 	private DatabaseResources databaseResources;
 
 	private WorkloadResources workloadResources;
 
-	private HashMap<String, Stage> stagem = new HashMap<String, Stage>();
+	private ServerControl server = new ServerControl();
 
-	private final static Logger logger = Logger
-			.getLogger(ClientEmulationStartup.class);
+	private HashMap<String, Integer> replicas = new HashMap<String, Integer>();
 
-	private final HashMap<String, Vector<ClientEmulation>> server = new HashMap<String, Vector<ClientEmulation>>();
+	private String tables[];
 
-	public ClientEmulationStartup() {
+	public ClientEmulationStartup() throws InvalidTransactionException {
 		if (logger.isInfoEnabled()) {
 			logger.info("Loading resources!");
 		}
 
+		configure();
+
 		databaseResources = new DatabaseResources();
 		workloadResources = new WorkloadResources();
 
+		ScheduledExecutorService executor = Executors
+				.newSingleThreadScheduledExecutor();
+
+		executor.scheduleWithFixedDelay(new Runnable() {
+			public void run() {
+				balancing();
+			}
+		}, 0, 60000, TimeUnit.MILLISECONDS);
 	}
 
-	public synchronized void start(String key, String arg)
+	public synchronized void start(String key, String arg, String machine)
 			throws InvalidTransactionException {
 
-		if (this.stagem.get(key) == null) {
+		if (this.server.getClientStage(key) == null) {
 
-			this.stagem.put(key, Stage.RUNNING);
+			server.setClientStage(key, Stage.RUNNING);
 
 			String[] args = arg.split("[ ]+");
 
-			this.executor.execute(new Start(key, args));
+			this.executor.execute(new Start(key, args, machine));
 		} else {
 			throw new InvalidTransactionException(key + " start on "
-					+ this.stagem.get(key));
+					+ this.server.getClientStage(key));
 		}
 	}
 
-	public synchronized void startScenario(String key, String scenario)
+	public synchronized void start(String key, String args[], String machine)
 			throws InvalidTransactionException {
+		if (this.server.getClientStage(key) == null) {
+			server.setClientStage(key, Stage.RUNNING);
+			this.executor.execute(new Start(key, args, machine));
+		} else {
+			throw new InvalidTransactionException(key + " start on "
+					+ this.server.getClientStage(key));
+		}
+	}
+
+	public synchronized void startScenario(int clients, String scenario)
+			throws InvalidTransactionException {
+		logger.info("Starting scenario " + scenario);
+
 		StringBuilder str = new StringBuilder();
-		configureScenario(scenario, key, str);
-		start(key, str.toString());
+		String client = server.findFreeClient();
+		logger.info("The set of clients is indentifed as " + client);
+
+		String machine = server.findFreeMachine();
+		if (machine != null) {
+			logger.info("The replica used is " + machine);
+			if (configureScenario(clients, scenario, client, machine, 0, str)) {
+				start(client, str.toString(), machine);
+			} else {
+				logger.error("There is something wrong with the parameters");
+				throw new InvalidTransactionException(
+						"There is something wrong with the parameters");
+			}
+		} else {
+			logger.info("There is no replica avaiable. Please define one.");
+			throw new InvalidTransactionException(
+					"There is no replica avaiable. Please define one.");
+		}
+
+		logger.info("It is done for scenario " + scenario);
 	}
 
 	class Start implements Runnable {
@@ -77,71 +130,32 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 		private String key;
 
-		public Start(String key, String[] args) {
+		private String machine;
+
+		public Start(String key, String[] args, String machine) {
 			this.key = key;
 			this.args = args;
+			this.machine = machine;
 		}
 
 		public void run() {
-			startClientEmulation(this.key, this.args);
+			startClientEmulation(this.key, this.machine, this.args);
 		}
 	}
 
 	public synchronized void pause(String key)
 			throws InvalidTransactionException {
-		if (this.stagem.get(key) != null
-				&& this.stagem.get(key).equals(Stage.RUNNING)) {
-
-			this.stagem.put(key, Stage.PAUSED);
-
-			if (server.get(key) != null) {
-				for (ClientEmulation e : server.get(key)) {
-					e.pause();
-				}
-
-			}
-		} else {
-			throw new InvalidTransactionException(key + " pause on "
-					+ this.stagem.get(key));
-		}
+		server.pauseClient(key);
 	}
 
 	public synchronized void resume(String key)
 			throws InvalidTransactionException {
-		if (this.stagem.get(key) != null
-				&& this.stagem.get(key).equals(Stage.PAUSED)) {
-
-			this.stagem.put(key, Stage.RUNNING);
-
-			if (server.get(key) != null) {
-				for (ClientEmulation e : server.get(key)) {
-					e.unpause();
-				}
-			}
-		} else {
-			throw new InvalidTransactionException(key + " unpause on "
-					+ this.stagem.get(key));
-		}
+		server.resumeClient(key);
 	}
 
 	public synchronized void stop(String key)
 			throws InvalidTransactionException {
-		if (this.stagem.get(key) != null
-				&& (this.stagem.get(key).equals(Stage.RUNNING) || this.stagem
-						.get(key).equals(Stage.PAUSED))) {
-
-			if (server.get(key) != null) {
-				for (ClientEmulation e : server.get(key)) {
-					e.stopit();
-				}
-			}
-
-			this.server.remove(key);
-			this.stagem.remove(key);
-		} else {
-			throw new InvalidTransactionException(key + " stop on "
-					+ this.stagem.get(key));
-		}
+		server.stopClient(key);
 	}
 
 	public void kill() {
@@ -154,7 +168,8 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		}
 	}
 
-	private void startClientEmulation(String keyArgs, String[] args) {
+	private synchronized void startClientEmulation(String keyArgs,
+			String machine, String[] args) {
 		ClientEmulation e = null;
 		ArgDB db = new ArgDB();
 
@@ -269,6 +284,11 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			// DOMConfigurator.configure(log4jArg.s);
 
+			if (!server.isServerHealth(machine)) {
+				throw new InvalidTransactionException(
+						"Server is not valid. Most likely it is down.");
+			}
+
 			logger.info("Starting up the client application.");
 			logger.info("Remote Emulator for Database Benchmark ...");
 			logger
@@ -325,7 +345,9 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 				ebs.add(e);
 			}
 
-			server.put(keyArgs, ebs);
+			server.setClientEmulations(keyArgs, ebs);
+			server.setClientConfiguration(keyArgs, args);
+			server.attachClientToServer(keyArgs, machine);
 
 			logger.info("Running simulation for " + mi.num + " minute(s).");
 
@@ -353,9 +375,58 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		} catch (Exception ex) {
 			logger.info("Error while creating clients: ", ex);
 		} finally {
-			this.server.remove(keyArgs);
-			this.stagem.remove(keyArgs);
+
+			try {
+				if (server.getClientStage(keyArgs).equals(Stage.FAILOVER)) {
+					int cont = 0;
+					int contAvailability = 0;
+					int load = 0;
+					int lowLoad = Integer.MAX_VALUE;
+					String lowServer = null;
+					if (args != null) {
+						while (cont < args.length) {
+							if (args[cont].startsWith("jdbc")) {
+								break;
+							}
+							cont++;
+						}
+						Iterator<String> itServers = server.getServers()
+								.iterator();
+						String key = null;
+						while (itServers.hasNext()) {
+							try {
+								key = itServers.next();
+								verifyingAvailability(key);
+								server.setServerHealth(key, true);
+								contAvailability++;
+								load = server.getNumberOfClientsOnServer(key);
+								if (load < lowLoad) {
+									lowLoad = load;
+									lowServer = key;
+								}
+							} catch (SQLException ex) {
+								ex.printStackTrace();
+								server.setServerHealth(key, false);
+							}
+						}
+						if (contAvailability >= 1
+								&& args[cont].equals(lowServer)) {
+							args[cont] = lowServer;
+							start(server.findFreeClient(), args, lowServer);
+						}
+					}
+				}
+			}
+
+			catch (Exception exy) {
+				exy.printStackTrace();
+			}
+
+			this.server.removeClientEmulation(keyArgs);
+			this.server.removeClientStage(keyArgs);
+
 			logger.info("Ebs finished their jobs..");
+			notifyAll();
 		}
 	}
 
@@ -375,7 +446,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	public synchronized void notifyThreadsCompletion(String key) {
-		this.stagem.put(key, Stage.STOPPED);
+		server.setClientStage(key, Stage.FAILOVER);
 		notifyAll();
 	}
 
@@ -396,8 +467,10 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			long remaining = term * 60 * 1000; // TODO: It must be changed to a
 			// constant
 
-			while (remaining > 0 && this.stagem.get(key) != null
-					&& !this.stagem.get(key).equals(Stage.STOPPED)) {
+			while (remaining > 0 && this.server.getClientStage(key) != null
+					&& !this.server.getClientStage(key).equals(Stage.STOPPED)
+					&& !this.server.getClientStage(key).equals(Stage.FAILOVER)) {
+
 				wait(remaining);
 
 				end = System.currentTimeMillis();
@@ -447,29 +520,197 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		this.workloadResources = workloadResources;
 	}
 
-	private boolean configureScenario(String scenario, String key,
-			StringBuilder str) {
+	public synchronized void addServer(String key)
+			throws InvalidTransactionException {
+		this.server.addServer(key);
+	}
+
+	public synchronized void removeServer(String key)
+			throws InvalidTransactionException {
+		this.server.removeServer(key);
+	}
+
+	public synchronized HashSet<String> getClients()
+			throws InvalidTransactionException {
+		return (this.server.getClients());
+	}
+
+	public synchronized int getNumberOfClients(String key)
+			throws InvalidTransactionException {
+		return (this.server.getNumberOfClients(key));
+	}
+
+	public synchronized int getNumberOfClientsOnServer(String key)
+			throws InvalidTransactionException {
+		return (this.server.getNumberOfClientsOnServer(key));
+	}
+
+	public synchronized HashSet<String> getServers()
+			throws InvalidTransactionException {
+		return (this.server.getServers());
+	}
+
+	public synchronized boolean checkConsistency()
+			throws InvalidTransactionException {
+		Iterator<String> it = server.getClients().iterator();
+		while (it.hasNext()) {
+			String key = it.next();
+			if (this.server.getClientStage(key) != null
+					&& (this.server.getClientStage(key).equals(Stage.RUNNING) || this.server
+							.getClientStage(key).equals(Stage.PAUSED))) {
+
+				if (server.getClientEmulations(key) != null) {
+					for (ClientEmulation e : server.getClientEmulations(key)) {
+						e.stopit();
+					}
+				}
+			}
+		}
+		System.out.println("------------------ " + server.getClients().size()
+				+ " ------------------ ");
+		while (server.getClients().size() != 0) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+			}
+			System.out.println("------------------ "
+					+ server.getClients().size() + " ------------------ ");
+		}
+		return (checkingConsistency());
+	}
+
+	private boolean checkingConsistency() throws InvalidTransactionException {
+		boolean ret = true;
+		HashSet<String> consistencyBag = new HashSet<String>();
+		int cont = 0;
+
+		while (cont < 9 && ret == true) {
+			Iterator<String> itServers = server.getServers().iterator();
+			while (itServers.hasNext()) {
+				String key = itServers.next();
+				if (server.isServerHealth(key)) {
+					try {
+						Connection con = DriverManager.getConnection(key);
+						con.setAutoCommit(true);
+
+						String command = "select check_consistency('"
+								+ tables[cont] + "','key');";
+
+						System.out.println("command " + command);
+
+						Statement st = con.createStatement();
+
+						ResultSet rs = st.executeQuery(command);
+
+						if (rs.next()) {
+							consistencyBag.add(rs.getString(1));
+						}
+						rs.close();
+						st.close();
+						con.close();
+					} catch (SQLException e) {
+						logger.error("Error while connecting to a database", e);
+					}
+				}
+			}
+			if (consistencyBag.size() > 1) {
+				ret = false;
+			}
+			consistencyBag.clear();
+			cont++;
+		}
+		return (ret);
+	}
+
+	private synchronized void balancing() {
+		int contAvailability = 0;
+		int load = 0;
+		int highLoad = Integer.MIN_VALUE;
+		String highServer = null;
+		int lowLoad = Integer.MAX_VALUE;
+		String lowServer = null;
+		try {
+			Iterator<String> itServers = server.getServers().iterator();
+			String key = null;
+			while (itServers.hasNext()) {
+				try {
+					key = itServers.next();
+					verifyingAvailability(key);
+					server.setServerHealth(key, true);
+					contAvailability++;
+					load = server.getNumberOfClientsOnServer(key);
+					if (load > highLoad) {
+						highLoad = load;
+						highServer = key;
+					}
+					if (load < lowLoad) {
+						lowLoad = load;
+						lowServer = key;
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+					server.setServerHealth(key, false);
+				}
+			}
+
+			if (contAvailability > 1) {
+				int contClient = server.getNumberOfClients("*");
+				int mean = (contClient / contAvailability)
+						/ TPCConst.getNumMinClients();
+				if (mean > 0) {
+					String client = server.findServerClient(highServer);
+					if (client != null) {
+						String args[] = server.getClientConfiguration(client);
+						stop(client);
+						int cont = 0;
+						if (args != null) {
+							while (cont < args.length) {
+								if (args[cont].startsWith("jdbc")) {
+									break;
+								}
+								cont++;
+							}
+							args[cont] = lowServer;
+							start(server.findFreeClient(), args, lowServer);
+						}
+					}
+				}
+			}
+		} catch (InvalidTransactionException e) {
+			logger.error("Something bad happend !!!", e);
+		}
+	}
+
+	private void verifyingAvailability(String key) throws SQLException {
+		Connection con = DriverManager.getConnection(key);
+		con.setAutoCommit(true);
+		Statement st = con.createStatement();
+		st.executeQuery("select key from warehouse limit 1;");
+		st.close();
+		con.close();
+	}
+
+	private boolean configureScenario(int clients, String scenario, String key,
+			String machine, int fixedFrag, StringBuilder str) {
 		boolean ret = false;
 
-		if (scenario.equals("light")) {
-			String info[] = key.split("-");
-			int replica = Integer.parseInt(info[1]);
-			int address = 31 + replica;
+		if (clients > 0 && scenario.equals("light")) {
+			int frag = (fixedFrag == 0 ? replicas.get(machine) : fixedFrag);
 
 			str
 					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
-							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI 5 "
-							+ "-STclass escada.tpc.tpcc.TPCCStateTransition "
-							+ "-DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
-							+ "-TRACEFLAG TRACE -PREFIX "
+							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
+							+ clients
+							+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
+							+ " -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
+							+ " -TRACEFLAG TRACE -PREFIX "
 							+ key
 							+ " "
-							+ "-DBpath jdbc:postgresql://192.168.180."
-							+ address
-							+ "/tpcc "
-							+ "-DBdriver org.postgresql.Driver "
-							+ "-DBusr tpcc -DBpasswd tpcc -POOL 20 -MI 2000 -FRAG "
-							+ replica + " " + "-RESUBMIT false");
+							+ " -DBpath "
+							+ machine
+							+ " -DBdriver org.postgresql.Driver "
+							+ " -DBusr tpcc -DBpasswd tpcc -POOL 20 -MI 2000 -FRAG "
+							+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(4);
 			TPCConst.setNumMinClients(5);
@@ -480,35 +721,49 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			ret = true;
 		}
 
-		if (scenario.equals("heavy")) {
-			String info[] = key.split("-");
-			int replica = Integer.parseInt(info[1]);
-			int address = 31 + replica;
-			replica = 1 + ((replica - 1) * 3);
-
-			str
-					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
-							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI 30 "
-							+ "-STclass escada.tpc.tpcc.TPCCStateTransition "
-							+ "-DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
-							+ "-TRACEFLAG TRACE -PREFIX "
-							+ key
-							+ " "
-							+ "-DBpath jdbc:postgresql://192.168.180."
-							+ address
-							+ "/tpcc "
-							+ "-DBdriver org.postgresql.Driver "
-							+ "-DBusr tpcc -DBpasswd tpcc -POOL 30 -MI 2000 -FRAG "
-							+ replica + " " + "-RESUBMIT false");
-
-			workloadResources.setNumberOfWarehouses(12);
-			TPCConst.setNumMinClients(10);
-			TPCCConst.setNumCustomer(3000);
-			TPCCConst.setNumDistrict(10);
-			TPCCConst.setNumItem(100000);
-			TPCCConst.setNumLastName(999);
-			ret = true;
-		}
 		return (ret);
+	}
+
+	private void configure() throws InvalidTransactionException {
+		server
+				.addServer("jdbc:postgresql://localhost/tpcc?user=alfranio&password=123456");
+		server
+				.addServer("jdbc:postgresql://192.168.180.32/tpcc?user=tpcc&password=123456");
+		server
+				.addServer("jdbc:postgresql://192.168.180.33/tpcc?user=tpcc&password=123456");
+		server
+				.addServer("jdbc:postgresql://192.168.180.34/tpcc?user=tpcc&password=123456");
+		server
+				.addServer("jdbc:postgresql://192.168.180.35/tpcc?user=tpcc&password=123456");
+
+		replicas
+				.put(
+						"jdbc:postgresql://localhost/tpcc?user=alfranio&password=123456",
+						1);
+		replicas
+				.put(
+						"jdbc:postgresql://192.168.180.32/tpcc?user=tpcc&password=123456",
+						1);
+		replicas
+				.put(
+						"jdbc:postgresql://192.168.180.33/tpcc?user=tpcc&password=123456",
+						2);
+		replicas
+				.put(
+						"jdbc:postgresql://192.168.180.34/tpcc?user=tpcc&password=123456",
+						3);
+		replicas
+				.put(
+						"jdbc:postgresql://192.168.180.35/tpcc?user=tpcc&password=123456",
+						4);
+
+		tables = new String[] { "warehouse", "district", "item", "stock",
+				"customer", "orders", "order_line", "new_order", "history" };
+
+		try {
+			Class.forName("org.postgresql.Driver");
+		} catch (java.lang.Exception ex) {
+
+		}
 	}
 }

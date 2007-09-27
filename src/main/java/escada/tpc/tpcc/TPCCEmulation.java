@@ -27,7 +27,7 @@ public class TPCCEmulation extends Emulation {
 		this.paused = true;
 	}
 
-	public void unpause() {
+	public void resume() {
 		this.paused = false;
 		synchronized (this) {
 			this.notify();
