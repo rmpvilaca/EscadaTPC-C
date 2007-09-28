@@ -765,7 +765,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	private void configure() throws InvalidTransactionException {
 		
 		server
-		.addServer("jdbc:postgresql://192.168.180.32:5432/tpcc?user=alfranio&password=123456");
+		.addServer("jdbc:postgresql://192.168.180.32:5432/tpcc?user=tpcc&password=123456");
 server
 		.addServer("jdbc:postgresql://192.168.82.33:5432/tpcc?user=tpcc&password=123456");
 server
