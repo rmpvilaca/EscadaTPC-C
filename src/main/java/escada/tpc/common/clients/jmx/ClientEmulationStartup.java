@@ -170,10 +170,11 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		}
 	}
 
-	private synchronized void startClientEmulation(String keyArgs,
+	private void startClientEmulation(String keyArgs,
 			String machine, String[] args) {
 		ClientEmulation e = null;
 		ArgDB db = new ArgDB();
+		Vector<ClientEmulation> ebs = new Vector<ClientEmulation>();
 
 		try {
 
@@ -284,13 +285,6 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			db.parse(args);
 
-			// DOMConfigurator.configure(log4jArg.s);
-
-			if (!server.isServerHealth(machine)) {
-				throw new InvalidTransactionException(
-						"Server is not valid. Most likely it is down.");
-			}
-
 			logger.info("Starting up the client application.");
 			logger.info("Remote Emulator for Database Benchmark ...");
 			logger
@@ -299,63 +293,63 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			Usage(args, db);
 
-			DatabaseManager dbManager = null;
+			synchronized (this) {
 
-			Class cl = null;
-			Constructor co = null;
-			cl = Class.forName(dbArg.s);
-			try {
-				co = cl.getConstructor(new Class[] { Integer.TYPE });
-			} catch (Exception ex) {
+				DatabaseManager dbManager = null;
+
+				Class cl = null;
+				Constructor co = null;
+				cl = Class.forName(dbArg.s);
+				try {
+					co = cl.getConstructor(new Class[] { Integer.TYPE });
+				} catch (Exception ex) {
+				}
+				if (co == null) {
+					dbManager = (DatabaseManager) cl.newInstance();
+				} else {
+					dbManager = (DatabaseManager) co
+							.newInstance(new Object[] { new Integer(cli.num) });
+				}
+
+				dbManager.setConnectionPool(true);
+				dbManager.setMaxConnection(poolArg.num);
+				dbManager.setDriverName(driverArg.s);
+				dbManager.setjdbcPath(pathArg.s);
+				dbManager.setUserInfo(usrArg.s, passwdArg.s);
+
+				for (int i = 0; i < cli.num; i++) {
+
+					e = new ClientEmulation();
+
+					e.setFinished(false);
+					e.setTraceInformation(prefix.s);
+					e.setNumberConcurrentEmulators(cli.num);
+					e.setStatusThinkTime(key.flag);
+					e.setStatusReSubmit(resArg.flag);
+					e.setDatabase(dbManager);
+					e.setEmulationName(prefix.s);
+					e.setHostId(Integer.toString(hostArg.num));
+
+					e.create(ebArg.s, stArg.s, i, fragArg.num, this, keyArgs);
+
+					Thread t = new Thread(e);
+					t.setName(prefix.s + "-" + i);
+					e.setThread(t);
+					t.start();
+
+					ebs.add(e);
+				}
+
+				server.setClientEmulations(keyArgs, ebs);
+				server.setClientConfiguration(keyArgs, args);
+				server.attachClientToServer(keyArgs, machine);
 			}
-			if (co == null) {
-				dbManager = (DatabaseManager) cl.newInstance();
-			} else {
-				dbManager = (DatabaseManager) co
-						.newInstance(new Object[] { new Integer(cli.num) });
-			}
-
-			dbManager.setConnectionPool(true);
-			dbManager.setMaxConnection(poolArg.num);
-			dbManager.setDriverName(driverArg.s);
-			dbManager.setjdbcPath(pathArg.s);
-			dbManager.setUserInfo(usrArg.s, passwdArg.s);
-
-			Vector<ClientEmulation> ebs = new Vector<ClientEmulation>();
-
-			int i = 0;
-			for (i = 0; i < cli.num; i++) {
-
-				e = new ClientEmulation();
-
-				e.setFinished(false);
-				e.setTraceInformation(prefix.s);
-				e.setNumberConcurrentEmulators(cli.num);
-				e.setStatusThinkTime(key.flag);
-				e.setStatusReSubmit(resArg.flag);
-				e.setDatabase(dbManager);
-				e.setEmulationName(prefix.s);
-				e.setHostId(Integer.toString(hostArg.num));
-
-				e.create(ebArg.s, stArg.s, i, fragArg.num, this, keyArgs);
-
-				Thread t = new Thread(e);
-				t.setName(prefix.s + "-" + i);
-				e.setThread(t);
-				t.start();
-
-				ebs.add(e);
-			}
-
-			server.setClientEmulations(keyArgs, ebs);
-			server.setClientConfiguration(keyArgs, args);
-			server.attachClientToServer(keyArgs, machine);
 
 			logger.info("Running simulation for " + mi.num + " minute(s).");
 
 			waitForRampDown(keyArgs, 0, mi.num);
 
-			for (i = 0; i < cli.num; i++) {
+			for (int i = 0; i < cli.num; i++) {
 				e = (ClientEmulation) ebs.elementAt(i);
 				logger.info("Waiting for the eb " + i + " to finish its job..");
 				try {
@@ -378,58 +372,71 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			logger.info("Error while creating clients: ", ex);
 		} finally {
 
-			try {
-				if (server.getClientStage(keyArgs).equals(Stage.FAILOVER)
-						&& isFailOverEnabled == true) {
-					int cont = 0;
-					int contAvailability = 0;
-					int load = 0;
-					int lowLoad = Integer.MAX_VALUE;
-					String lowServer = null;
-					if (args != null) {
-						while (cont < args.length) {
-							if (args[cont].startsWith("jdbc")) {
-								break;
-							}
-							cont++;
-						}
-						Iterator<String> itServers = server.getServers()
-								.iterator();
-						String key = null;
-						while (itServers.hasNext()) {
-							try {
-								key = itServers.next();
-								verifyingAvailability(key);
-								server.setServerHealth(key, true);
-								contAvailability++;
-								load = server.getNumberOfClientsOnServer(key);
-								if (load < lowLoad) {
-									lowLoad = load;
-									lowServer = key;
+			synchronized (this) {
+				try {
+
+					System.out.println("OI OI OI OI OI OI OI --- 01 01 01 01");
+
+					if (server.getClientStage(keyArgs) != null
+							&& server.getClientStage(keyArgs).equals(
+									Stage.FAILOVER)
+							&& isFailOverEnabled == true) {
+
+						System.out
+								.println("OI OI OI OI OI OI OI --- 02 02 02 02");
+
+						int cont = 0;
+						int contAvailability = 0;
+						int load = 0;
+						int lowLoad = Integer.MAX_VALUE;
+						String lowServer = null;
+						if (args != null) {
+							while (cont < args.length) {
+								if (args[cont].startsWith("jdbc")) {
+									break;
 								}
-							} catch (SQLException ex) {
-								ex.printStackTrace();
-								server.setServerHealth(key, false);
+								cont++;
 							}
-						}
-						if (contAvailability >= 1
-								&& args[cont].equals(lowServer)) {
-							args[cont] = lowServer;
-							start(server.findFreeClient(), args, lowServer);
+							Iterator<String> itServers = server.getServers()
+									.iterator();
+							String key = null;
+							while (itServers.hasNext()) {
+								try {
+									key = itServers.next();
+									verifyingAvailability(key);
+									server.setServerHealth(key, true);
+									contAvailability++;
+									load = server
+											.getNumberOfClientsOnServer(key);
+									if (load < lowLoad) {
+										lowLoad = load;
+										lowServer = key;
+									}
+								} catch (SQLException ex) {
+									logger.warn("Server " + key + " is not available.",ex);
+									server.setServerHealth(key, false);
+								}
+							}
+							System.out.println(".........SAIDA SAIDA.......");
+							if (contAvailability >= 1
+									&& args[cont].equals(lowServer)) {
+								args[cont] = lowServer;
+								start(server.findFreeClient(), args, lowServer);
+							}
 						}
 					}
 				}
+
+				catch (Exception exy) {
+					exy.printStackTrace();
+				}
+
+				this.server.removeClientEmulation(keyArgs);
+				this.server.removeClientStage(keyArgs);
+
+				logger.info("Ebs finished their jobs..");
+				notifyAll();
 			}
-
-			catch (Exception exy) {
-				exy.printStackTrace();
-			}
-
-			this.server.removeClientEmulation(keyArgs);
-			this.server.removeClientStage(keyArgs);
-
-			logger.info("Ebs finished their jobs..");
-			notifyAll();
 		}
 	}
 
@@ -702,7 +709,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			str
 					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
-							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
+							+ "-LOGconfig configuration.files/logger.xml -KEY false -CLI "
 							+ clients
 							+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
 							+ " -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
@@ -740,7 +747,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 							+ " -DBpath "
 							+ machine
 							+ " -DBdriver org.postgresql.Driver "
-							+ " -DBusr tpcc -DBpasswd tpcc -POOL 20 -MI 2000 -FRAG "
+							+ " -DBusr tpcc -DBpasswd tpcc -POOL 50 -MI 2000 -FRAG "
 							+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(15);
@@ -756,62 +763,64 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	private void configure() throws InvalidTransactionException {
+		
 		server
-				.addServer("jdbc:postgresql://lhufa:5432/tpcc?user=tpcc&password=123456");
-		server
-				.addServer("jdbc:postgresql://lhona:5432/tpcc?user=tpcc&password=123456");
-		server
-				.addServer("jdbc:postgresql://ucha:5432/tpcc?user=tpcc&password=123456");
+		.addServer("jdbc:postgresql://192.168.180.32:5432/tpcc?user=alfranio&password=123456");
+server
+		.addServer("jdbc:postgresql://192.168.82.33:5432/tpcc?user=tpcc&password=123456");
+server
+		.addServer("jdbc:postgresql://192.168.82.34:5432/tpcc?user=tpcc&password=123456");
+server
+		.addServer("jdbc:postgresql://192.168.82.35:5432/tpcc?user=tpcc&password=123456");
 
-		replicas.put(
-				"jdbc:postgresql://lhufa:5432/tpcc?user=tpcc&password=123456",
+replicas
+		.put(
+				"jdbc:postgresql://192.168.82.32:5432/tpcc?user=tpcc&password=123456",
 				1);
 
-		replicas.put(
-				"jdbc:postgresql://lhona:5432/tpcc?user=tpcc&password=123456",
+replicas
+		.put(
+				"jdbc:postgresql://192.168.82.33:5432/tpcc?user=tpcc&password=123456",
 				2);
+
+replicas
+		.put(
+				"jdbc:postgresql://192.168.82.34:5432/tpcc?user=tpcc&password=123456",
+				3);
+
+replicas
+		.put(
+				"jdbc:postgresql://192.168.82.35:5432/tpcc?user=tpcc&password=123456",
+				4);
+		
+		/*server
+				.addServer("jdbc:postgresql://192.168.82.132:5432/tpcc?user=alfranio&password=123456");
+		server
+				.addServer("jdbc:postgresql://192.168.82.132:5433/tpcc?user=alfranio&password=123456");
+		server
+				.addServer("jdbc:postgresql://192.168.82.132:5434/tpcc?user=alfranio&password=123456");
+		server
+				.addServer("jdbc:postgresql://192.168.82.132:5435/tpcc?user=alfranio&password=123456");
 
 		replicas
 				.put(
-						"jdbc:postgresql://ucha:5432/tpcc?user=tpcc&password=123456",
+						"jdbc:postgresql://192.168.82.132:5432/tpcc?user=alfranio&password=123456",
+						1);
+
+		replicas
+				.put(
+						"jdbc:postgresql://192.168.82.132:5433/tpcc?user=alfranio&password=123456",
+						2);
+
+		replicas
+				.put(
+						"jdbc:postgresql://192.168.82.132:5434/tpcc?user=alfranio&password=123456",
 						3);
 
-		/*
-		 * server
-		 * .addServer("jdbc:postgresql://192.168.180.32/tpcc?user=tpcc&password=123456");
-		 * server
-		 * .addServer("jdbc:postgresql://192.168.180.33/tpcc?user=tpcc&password=123456");
-		 * server
-		 * .addServer("jdbc:postgresql://192.168.180.34/tpcc?user=tpcc&password=123456");
-		 * server
-		 * .addServer("jdbc:postgresql://192.168.180.35/tpcc?user=tpcc&password=123456");
-		 * 
-		 * replicas .put(
-		 * "jdbc:postgresql://192.168.82.132:5432/tpcc?user=alfranio&password=123456",
-		 * 1);
-		 * 
-		 * replicas .put(
-		 * "jdbc:postgresql://192.168.82.132:5433/tpcc?user=alfranio&password=123456",
-		 * 2);
-		 * 
-		 * replicas .put(
-		 * "jdbc:postgresql://192.168.82.132:5434/tpcc?user=alfranio&password=123456",
-		 * 3);
-		 * 
-		 * replicas .put(
-		 * "jdbc:postgresql://192.168.82.132:5435/tpcc?user=alfranio&password=123456",
-		 * 4);
-		 * 
-		 * replicas .put(
-		 * "jdbc:postgresql://192.168.180.32/tpcc?user=tpcc&password=123456",
-		 * 1); replicas .put(
-		 * "jdbc:postgresql://192.168.180.33/tpcc?user=tpcc&password=123456",
-		 * 2); replicas .put(
-		 * "jdbc:postgresql://192.168.180.34/tpcc?user=tpcc&password=123456",
-		 * 3); replicas .put(
-		 * "jdbc:postgresql://192.168.180.35/tpcc?user=tpcc&password=123456",
-		 * 4);
-		 */
+		replicas
+				.put(
+						"jdbc:postgresql://192.168.82.132:5435/tpcc?user=alfranio&password=123456",
+						4);*/
 
 		tables = new String[] { "warehouse", "district", "item", "stock",
 				"customer", "orders", "order_line", "new_order", "history" };

@@ -270,11 +270,10 @@ public class ServerControl {
 	}
 
 	public void stopClient(String key) throws InvalidTransactionException {
-
 		if (key == null || key.equals("*")) {
-			Iterator<String> it = clientsEmulation.keySet().iterator();
+			Iterator it = ((HashMap) clientsEmulation.clone()).keySet().iterator();
 			while (it.hasNext()) {
-				String keyValue = it.next();
+				String keyValue = (String) it.next();
 				if (this.clientsStage.get(keyValue) != null
 						&& (this.clientsStage.get(keyValue).equals(
 								Stage.RUNNING) || this.clientsStage.get(
