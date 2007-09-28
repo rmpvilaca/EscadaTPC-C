@@ -375,21 +375,18 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			synchronized (this) {
 				try {
 
-					System.out.println("OI OI OI OI OI OI OI --- 01 01 01 01");
-
 					if (server.getClientStage(keyArgs) != null
 							&& server.getClientStage(keyArgs).equals(
 									Stage.FAILOVER)
 							&& isFailOverEnabled == true) {
 
-						System.out
-								.println("OI OI OI OI OI OI OI --- 02 02 02 02");
+						logger.debug("Doing failover...");
 
 						int cont = 0;
 						int contAvailability = 0;
 						int load = 0;
 						int lowLoad = Integer.MAX_VALUE;
-						String lowServer = null;
+						String lowLoadServer = null;
 						if (args != null) {
 							while (cont < args.length) {
 								if (args[cont].startsWith("jdbc")) {
@@ -410,18 +407,18 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 											.getNumberOfClientsOnServer(key);
 									if (load < lowLoad) {
 										lowLoad = load;
-										lowServer = key;
+										lowLoadServer = key;
 									}
 								} catch (SQLException ex) {
 									logger.warn("Server " + key + " is not available.",ex);
 									server.setServerHealth(key, false);
 								}
 							}
-							System.out.println(".........SAIDA SAIDA.......");
 							if (contAvailability >= 1
-									&& args[cont].equals(lowServer)) {
-								args[cont] = lowServer;
-								start(server.findFreeClient(), args, lowServer);
+									&& !args[cont].equals(lowLoadServer)) {
+								logger.debug("Let's move to server " + lowLoadServer);
+								args[cont] = lowLoadServer;
+								start(server.findFreeClient(), args, lowLoadServer);
 							}
 						}
 					}
@@ -636,9 +633,9 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		int contAvailability = 0;
 		int load = 0;
 		int highLoad = Integer.MIN_VALUE;
-		String highServer = null;
+		String highLoadServer = null;
 		int lowLoad = Integer.MAX_VALUE;
-		String lowServer = null;
+		String lowLoadServer = null;
 		try {
 			Iterator<String> itServers = server.getServers().iterator();
 			String key = null;
@@ -651,11 +648,11 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 					load = server.getNumberOfClientsOnServer(key);
 					if (load > highLoad) {
 						highLoad = load;
-						highServer = key;
+						highLoadServer = key;
 					}
 					if (load < lowLoad) {
 						lowLoad = load;
-						lowServer = key;
+						lowLoadServer = key;
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -668,7 +665,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 				int mean = (contClient / contAvailability)
 						/ TPCConst.getNumMinClients();
 				if (mean > 0) {
-					String client = server.findServerClient(highServer);
+					String client = server.findServerClient(highLoadServer);
 					if (client != null) {
 						String args[] = server.getClientConfiguration(client);
 						stop(client);
@@ -680,8 +677,8 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 								}
 								cont++;
 							}
-							args[cont] = lowServer;
-							start(server.findFreeClient(), args, lowServer);
+							args[cont] = lowLoadServer;
+							start(server.findFreeClient(), args, lowLoadServer);
 						}
 					}
 				}
@@ -792,8 +789,10 @@ replicas
 		.put(
 				"jdbc:postgresql://192.168.82.35:5432/tpcc?user=tpcc&password=123456",
 				4);
-		
-		/*server
+
+
+/*		
+		server
 				.addServer("jdbc:postgresql://192.168.82.132:5432/tpcc?user=alfranio&password=123456");
 		server
 				.addServer("jdbc:postgresql://192.168.82.132:5433/tpcc?user=alfranio&password=123456");
