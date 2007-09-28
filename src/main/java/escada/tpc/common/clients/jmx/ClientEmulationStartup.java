@@ -764,30 +764,30 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		server
 		.addServer("jdbc:postgresql://192.168.180.32:5432/tpcc?user=tpcc&password=123456");
 server
-		.addServer("jdbc:postgresql://192.168.82.33:5432/tpcc?user=tpcc&password=123456");
+		.addServer("jdbc:postgresql://192.168.180.33:5432/tpcc?user=tpcc&password=123456");
 server
-		.addServer("jdbc:postgresql://192.168.82.34:5432/tpcc?user=tpcc&password=123456");
+		.addServer("jdbc:postgresql://192.168.180.34:5432/tpcc?user=tpcc&password=123456");
 server
-		.addServer("jdbc:postgresql://192.168.82.35:5432/tpcc?user=tpcc&password=123456");
+		.addServer("jdbc:postgresql://192.168.180.35:5432/tpcc?user=tpcc&password=123456");
 
 replicas
 		.put(
-				"jdbc:postgresql://192.168.82.32:5432/tpcc?user=tpcc&password=123456",
+				"jdbc:postgresql://192.168.180.32:5432/tpcc?user=tpcc&password=123456",
 				1);
 
 replicas
 		.put(
-				"jdbc:postgresql://192.168.82.33:5432/tpcc?user=tpcc&password=123456",
+				"jdbc:postgresql://192.168.180.33:5432/tpcc?user=tpcc&password=123456",
 				2);
 
 replicas
 		.put(
-				"jdbc:postgresql://192.168.82.34:5432/tpcc?user=tpcc&password=123456",
+				"jdbc:postgresql://192.168.180.34:5432/tpcc?user=tpcc&password=123456",
 				3);
 
 replicas
 		.put(
-				"jdbc:postgresql://192.168.82.35:5432/tpcc?user=tpcc&password=123456",
+				"jdbc:postgresql://192.168.180.35:5432/tpcc?user=tpcc&password=123456",
 				4);
 
 
