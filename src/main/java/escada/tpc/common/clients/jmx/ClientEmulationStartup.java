@@ -726,7 +726,8 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		    Set<ObjectName> beans;
 			beans = mbsc.queryNames(new ObjectName("escada.replicator.management.sensors.replica:id=CaptureSensor"), null);		
 		    ObjectName bean=beans.iterator().next();
-		    isRecovering=(Boolean)mbsc.invoke(bean, "isRecovering", null, null);
+		    isRecovering=(Boolean)mbsc.getAttribute(bean, "Recovering");
+
 		    jmxc.close();
 		} catch (Exception e) {
 			e.printStackTrace();
