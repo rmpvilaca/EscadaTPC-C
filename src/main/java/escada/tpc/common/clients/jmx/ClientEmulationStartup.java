@@ -33,7 +33,6 @@ import escada.tpc.common.resources.WorkloadResources;
 import escada.tpc.common.util.Pad;
 import escada.tpc.tpcc.TPCCConst;
 
-
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -111,7 +110,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 		StringBuilder str = new StringBuilder();
 		String client = server.findFreeClient();
-		
+
 		logger.info("The set of clients is indentifed as " + client);
 
 		String machine = server.findFreeMachine();
@@ -131,7 +130,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		}
 
 		logger.info("It is done for scenario " + scenario);
-		
+
 		return (machine);
 	}
 
@@ -178,8 +177,8 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		}
 	}
 
-	private void startClientEmulation(String keyArgs,
-			String machine, String[] args) {
+	private void startClientEmulation(String keyArgs, String machine,
+			String[] args) {
 		ClientEmulation e = null;
 		ArgDB db = new ArgDB();
 		Vector<ClientEmulation> ebs = new Vector<ClientEmulation>();
@@ -418,15 +417,18 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 										lowLoadServer = key;
 									}
 								} catch (SQLException ex) {
-									logger.warn("Server " + key + " is not available.",ex);
+									logger.warn("Server " + key
+											+ " is not available.", ex);
 									server.setServerHealth(key, false);
 								}
 							}
 							if (contAvailability >= 1
 									&& !args[cont].equals(lowLoadServer)) {
-								logger.debug("Let's move to server " + lowLoadServer);
+								logger.debug("Let's move to server "
+										+ lowLoadServer);
 								args[cont] = lowLoadServer;
-								start(server.findFreeClient(), args, lowLoadServer);
+								start(server.findFreeClient(), args,
+										lowLoadServer);
 							}
 						}
 					}
@@ -555,9 +557,19 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		return (this.server.getNumberOfClients(key));
 	}
 
+	public synchronized int getNumberOfClients()
+			throws InvalidTransactionException {
+		return (this.server.getNumberOfClients("*"));
+	}
+
 	public synchronized int getNumberOfClientsOnServer(String key)
 			throws InvalidTransactionException {
 		return (this.server.getNumberOfClientsOnServer(key));
+	}
+
+	public synchronized int getNumberOfClientsOnServer()
+			throws InvalidTransactionException {
+		return (this.server.getNumberOfClientsOnServer("*"));
 	}
 
 	public synchronized HashSet<String> getServers()
@@ -698,43 +710,43 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	private void verifyingAvailability(String key) throws SQLException {
 		/*
-   JMXServiceURL url =
-       new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi");
-   JMXConnector jmxc = JMXConnectorFactory.connect(url, null);*/
-		
+		 * JMXServiceURL url = new
+		 * JMXServiceURL("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi");
+		 * JMXConnector jmxc = JMXConnectorFactory.connect(url, null);
+		 */
+
 		Connection con = DriverManager.getConnection(key);
 		con.setAutoCommit(true);
 		Statement st = con.createStatement();
 		st.executeQuery("select key from warehouse limit 1;");
 		st.close();
 		con.close();
-	/*	
-	    MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
-	    
-        ObjectName mbeanName = new ObjectName("com.example:type=Hello");
-
-        HelloMBean mbeanProxy =
-            JMX.newMBeanProxy(mbsc, mbeanName, HelloMBean.class, true);
-
-        echo("\nAdd notification listener...");
-	mbsc.addNotificationListener(mbeanName, listener, null, null);
-
-        echo("\nCacheSize = " + mbeanProxy.getCacheSize());
-
-        mbeanProxy.setCacheSize(150);
-
-        echo("\nWaiting for notification...");
-        sleep(2000);
-
-        echo("\nCacheSize = " + mbeanProxy.getCacheSize());
-        echo("\nInvoke sayHello() in Hello MBean...");
-        mbeanProxy.sayHello();
-
-        echo("\nInvoke add(2, 3) in Hello MBean...");
-        echo("\nadd(2, 3) = " + mbeanProxy.add(2, 3))
-	    
-	    
-	    jmxc.close();*/
+		/*
+		 * MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
+		 * 
+		 * ObjectName mbeanName = new ObjectName("com.example:type=Hello");
+		 * 
+		 * HelloMBean mbeanProxy = JMX.newMBeanProxy(mbsc, mbeanName,
+		 * HelloMBean.class, true);
+		 * 
+		 * echo("\nAdd notification listener...");
+		 * mbsc.addNotificationListener(mbeanName, listener, null, null);
+		 * 
+		 * echo("\nCacheSize = " + mbeanProxy.getCacheSize());
+		 * 
+		 * mbeanProxy.setCacheSize(150);
+		 * 
+		 * echo("\nWaiting for notification..."); sleep(2000);
+		 * 
+		 * echo("\nCacheSize = " + mbeanProxy.getCacheSize()); echo("\nInvoke
+		 * sayHello() in Hello MBean..."); mbeanProxy.sayHello();
+		 * 
+		 * echo("\nInvoke add(2, 3) in Hello MBean..."); echo("\nadd(2, 3) = " +
+		 * mbeanProxy.add(2, 3))
+		 * 
+		 * 
+		 * jmxc.close();
+		 */
 	}
 
 	private boolean configureScenario(int clients, String scenario, String key,
@@ -800,66 +812,62 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	private void configure() throws InvalidTransactionException {
-		
+
 		server
-		.addServer("jdbc:postgresql://192.168.180.32:5432/tpcc?user=tpcc&password=123456");
-server
-		.addServer("jdbc:postgresql://192.168.180.33:5432/tpcc?user=tpcc&password=123456");
-server
-		.addServer("jdbc:postgresql://192.168.180.34:5432/tpcc?user=tpcc&password=123456");
-server
-		.addServer("jdbc:postgresql://192.168.180.35:5432/tpcc?user=tpcc&password=123456");
-
-replicas
-		.put(
-				"jdbc:postgresql://192.168.180.32:5432/tpcc?user=tpcc&password=123456",
-				1);
-
-replicas
-		.put(
-				"jdbc:postgresql://192.168.180.33:5432/tpcc?user=tpcc&password=123456",
-				2);
-
-replicas
-		.put(
-				"jdbc:postgresql://192.168.180.34:5432/tpcc?user=tpcc&password=123456",
-				3);
-
-replicas
-		.put(
-				"jdbc:postgresql://192.168.180.35:5432/tpcc?user=tpcc&password=123456",
-				4);
-
-
-/*		
+				.addServer("jdbc:postgresql://192.168.180.32:5432/tpcc?user=tpcc&password=123456");
 		server
-				.addServer("jdbc:postgresql://192.168.82.132:5432/tpcc?user=alfranio&password=123456");
+				.addServer("jdbc:postgresql://192.168.180.33:5432/tpcc?user=tpcc&password=123456");
 		server
-				.addServer("jdbc:postgresql://192.168.82.132:5433/tpcc?user=alfranio&password=123456");
+				.addServer("jdbc:postgresql://192.168.180.34:5432/tpcc?user=tpcc&password=123456");
 		server
-				.addServer("jdbc:postgresql://192.168.82.132:5434/tpcc?user=alfranio&password=123456");
-		server
-				.addServer("jdbc:postgresql://192.168.82.132:5435/tpcc?user=alfranio&password=123456");
+				.addServer("jdbc:postgresql://192.168.180.35:5432/tpcc?user=tpcc&password=123456");
 
 		replicas
 				.put(
-						"jdbc:postgresql://192.168.82.132:5432/tpcc?user=alfranio&password=123456",
+						"jdbc:postgresql://192.168.180.32:5432/tpcc?user=tpcc&password=123456",
 						1);
 
 		replicas
 				.put(
-						"jdbc:postgresql://192.168.82.132:5433/tpcc?user=alfranio&password=123456",
+						"jdbc:postgresql://192.168.180.33:5432/tpcc?user=tpcc&password=123456",
 						2);
 
 		replicas
 				.put(
-						"jdbc:postgresql://192.168.82.132:5434/tpcc?user=alfranio&password=123456",
+						"jdbc:postgresql://192.168.180.34:5432/tpcc?user=tpcc&password=123456",
 						3);
 
 		replicas
 				.put(
-						"jdbc:postgresql://192.168.82.132:5435/tpcc?user=alfranio&password=123456",
-						4);*/
+						"jdbc:postgresql://192.168.180.35:5432/tpcc?user=tpcc&password=123456",
+						4);
+
+		/*
+		 * server
+		 * .addServer("jdbc:postgresql://192.168.82.132:5432/tpcc?user=alfranio&password=123456");
+		 * server
+		 * .addServer("jdbc:postgresql://192.168.82.132:5433/tpcc?user=alfranio&password=123456");
+		 * server
+		 * .addServer("jdbc:postgresql://192.168.82.132:5434/tpcc?user=alfranio&password=123456");
+		 * server
+		 * .addServer("jdbc:postgresql://192.168.82.132:5435/tpcc?user=alfranio&password=123456");
+		 * 
+		 * replicas .put(
+		 * "jdbc:postgresql://192.168.82.132:5432/tpcc?user=alfranio&password=123456",
+		 * 1);
+		 * 
+		 * replicas .put(
+		 * "jdbc:postgresql://192.168.82.132:5433/tpcc?user=alfranio&password=123456",
+		 * 2);
+		 * 
+		 * replicas .put(
+		 * "jdbc:postgresql://192.168.82.132:5434/tpcc?user=alfranio&password=123456",
+		 * 3);
+		 * 
+		 * replicas .put(
+		 * "jdbc:postgresql://192.168.82.132:5435/tpcc?user=alfranio&password=123456",
+		 * 4);
+		 */
 
 		tables = new String[] { "warehouse", "district", "item", "stock",
 				"customer", "orders", "order_line", "new_order", "history" };

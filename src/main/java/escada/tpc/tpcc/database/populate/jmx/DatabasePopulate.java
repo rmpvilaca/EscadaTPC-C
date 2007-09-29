@@ -3,6 +3,8 @@ package escada.tpc.tpcc.database.populate.jmx;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
@@ -16,23 +18,28 @@ import escada.tpc.tpcc.database.populate.dbPopulate;
 import escada.tpc.tpcc.database.populate.jmx.DatabasePopulateMBean;
 
 public class DatabasePopulate implements DatabasePopulateMBean {
-	
-	private static final Logger logger = Logger.getLogger(DatabasePopulate.class);
+
+	private static final Logger logger = Logger
+			.getLogger(DatabasePopulate.class);
+
 	private DatabaseResources databaseResources = null;
+
 	private WorkloadResources workloadResources = null;
+
+	private HashSet<String> servers = new HashSet<String>();
 
 	public DatabasePopulate() {
 
-		if(logger.isInfoEnabled()) {
+		if (logger.isInfoEnabled()) {
 			logger.info("Trying to load resources for populate!");
 		}
-		
+
 		databaseResources = new DatabaseResources();
 		workloadResources = new WorkloadResources();
 	}
-	
+
 	public void kill() {
-		if(logger.isInfoEnabled()) {
+		if (logger.isInfoEnabled()) {
 			logger.info("Kill action called. Terminating DatabasePopulate!");
 		}
 		System.exit(0);
@@ -40,38 +47,90 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 
 	public void start() throws InvalidTransactionException {
 
-		if(logger.isInfoEnabled()) {
-			logger.info("Connecting to database using driver: " + databaseResources.getDriver() + ", username: " + databaseResources.getUserName() + ", connection string: " + databaseResources.getConnectionString());
+		if (logger.isInfoEnabled()) {
+			logger.info("Connecting to database using driver: "
+					+ databaseResources.getDriver() + ", username: "
+					+ databaseResources.getUserName() + ", connection string: "
+					+ databaseResources.getConnectionString());
 		}
-		
-		Connection conn=null;
+
+		Connection conn = null;
 		try {
 			Class.forName(databaseResources.getDriver());
-			conn = DriverManager.getConnection(databaseResources.getConnectionString(), databaseResources.getUserName(), databaseResources.getPassword());
+			conn = DriverManager.getConnection(databaseResources
+					.getConnectionString(), databaseResources.getUserName(),
+					databaseResources.getPassword());
 			conn.setAutoCommit(false);
+
+			if (logger.isInfoEnabled()) {
+				logger.info("Starting POPULATE process!");
+			}
+
+			dbPopulate db = new dbPopulate();
+			db.populate(conn, workloadResources.getNumberOfWarehouses());
+			conn.close();
+
+			if (logger.isInfoEnabled()) {
+				logger.info("POPULATE process ENDED!");
+			}
+
 		} catch (ClassNotFoundException e) {
 			logger.error("Unable to load database driver!", e);
 		} catch (SQLException e) {
-			logger.error("Exception caught while talking (SQL) to the database!", e);
+			logger.error(
+					"Exception caught while talking (SQL) to the database!", e);
 		}
-		
-		if(logger.isInfoEnabled()) {
-			logger.info("Starting POPULATE process!");
-		}
-
-		new dbPopulate(conn, workloadResources.getNumberOfWarehouses());
-		
-		if(logger.isInfoEnabled()) {
-			logger.info("POPULATE process ENDED!");
-		}
-
 	}
-	
-	public void startScenario(String scenario) throws InvalidTransactionException {
+
+	public void clean() {
+		Iterator<String> it = servers.iterator();
+
+		while (it.hasNext()) {
+
+			Connection conn = null;
+			try {
+				Class.forName(databaseResources.getDriver());
+				conn = DriverManager.getConnection(it.next(), databaseResources
+						.getUserName(), databaseResources.getPassword());
+				conn.setAutoCommit(false);
+
+				if (logger.isInfoEnabled()) {
+					logger.info("Starting POPULATE process!");
+				}
+
+				dbPopulate db = new dbPopulate();
+				db.clean(conn);
+				conn.close();
+
+				if (logger.isInfoEnabled()) {
+					logger.info("POPULATE process ENDED!");
+				}
+
+			} catch (ClassNotFoundException e) {
+				logger.error("Unable to load database driver!", e);
+			} catch (SQLException e) {
+				logger
+						.error(
+								"Exception caught while talking (SQL) to the database!",
+								e);
+			}
+		}
+	}
+
+	public void startScenario(String scenario)
+			throws InvalidTransactionException {
 		if (configureScenario(scenario)) {
 			start();
+		} else {
+			logger.info("Scenario was not found...");
 		}
-		else {
+	}
+
+	public void cleanScenario(String scenario)
+			throws InvalidTransactionException {
+		if (configureScenario(scenario)) {
+			clean();
+		} else {
 			logger.info("Scenario was not found...");
 		}
 	}
@@ -93,21 +152,29 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 			WorkloadResources workloadResources) {
 		this.workloadResources = workloadResources;
 	}
-	
+
 	private boolean configureScenario(String scenario) {
 		boolean ret = false;
-		
+
 		if (scenario.equalsIgnoreCase("light")) {
 			databaseResources.setDriver("org.postgresql.Driver");
 			databaseResources.setUserName("tpcc");
-			databaseResources.setConnectionString("jdbc:postgresql://192.168.180.32/tpcc");
+			databaseResources
+					.setConnectionString("jdbc:postgresql://192.168.180.32/tpcc");
 			databaseResources.setPassword("tpcc");
 			workloadResources.setNumberOfWarehouses(4);
+
+			servers.add("jdbc:postgresql://192.168.180.32/tpcc");
+			servers.add("jdbc:postgresql://192.168.180.33/tpcc");
+			servers.add("jdbc:postgresql://192.168.180.34/tpcc");
+			servers.add("jdbc:postgresql://192.168.180.35/tpcc");
+
 			TPCConst.setNumMinClients(5);
 			TPCCConst.setNumCustomer(100);
 			TPCCConst.setNumDistrict(5);
 			TPCCConst.setNumItem(10);
-			TPCCConst.setNumLastName(99);				
+			TPCCConst.setNumLastName(99);
+
 			ret = true;
 		}
 		return (ret);

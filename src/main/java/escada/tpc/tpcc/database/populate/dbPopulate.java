@@ -21,53 +21,65 @@ import escada.tpc.tpcc.TPCCConst;
 import escada.tpc.tpcc.util.TPCCRandGen;
 
 public class dbPopulate {
-	
+
 	private static final Logger logger = Logger.getLogger(dbPopulate.class);
-	
-	public dbPopulate(Connection conn, int numWareh) {
+
+	public void clean(Connection conn) {
+		PreparedStatement pstmt = null;
+
+		try {
+			pstmt = conn.prepareStatement("truncate warehouse");
+
+			pstmt.execute();
+			conn.commit();
+
+			pstmt = conn.prepareStatement("truncate district");
+			pstmt.execute();
+			conn.commit();
+
+			pstmt = conn.prepareStatement("truncate customer");
+			pstmt.execute();
+			conn.commit();
+
+			pstmt = conn.prepareStatement("truncate item");
+			pstmt.execute();
+			conn.commit();
+
+			pstmt = conn.prepareStatement("truncate stock");
+			pstmt.execute();
+			conn.commit();
+
+			pstmt = conn.prepareStatement("truncate orders");
+			pstmt.execute();
+			conn.commit();
+
+			pstmt = conn.prepareStatement("truncate order_line");
+			pstmt.execute();
+			conn.commit();
+
+			pstmt = conn.prepareStatement("truncate history");
+			pstmt.execute();
+			conn.commit();
+
+			pstmt = conn.prepareStatement("truncate new_order");
+			pstmt.execute();
+			conn.commit();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void populate(Connection conn, int numWareh) {
 
 		PreparedStatement pstmt = null;
 		Random rg = new Random(71830);
 		Timestamp tStamp;
 		try {
+			clean(conn);
+
 			logger.debug("populating warehouse...");
-			
-			pstmt = conn.prepareStatement("truncate warehouse");
-			pstmt.execute();
-			conn.commit();
-			
-			pstmt = conn.prepareStatement("truncate district");
-			pstmt.execute();
-			conn.commit();
-			
-			pstmt = conn.prepareStatement("truncate customer");
-			pstmt.execute();
-			conn.commit();
-			
-			pstmt = conn.prepareStatement("truncate item");
-			pstmt.execute();
-			conn.commit();
-			
-			pstmt = conn.prepareStatement("truncate stock");
-			pstmt.execute();
-			conn.commit();
-			
-			pstmt = conn.prepareStatement("truncate orders");
-			pstmt.execute();
-			conn.commit();
-			
-			pstmt = conn.prepareStatement("truncate order_line");
-			pstmt.execute();
-			conn.commit();
-			
-			pstmt = conn.prepareStatement("truncate history");
-			pstmt.execute();
-			conn.commit();
-			
-			pstmt = conn.prepareStatement("truncate new_order");
-			pstmt.execute();
-			conn.commit();
-			
+
 			pstmt = conn
 					.prepareStatement("insert into warehouse (w_id,w_name,w_street_1,"
 							+ "w_street_2,w_city,w_state,w_zip,w_tax,w_ytd) "
@@ -387,7 +399,6 @@ public class dbPopulate {
 				conn.commit();
 			cont = 0;
 			pstmt.close();
-			conn.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			try {
@@ -397,7 +408,6 @@ public class dbPopulate {
 				System.exit(-1);
 			}
 		}
-
 	}
 
 	public String generateString(int length) {
@@ -498,8 +508,13 @@ public class dbPopulate {
 			Connection conn = DriverManager.getConnection(jdbc, userName,
 					password);
 			conn.setAutoCommit(false);
+
 			logger.debug("Starting populating:");
-			new dbPopulate(conn, numberOfwarehouse);
+
+			dbPopulate db = new dbPopulate();
+			db.populate(conn, numberOfwarehouse);
+			conn.close();
+
 			logger.debug("done! ");
 		} catch (SQLException e) {
 			System.err.println("getConnection error");

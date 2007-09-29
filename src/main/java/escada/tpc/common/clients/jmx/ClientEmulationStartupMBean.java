@@ -29,7 +29,11 @@ public interface ClientEmulationStartupMBean {
 	
 	public int getNumberOfClients(String key) throws InvalidTransactionException;
 	
+	public int getNumberOfClients() throws InvalidTransactionException;
+	
 	public int getNumberOfClientsOnServer(String key) throws InvalidTransactionException;
+	
+	public int getNumberOfClientsOnServer() throws InvalidTransactionException;
 	
 	public boolean checkConsistency() throws InvalidTransactionException;	
 	
