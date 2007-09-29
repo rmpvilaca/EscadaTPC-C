@@ -33,6 +33,11 @@ import escada.tpc.common.resources.WorkloadResources;
 import escada.tpc.common.util.Pad;
 import escada.tpc.tpcc.TPCCConst;
 
+
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
 public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		ClientEmulationMaster {
 
@@ -100,12 +105,13 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		}
 	}
 
-	public synchronized void startScenario(int clients, String scenario)
+	public synchronized String startScenario(int clients, String scenario)
 			throws InvalidTransactionException {
 		logger.info("Starting scenario " + scenario);
 
 		StringBuilder str = new StringBuilder();
 		String client = server.findFreeClient();
+		
 		logger.info("The set of clients is indentifed as " + client);
 
 		String machine = server.findFreeMachine();
@@ -125,6 +131,8 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		}
 
 		logger.info("It is done for scenario " + scenario);
+		
+		return (machine);
 	}
 
 	class Start implements Runnable {
@@ -689,12 +697,44 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	private void verifyingAvailability(String key) throws SQLException {
+		/*
+   JMXServiceURL url =
+       new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi");
+   JMXConnector jmxc = JMXConnectorFactory.connect(url, null);*/
+		
 		Connection con = DriverManager.getConnection(key);
 		con.setAutoCommit(true);
 		Statement st = con.createStatement();
 		st.executeQuery("select key from warehouse limit 1;");
 		st.close();
 		con.close();
+	/*	
+	    MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
+	    
+        ObjectName mbeanName = new ObjectName("com.example:type=Hello");
+
+        HelloMBean mbeanProxy =
+            JMX.newMBeanProxy(mbsc, mbeanName, HelloMBean.class, true);
+
+        echo("\nAdd notification listener...");
+	mbsc.addNotificationListener(mbeanName, listener, null, null);
+
+        echo("\nCacheSize = " + mbeanProxy.getCacheSize());
+
+        mbeanProxy.setCacheSize(150);
+
+        echo("\nWaiting for notification...");
+        sleep(2000);
+
+        echo("\nCacheSize = " + mbeanProxy.getCacheSize());
+        echo("\nInvoke sayHello() in Hello MBean...");
+        mbeanProxy.sayHello();
+
+        echo("\nInvoke add(2, 3) in Hello MBean...");
+        echo("\nadd(2, 3) = " + mbeanProxy.add(2, 3))
+	    
+	    
+	    jmxc.close();*/
 	}
 
 	private boolean configureScenario(int clients, String scenario, String key,
@@ -706,7 +746,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			str
 					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
-							+ "-LOGconfig configuration.files/logger.xml -KEY false -CLI "
+							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
 							+ clients
 							+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
 							+ " -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
