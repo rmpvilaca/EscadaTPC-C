@@ -83,6 +83,8 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 			if(this.latencyCounter > 0) {
 				t = ((double)this.latencyAccumulator) / ((double)this.latencyCounter);
 				t = (t < MINIMUM_VALUE ? 0 : t);
+			} else {
+				t = 0.0;
 			}
 
 			this.lastComputationLatency = current;
