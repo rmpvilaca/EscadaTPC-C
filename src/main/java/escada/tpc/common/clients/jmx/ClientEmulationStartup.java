@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,6 +34,8 @@ import escada.tpc.common.resources.WorkloadResources;
 import escada.tpc.common.util.Pad;
 import escada.tpc.tpcc.TPCCConst;
 
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -74,7 +77,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			public void run() {
 				balancing();
 			}
-		}, 0, 60000, TimeUnit.MILLISECONDS);
+		}, 0, 5000, TimeUnit.MILLISECONDS);
 	}
 
 	public synchronized void start(String key, String arg, String machine)
@@ -675,7 +678,8 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 						lowLoadServer = key;
 					}
 				} catch (SQLException e) {
-					e.printStackTrace();
+					if (logger.isDebugEnabled())
+						logger.debug("Server "+key+" is Unavailable");
 					server.setServerHealth(key, false);
 				}
 			}
@@ -709,44 +713,30 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	private void verifyingAvailability(String key) throws SQLException {
-		/*
-		 * JMXServiceURL url = new
-		 * JMXServiceURL("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi");
-		 * JMXConnector jmxc = JMXConnectorFactory.connect(url, null);
-		 */
-
-		Connection con = DriverManager.getConnection(key);
-		con.setAutoCommit(true);
-		Statement st = con.createStatement();
-		st.executeQuery("select key from warehouse limit 1;");
-		st.close();
-		con.close();
-		/*
-		 * MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
-		 * 
-		 * ObjectName mbeanName = new ObjectName("com.example:type=Hello");
-		 * 
-		 * HelloMBean mbeanProxy = JMX.newMBeanProxy(mbsc, mbeanName,
-		 * HelloMBean.class, true);
-		 * 
-		 * echo("\nAdd notification listener...");
-		 * mbsc.addNotificationListener(mbeanName, listener, null, null);
-		 * 
-		 * echo("\nCacheSize = " + mbeanProxy.getCacheSize());
-		 * 
-		 * mbeanProxy.setCacheSize(150);
-		 * 
-		 * echo("\nWaiting for notification..."); sleep(2000);
-		 * 
-		 * echo("\nCacheSize = " + mbeanProxy.getCacheSize()); echo("\nInvoke
-		 * sayHello() in Hello MBean..."); mbeanProxy.sayHello();
-		 * 
-		 * echo("\nInvoke add(2, 3) in Hello MBean..."); echo("\nadd(2, 3) = " +
-		 * mbeanProxy.add(2, 3))
-		 * 
-		 * 
-		 * jmxc.close();
-		 */
+		int beginIndex=key.indexOf("//");
+		String str1=key.substring(beginIndex+2);
+		String str2=str1.substring(0,str1.indexOf("/"));
+		String hostName=str2.split(":")[0];
+		boolean isReady=false;
+		try{
+		   JMXServiceURL url=new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+hostName+":8999/jmxrmi");
+			// creates the environment to hold the pass and the username
+		   HashMap<String, Object> env=new HashMap<String, Object>();;
+		   String[] credentials = new String[] { "controlRole", "fat" };
+		   env.put("jmx.remote.credentials", credentials);
+		   env.put("jmx.invoke.getters", true);
+		   JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
+		   MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
+		    Set<ObjectName> beans;
+			beans = mbsc.queryNames(new ObjectName("escada.replicator.management.sensors.replica:id=CaptureSensor"), null);		
+		    ObjectName bean=beans.iterator().next();
+		    isReady=(Boolean)mbsc.invoke(bean, "acceptTransactions",null,null);
+		    jmxc.close();
+		} catch (Exception e) {
+			throw new SQLException("Cant connect");
+		} 
+		if (!isReady)
+			throw new SQLException("Doing recovery");
 	}
 
 	private boolean configureScenario(int clients, String scenario, String key,
