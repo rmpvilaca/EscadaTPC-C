@@ -70,11 +70,11 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		ScheduledExecutorService executor = Executors
 				.newSingleThreadScheduledExecutor();
 
-		executor.scheduleWithFixedDelay(new Runnable() {
+		/*executor.scheduleWithFixedDelay(new Runnable() {
 			public void run() {
 				balancing();
 			}
-		}, 0, 60000, TimeUnit.MILLISECONDS);
+		}, 0, 60000, TimeUnit.MILLISECONDS);*/
 	}
 
 	public synchronized void start(String key, String arg, String machine)
