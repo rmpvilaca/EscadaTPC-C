@@ -1,8 +1,6 @@
 package escada.tpc.common.clients.jmx;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -11,7 +9,6 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
@@ -21,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
-import escada.replicator.management.sensors.replica.CaptureSensorMBean;
 import escada.tpc.common.TPCConst;
 import escada.tpc.common.args.Arg;
 import escada.tpc.common.args.ArgDB;
@@ -38,12 +34,7 @@ import escada.tpc.common.resources.WorkloadResources;
 import escada.tpc.common.util.Pad;
 import escada.tpc.tpcc.TPCCConst;
 
-
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
-import javax.management.MBeanServerInvocationHandler;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -86,7 +77,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			public void run() {
 				balancing();
 			}
-		}, 0, 60000, TimeUnit.MILLISECONDS);
+		}, 0, 5000, TimeUnit.MILLISECONDS);
 	}
 
 	public synchronized void start(String key, String arg, String machine)
@@ -674,7 +665,8 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 						lowLoadServer = key;
 					}
 				} catch (SQLException e) {
-					e.printStackTrace();
+					if (logger.isDebugEnabled())
+						logger.debug("Server "+key+" is Unavailable");
 					server.setServerHealth(key, false);
 				}
 			}
@@ -713,7 +705,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		String str1=key.substring(beginIndex+2);
 		String str2=str1.substring(0,str1.indexOf("/"));
 		String hostName=str2.split(":")[0];
-		boolean isRecovering=true;
+		boolean isReady=false;
 		try{
 		   JMXServiceURL url=new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+hostName+":8999/jmxrmi");
 			// creates the environment to hold the pass and the username
@@ -726,14 +718,12 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		    Set<ObjectName> beans;
 			beans = mbsc.queryNames(new ObjectName("escada.replicator.management.sensors.replica:id=CaptureSensor"), null);		
 		    ObjectName bean=beans.iterator().next();
-		    isRecovering=(Boolean)mbsc.getAttribute(bean, "Recovering");
-
+		    isReady=(Boolean)mbsc.invoke(bean, "acceptTransactions",null,null);
 		    jmxc.close();
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new SQLException("Cant connect");
 		} 
-		if (isRecovering)
+		if (!isReady)
 			throw new SQLException("Doing recovery");
 	}
 
