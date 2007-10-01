@@ -84,37 +84,38 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 
 	public void clean() {
 		Iterator<String> it = servers.iterator();
+		
+
+		if (logger.isInfoEnabled()) {
+			logger.info("Starting CLEANUP process!");
+		}
 
 		while (it.hasNext()) {
 
 			Connection conn = null;
+			String server = null;
 			try {
 				Class.forName(databaseResources.getDriver());
-				conn = DriverManager.getConnection(it.next(), databaseResources
+				server = it.next(); 
+				conn = DriverManager.getConnection(server, databaseResources
 						.getUserName(), databaseResources.getPassword());
 				conn.setAutoCommit(false);
-
-				if (logger.isInfoEnabled()) {
-					logger.info("Starting POPULATE process!");
-				}
 
 				dbPopulate db = new dbPopulate();
 				db.clean(conn);
 				conn.close();
 
-				if (logger.isInfoEnabled()) {
-					logger.info("POPULATE process ENDED!");
-				}
-
 			} catch (ClassNotFoundException e) {
 				logger.error("Unable to load database driver!", e);
 			} catch (SQLException e) {
-				logger
-						.error(
-								"Exception caught while talking (SQL) to the database!",
-								e);
+				logger.error("Error while connecting to " + server);
+				logger.error("Exception caught ", e);
 			}
 		}
+		
+		if (logger.isInfoEnabled()) {
+			logger.info("CLEANUP process ENDED!");
+		}		
 	}
 
 	public void startScenario(String scenario)
@@ -160,15 +161,16 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 			databaseResources.setDriver("org.postgresql.Driver");
 			databaseResources.setUserName("tpcc");
 			databaseResources
-					.setConnectionString("jdbc:postgresql://192.168.180.32/tpcc");
+			.setConnectionString("jdbc:postgresql://192.168.180.32:5432/tpcc");
+			
 			databaseResources.setPassword("tpcc");
 			workloadResources.setNumberOfWarehouses(4);
 
-			servers.add("jdbc:postgresql://192.168.180.32/tpcc");
-			servers.add("jdbc:postgresql://192.168.180.33/tpcc");
-			servers.add("jdbc:postgresql://192.168.180.34/tpcc");
-			servers.add("jdbc:postgresql://192.168.180.35/tpcc");
-
+			servers.add("jdbc:postgresql://192.168.180.32:5432/tpcc");
+			servers.add("jdbc:postgresql://192.168.180.33:5432/tpcc");
+			servers.add("jdbc:postgresql://192.168.180.34:5432/tpcc");
+			servers.add("jdbc:postgresql://192.168.180.35:5432/tpcc");
+			
 			TPCConst.setNumMinClients(5);
 			TPCCConst.setNumCustomer(100);
 			TPCCConst.setNumDistrict(5);

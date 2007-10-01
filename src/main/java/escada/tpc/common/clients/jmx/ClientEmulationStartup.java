@@ -16,6 +16,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
 import org.apache.log4j.Logger;
 
 import escada.tpc.common.TPCConst;
@@ -33,12 +39,6 @@ import escada.tpc.common.resources.DatabaseResources;
 import escada.tpc.common.resources.WorkloadResources;
 import escada.tpc.common.util.Pad;
 import escada.tpc.tpcc.TPCCConst;
-
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 
 public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		ClientEmulationMaster {
@@ -58,7 +58,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	private String tables[];
 
-	private boolean isFailOverEnabled = false;
+	private boolean isFailOverEnabled = true;
 
 	public ClientEmulationStartup() throws InvalidTransactionException {
 		if (logger.isInfoEnabled()) {
@@ -185,6 +185,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		ClientEmulation e = null;
 		ArgDB db = new ArgDB();
 		Vector<ClientEmulation> ebs = new Vector<ClientEmulation>();
+		DatabaseManager dbManager = null;
 
 		try {
 
@@ -305,8 +306,6 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			synchronized (this) {
 
-				DatabaseManager dbManager = null;
-
 				Class cl = null;
 				Constructor co = null;
 				cl = Class.forName(dbArg.s);
@@ -370,7 +369,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 					continue;
 				}
 			}
-
+			
 			logger.info("EBs finished.");
 
 		} catch (Arg.Exception ae) {
@@ -435,14 +434,21 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 							}
 						}
 					}
+					
+					
 				}
-
 				catch (Exception exy) {
 					exy.printStackTrace();
 				}
-
+				
 				this.server.removeClientEmulation(keyArgs);
 				this.server.removeClientStage(keyArgs);
+				
+				try {
+					dbManager.releaseConnections();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
 
 				logger.info("Ebs finished their jobs..");
 				notifyAll();
@@ -583,6 +589,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	public synchronized boolean checkConsistency()
 			throws InvalidTransactionException {
 		Iterator<String> it = server.getClients().iterator();
+		
 		while (it.hasNext()) {
 			String key = it.next();
 			if (this.server.getClientStage(key) != null
@@ -596,17 +603,58 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 				}
 			}
 		}
-		System.out.println("------------------ " + server.getClients().size()
-				+ " ------------------ ");
+		System.out.println("------------------ Waiting while clients are running.");
 		while (server.getClients().size() != 0) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
 			}
-			System.out.println("------------------ "
-					+ server.getClients().size() + " ------------------ ");
 		}
+		
+		System.out.println("------------------ Waiting while there are transactions to be applied.");
+		Iterator<String> itServers = server.getServers().iterator();
+		while (itServers.hasNext()) {
+			String server = itServers.next();
+			int ret = verifyQueueApply(server);
+			System.out.println("------------------ Queue on server: " + server + " is " + ret); 
+			while (ret != 0) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+				}
+				ret = verifyQueueApply(server);
+			}
+		}
+		System.out.println("------------------ Verifying consistency.");		
+		
 		return (checkingConsistency());
+	}
+	
+	private int verifyQueueApply(String key) {
+		int ret = 0;
+		
+		int beginIndex=key.indexOf("//");
+		String str1=key.substring(beginIndex+2);
+		String str2=str1.substring(0,str1.indexOf("/"));
+		String hostName=str2.split(":")[0];
+		try{
+		   JMXServiceURL url=new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+hostName+":8999/jmxrmi");
+			// creates the environment to hold the pass and the username
+		   HashMap<String, Object> env=new HashMap<String, Object>();;
+		   String[] credentials = new String[] { "controlRole", "fat" };
+		   env.put("jmx.remote.credentials", credentials);
+		   env.put("jmx.invoke.getters", true);
+		   JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
+		   MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
+		    Set<ObjectName> beans;
+			beans = mbsc.queryNames(new ObjectName("escada.replicator.management.sensors.replica:id=ApplySensor"), null);		
+		    ObjectName bean=beans.iterator().next();
+		    mbsc.getAttribute(bean, "QueuedMessages");
+		    jmxc.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return (ret);
 	}
 
 	private boolean checkingConsistency() throws InvalidTransactionException {
@@ -735,8 +783,9 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		} catch (Exception e) {
 			throw new SQLException("Cant connect");
 		} 
-		if (!isReady)
+		if (!isReady) {
 			throw new SQLException("Doing recovery");
+		}
 	}
 
 	private boolean configureScenario(int clients, String scenario, String key,
@@ -758,7 +807,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 							+ " -DBpath "
 							+ machine
 							+ " -DBdriver org.postgresql.Driver "
-							+ " -DBusr tpcc -DBpasswd tpcc -POOL 20 -MI 2000 -FRAG "
+							+ " -DBusr tpcc -DBpasswd tpcc -POOL 5 -MI 45 -FRAG "
 							+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(4);
@@ -786,7 +835,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 							+ " -DBpath "
 							+ machine
 							+ " -DBdriver org.postgresql.Driver "
-							+ " -DBusr tpcc -DBpasswd tpcc -POOL 50 -MI 2000 -FRAG "
+							+ " -DBusr tpcc -DBpasswd tpcc -POOL 50 -MI 45 -FRAG "
 							+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(15);
@@ -832,32 +881,26 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 						"jdbc:postgresql://192.168.180.35:5432/tpcc?user=tpcc&password=123456",
 						4);
 
-		/*
-		 * server
-		 * .addServer("jdbc:postgresql://192.168.82.132:5432/tpcc?user=alfranio&password=123456");
-		 * server
-		 * .addServer("jdbc:postgresql://192.168.82.132:5433/tpcc?user=alfranio&password=123456");
-		 * server
-		 * .addServer("jdbc:postgresql://192.168.82.132:5434/tpcc?user=alfranio&password=123456");
-		 * server
-		 * .addServer("jdbc:postgresql://192.168.82.132:5435/tpcc?user=alfranio&password=123456");
-		 * 
-		 * replicas .put(
-		 * "jdbc:postgresql://192.168.82.132:5432/tpcc?user=alfranio&password=123456",
-		 * 1);
-		 * 
-		 * replicas .put(
-		 * "jdbc:postgresql://192.168.82.132:5433/tpcc?user=alfranio&password=123456",
-		 * 2);
-		 * 
-		 * replicas .put(
-		 * "jdbc:postgresql://192.168.82.132:5434/tpcc?user=alfranio&password=123456",
-		 * 3);
-		 * 
-		 * replicas .put(
-		 * "jdbc:postgresql://192.168.82.132:5435/tpcc?user=alfranio&password=123456",
-		 * 4);
-		 */
+		
+		 /* server
+		  .addServer("jdbc:postgresql://192.168.82.132:5432/tpcc?user=tpcc&password=123456");
+		  server
+		  .addServer("jdbc:postgresql://192.168.82.132:5433/tpcc?user=tpcc&password=123456");
+		  server
+		  .addServer("jdbc:postgresql://192.168.82.132:5434/tpcc?user=tpcc&password=123456");
+		  
+		  replicas .put(
+		  "jdbc:postgresql://192.168.82.132:5432/tpcc?user=tpcc&password=123456",
+		  1);
+		  
+		  replicas .put(
+		  "jdbc:postgresql://192.168.82.132:5433/tpcc?user=tpcc&password=123456",
+		  2);
+		  
+		  replicas .put(
+		  "jdbc:postgresql://192.168.82.132:5434/tpcc?user=tpcc&password=123456",
+		  3);*/
+		  
 
 		tables = new String[] { "warehouse", "district", "item", "stock",
 				"customer", "orders", "order_line", "new_order", "history" };
