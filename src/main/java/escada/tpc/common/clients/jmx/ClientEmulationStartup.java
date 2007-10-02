@@ -58,7 +58,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	private String tables[];
 
-	private boolean isFailOverEnabled = true;
+	private boolean isFailOverEnabled = false;
 
 	public ClientEmulationStartup() throws InvalidTransactionException {
 		if (logger.isInfoEnabled()) {
@@ -566,7 +566,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		return (this.server.getNumberOfClients(key));
 	}
 
-	public synchronized int getNumberOfClients()
+	public int getNumberOfClients()
 			throws InvalidTransactionException {
 		return (this.server.getNumberOfClients("*"));
 	}
@@ -590,7 +590,9 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			throws InvalidTransactionException {
 		Iterator<String> it = server.getClients().iterator();
 		
-		while (it.hasNext()) {
+		/*
+		 
+		 while (it.hasNext()) {
 			String key = it.next();
 			if (this.server.getClientStage(key) != null
 					&& (this.server.getClientStage(key).equals(Stage.RUNNING) || this.server
@@ -625,6 +627,9 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 				ret = verifyQueueApply(server);
 			}
 		}
+		
+		
+		*/
 		System.out.println("------------------ Verifying consistency.");		
 		
 		return (checkingConsistency());
@@ -649,7 +654,15 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		    Set<ObjectName> beans;
 			beans = mbsc.queryNames(new ObjectName("escada.replicator.management.sensors.replica:id=ApplySensor"), null);		
 		    ObjectName bean=beans.iterator().next();
-		    mbsc.getAttribute(bean, "QueuedMessages");
+		    Object retVal = mbsc.getAttribute(bean, "QueuedMessages");
+		    
+		    if(retVal != null) {
+		    	ret = (Integer) retVal;
+		    	logger.debug("Queued messages in apply:"+ret);
+		    } else {
+		    	throw new Exception("getQueuedMessages returned null.");
+		    }
+		    
 		    jmxc.close();
 		} catch (Exception e) {
 			e.printStackTrace();
