@@ -590,7 +590,9 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			throws InvalidTransactionException {
 		Iterator<String> it = server.getClients().iterator();
 		
-		while (it.hasNext()) {
+		/*
+		 
+		 while (it.hasNext()) {
 			String key = it.next();
 			if (this.server.getClientStage(key) != null
 					&& (this.server.getClientStage(key).equals(Stage.RUNNING) || this.server
@@ -625,6 +627,9 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 				ret = verifyQueueApply(server);
 			}
 		}
+		
+		
+		*/
 		System.out.println("------------------ Verifying consistency.");		
 		
 		return (checkingConsistency());
@@ -653,6 +658,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		    
 		    if(retVal != null) {
 		    	ret = (Integer) retVal;
+		    	logger.debug("Queued messages in apply:"+ret);
 		    } else {
 		    	throw new Exception("getQueuedMessages returned null.");
 		    }
