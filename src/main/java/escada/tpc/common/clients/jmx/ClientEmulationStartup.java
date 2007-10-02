@@ -58,7 +58,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	private String tables[];
 
-	private boolean isFailOverEnabled = true;
+	private boolean isFailOverEnabled = false	;
 
 	public ClientEmulationStartup() throws InvalidTransactionException {
 		if (logger.isInfoEnabled()) {
