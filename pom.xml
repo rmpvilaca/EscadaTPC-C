@@ -81,4 +81,18 @@
     </dependency>
   </dependencies>
 
+  <distributionManagement>
+    <repository>
+      <id>gorda</id>
+      <name>GORDA Jar Repository</name>
+      <url>scpexe://mvn.lsd.di.uminho.pt/home/ftp/pub/maven2/gorda.stable/storage/</url>
+    </repository>
+    <snapshotRepository>
+      <id>gorda.snapshot</id>
+      <name>Gorda snapshot repository</name>
+      <url>scpexe://mvn.lsd.di.uminho.pt/home/ftp/pub/maven2/gorda.snapshot/storage/</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+
 </project>

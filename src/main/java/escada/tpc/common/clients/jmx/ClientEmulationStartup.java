@@ -58,7 +58,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	private String tables[];
 
-	private boolean isFailOverEnabled = false	;
+	private boolean isFailOverEnabled = false;
 
 	public ClientEmulationStartup() throws InvalidTransactionException {
 		if (logger.isInfoEnabled()) {
@@ -369,7 +369,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 					continue;
 				}
 			}
-			
+
 			logger.info("EBs finished.");
 
 		} catch (Arg.Exception ae) {
@@ -381,78 +381,21 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			logger.info("Error while creating clients: ", ex);
 		} finally {
 
-			synchronized (this) {
-				try {
+			doFailOver(keyArgs, args);
 
-					if (server.getClientStage(keyArgs) != null
-							&& server.getClientStage(keyArgs).equals(
-									Stage.FAILOVER)
-							&& isFailOverEnabled == true) {
+			this.server.removeClientEmulations(keyArgs);
+			this.server.removeClientStage(keyArgs);
+			this.server.detachClientToServer(keyArgs, machine);
+			this.server.removeClientConfiguration(keyArgs);
 
-						logger.debug("Doing failover...");
-
-						int cont = 0;
-						int contAvailability = 0;
-						int load = 0;
-						int lowLoad = Integer.MAX_VALUE;
-						String lowLoadServer = null;
-						if (args != null) {
-							while (cont < args.length) {
-								if (args[cont].startsWith("jdbc")) {
-									break;
-								}
-								cont++;
-							}
-							Iterator<String> itServers = server.getServers()
-									.iterator();
-							String key = null;
-							while (itServers.hasNext()) {
-								try {
-									key = itServers.next();
-									verifyingAvailability(key);
-									server.setServerHealth(key, true);
-									contAvailability++;
-									load = server
-											.getNumberOfClientsOnServer(key);
-									if (load < lowLoad) {
-										lowLoad = load;
-										lowLoadServer = key;
-									}
-								} catch (SQLException ex) {
-									logger.warn("Server " + key
-											+ " is not available.", ex);
-									server.setServerHealth(key, false);
-								}
-							}
-							if (contAvailability >= 1
-									&& !args[cont].equals(lowLoadServer)) {
-								logger.debug("Let's move to server "
-										+ lowLoadServer);
-								args[cont] = lowLoadServer;
-								start(server.findFreeClient(), args,
-										lowLoadServer);
-							}
-						}
-					}
-					
-					
-				}
-				catch (Exception exy) {
-					exy.printStackTrace();
-				}
-				
-				this.server.removeClientEmulation(keyArgs);
-				this.server.removeClientStage(keyArgs);
-				
-				try {
-					dbManager.releaseConnections();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-
-				logger.info("Ebs finished their jobs..");
-				notifyAll();
+			try {
+				dbManager.releaseConnections();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
 			}
+
+			logger.info("Ebs finished their jobs..");
+			notifyAll();
 		}
 	}
 
@@ -566,8 +509,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		return (this.server.getNumberOfClients(key));
 	}
 
-	public synchronized int getNumberOfClients()
-			throws InvalidTransactionException {
+	public int getNumberOfClients() throws InvalidTransactionException {
 		return (this.server.getNumberOfClients("*"));
 	}
 
@@ -588,76 +530,6 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	public synchronized boolean checkConsistency()
 			throws InvalidTransactionException {
-		Iterator<String> it = server.getClients().iterator();
-		
-		while (it.hasNext()) {
-			String key = it.next();
-			if (this.server.getClientStage(key) != null
-					&& (this.server.getClientStage(key).equals(Stage.RUNNING) || this.server
-							.getClientStage(key).equals(Stage.PAUSED))) {
-
-				if (server.getClientEmulations(key) != null) {
-					for (ClientEmulation e : server.getClientEmulations(key)) {
-						e.stopit();
-					}
-				}
-			}
-		}
-		System.out.println("------------------ Waiting while clients are running.");
-		while (server.getClients().size() != 0) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-			}
-		}
-		
-		System.out.println("------------------ Waiting while there are transactions to be applied.");
-		Iterator<String> itServers = server.getServers().iterator();
-		while (itServers.hasNext()) {
-			String server = itServers.next();
-			int ret = verifyQueueApply(server);
-			System.out.println("------------------ Queue on server: " + server + " is " + ret); 
-			while (ret != 0) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-				}
-				ret = verifyQueueApply(server);
-			}
-		}
-		System.out.println("------------------ Verifying consistency.");		
-		
-		return (checkingConsistency());
-	}
-	
-	private int verifyQueueApply(String key) {
-		int ret = 0;
-		
-		int beginIndex=key.indexOf("//");
-		String str1=key.substring(beginIndex+2);
-		String str2=str1.substring(0,str1.indexOf("/"));
-		String hostName=str2.split(":")[0];
-		try{
-		   JMXServiceURL url=new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+hostName+":8999/jmxrmi");
-			// creates the environment to hold the pass and the username
-		   HashMap<String, Object> env=new HashMap<String, Object>();;
-		   String[] credentials = new String[] { "controlRole", "fat" };
-		   env.put("jmx.remote.credentials", credentials);
-		   env.put("jmx.invoke.getters", true);
-		   JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
-		   MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
-		    Set<ObjectName> beans;
-			beans = mbsc.queryNames(new ObjectName("escada.replicator.management.sensors.replica:id=ApplySensor"), null);		
-		    ObjectName bean=beans.iterator().next();
-		    mbsc.getAttribute(bean, "QueuedMessages");
-		    jmxc.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return (ret);
-	}
-
-	private boolean checkingConsistency() throws InvalidTransactionException {
 		boolean ret = true;
 		HashSet<String> consistencyBag = new HashSet<String>();
 		int cont = 0;
@@ -700,6 +572,128 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		return (ret);
 	}
 
+	private synchronized void doFailOver(String keyArgs, String args[]) {
+		 
+			try {
+
+				if (server.getClientStage(keyArgs) != null
+						&& server.getClientStage(keyArgs).equals(
+								Stage.FAILOVER)
+						&& isFailOverEnabled == true) {
+
+					logger.debug("Doing failover...");
+
+					int cont = 0;
+					int contAvailability = 0;
+					int load = 0;
+					int lowLoad = Integer.MAX_VALUE;
+					String lowLoadServer = null;
+					if (args != null) {
+						
+						// Finds jdbc argument and client argument to replace
+						// them with
+						// update informaiton on this new server.
+						int jdbcArg = 0;
+						cont = 0;
+						while (cont < args.length) {
+							if (args[cont].startsWith("jdbc")) {
+								break;
+							}
+							cont++;
+						}
+						jdbcArg = cont;
+						
+						int clientArg = 0;							
+						cont = 0;
+						while (cont < args.length) {
+							if (args[cont].startsWith("client")) {
+								break;
+							}
+							cont++;
+						}
+						clientArg = cont; 
+						
+						
+						Iterator<String> itServers = server.getServers()
+								.iterator();
+						String key = null;
+						while (itServers.hasNext()) {
+							try {
+								key = itServers.next();
+								verifyingAvailability(key);
+								server.setServerHealth(key, true);
+								contAvailability++;
+								load = server
+										.getNumberOfClientsOnServer(key);
+								if (load < lowLoad) {
+									lowLoad = load;
+									lowLoadServer = key;
+								}
+							} catch (SQLException ex) {
+								logger.warn("Server " + key
+										+ " is not available.", ex);
+								server.setServerHealth(key, false);
+							}
+						}
+						if (contAvailability >= 1
+								&& !args[jdbcArg].equals(lowLoadServer)) {
+							logger.debug("Let's move to server "
+									+ lowLoadServer);
+							args[jdbcArg] = lowLoadServer;
+							args[clientArg] = server.findFreeClient(); 
+							start(args[clientArg], args,
+									lowLoadServer);
+						}
+					}
+				}
+			}
+			catch (Exception exy) {
+				exy.printStackTrace();
+			}
+	}
+
+	private int verifyQueueApply(String key) {
+		int ret = 0;
+
+		int beginIndex = key.indexOf("//");
+		String str1 = key.substring(beginIndex + 2);
+		String str2 = str1.substring(0, str1.indexOf("/"));
+		String hostName = str2.split(":")[0];
+		try {
+			JMXServiceURL url = new JMXServiceURL(
+					"service:jmx:rmi:///jndi/rmi://" + hostName
+							+ ":8999/jmxrmi");
+			// creates the environment to hold the pass and the username
+			HashMap<String, Object> env = new HashMap<String, Object>();
+			;
+			String[] credentials = new String[] { "controlRole", "fat" };
+			env.put("jmx.remote.credentials", credentials);
+			env.put("jmx.invoke.getters", true);
+			JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
+			MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
+			Set<ObjectName> beans;
+			beans = mbsc
+					.queryNames(
+							new ObjectName(
+									"escada.replicator.management.sensors.replica:id=ApplySensor"),
+							null);
+			ObjectName bean = beans.iterator().next();
+			Object retVal = mbsc.getAttribute(bean, "QueuedMessages");
+
+			if (retVal != null) {
+				ret = (Integer) retVal;
+				logger.debug("Queued messages in apply:" + ret);
+			} else {
+				throw new Exception("getQueuedMessages returned null.");
+			}
+
+			jmxc.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return (ret);
+	}
+
 	private synchronized void balancing() {
 		int contAvailability = 0;
 		int load = 0;
@@ -727,7 +721,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 					}
 				} catch (SQLException e) {
 					if (logger.isDebugEnabled())
-						logger.debug("Server "+key+" is Unavailable");
+						logger.debug("Server " + key + " is Unavailable");
 					server.setServerHealth(key, false);
 				}
 			}
@@ -761,28 +755,36 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	private void verifyingAvailability(String key) throws SQLException {
-		int beginIndex=key.indexOf("//");
-		String str1=key.substring(beginIndex+2);
-		String str2=str1.substring(0,str1.indexOf("/"));
-		String hostName=str2.split(":")[0];
-		boolean isReady=false;
-		try{
-		   JMXServiceURL url=new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+hostName+":8999/jmxrmi");
+		int beginIndex = key.indexOf("//");
+		String str1 = key.substring(beginIndex + 2);
+		String str2 = str1.substring(0, str1.indexOf("/"));
+		String hostName = str2.split(":")[0];
+		boolean isReady = false;
+		try {
+			JMXServiceURL url = new JMXServiceURL(
+					"service:jmx:rmi:///jndi/rmi://" + hostName
+							+ ":8999/jmxrmi");
 			// creates the environment to hold the pass and the username
-		   HashMap<String, Object> env=new HashMap<String, Object>();;
-		   String[] credentials = new String[] { "controlRole", "fat" };
-		   env.put("jmx.remote.credentials", credentials);
-		   env.put("jmx.invoke.getters", true);
-		   JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
-		   MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
-		    Set<ObjectName> beans;
-			beans = mbsc.queryNames(new ObjectName("escada.replicator.management.sensors.replica:id=CaptureSensor"), null);		
-		    ObjectName bean=beans.iterator().next();
-		    isReady=(Boolean)mbsc.invoke(bean, "acceptTransactions",null,null);
-		    jmxc.close();
+			HashMap<String, Object> env = new HashMap<String, Object>();
+			;
+			String[] credentials = new String[] { "controlRole", "fat" };
+			env.put("jmx.remote.credentials", credentials);
+			env.put("jmx.invoke.getters", true);
+			JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
+			MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
+			Set<ObjectName> beans;
+			beans = mbsc
+					.queryNames(
+							new ObjectName(
+									"escada.replicator.management.sensors.replica:id=CaptureSensor"),
+							null);
+			ObjectName bean = beans.iterator().next();
+			isReady = (Boolean) mbsc.invoke(bean, "acceptTransactions", null,
+					null);
+			jmxc.close();
 		} catch (Exception e) {
 			throw new SQLException("Cant connect");
-		} 
+		}
 		if (!isReady) {
 			throw new SQLException("Doing recovery");
 		}
@@ -881,26 +883,26 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 						"jdbc:postgresql://192.168.180.35:5432/tpcc?user=tpcc&password=123456",
 						4);
 
-		
-		 /* server
-		  .addServer("jdbc:postgresql://192.168.82.132:5432/tpcc?user=tpcc&password=123456");
-		  server
-		  .addServer("jdbc:postgresql://192.168.82.132:5433/tpcc?user=tpcc&password=123456");
-		  server
-		  .addServer("jdbc:postgresql://192.168.82.132:5434/tpcc?user=tpcc&password=123456");
-		  
-		  replicas .put(
-		  "jdbc:postgresql://192.168.82.132:5432/tpcc?user=tpcc&password=123456",
-		  1);
-		  
-		  replicas .put(
-		  "jdbc:postgresql://192.168.82.132:5433/tpcc?user=tpcc&password=123456",
-		  2);
-		  
-		  replicas .put(
-		  "jdbc:postgresql://192.168.82.132:5434/tpcc?user=tpcc&password=123456",
-		  3);*/
-		  
+		/*
+		 * server
+		 * .addServer("jdbc:postgresql://192.168.82.132:5432/tpcc?user=tpcc&password=123456");
+		 * server
+		 * .addServer("jdbc:postgresql://192.168.82.132:5433/tpcc?user=tpcc&password=123456");
+		 * server
+		 * .addServer("jdbc:postgresql://192.168.82.132:5434/tpcc?user=tpcc&password=123456");
+		 * 
+		 * replicas .put(
+		 * "jdbc:postgresql://192.168.82.132:5432/tpcc?user=tpcc&password=123456",
+		 * 1);
+		 * 
+		 * replicas .put(
+		 * "jdbc:postgresql://192.168.82.132:5433/tpcc?user=tpcc&password=123456",
+		 * 2);
+		 * 
+		 * replicas .put(
+		 * "jdbc:postgresql://192.168.82.132:5434/tpcc?user=tpcc&password=123456",
+		 * 3);
+		 */
 
 		tables = new String[] { "warehouse", "district", "item", "stock",
 				"customer", "orders", "order_line", "new_order", "history" };

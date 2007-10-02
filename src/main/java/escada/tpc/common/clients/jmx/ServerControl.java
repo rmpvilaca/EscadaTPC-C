@@ -45,7 +45,7 @@ public class ServerControl {
 		this.clientsStage.remove(key);
 	}
 
-	public void removeClientEmulation(String key) {
+	public void removeClientEmulations(String key) {
 		this.clientsEmulation.remove(key);
 	}
 
