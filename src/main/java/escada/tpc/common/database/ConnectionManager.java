@@ -168,15 +168,16 @@ public class ConnectionManager {
 					ods.setUser(user);
 					ods.setPassword(passwd);
 					con = ods.getConnection();
-				} else
+				} else {
 					con = DriverManager.getConnection(jdbcPath, user, passwd);
+				}
 				con.setAutoCommit(false);
 				break;
 			}
 			totalConnections++;
 			return con;
 		} catch (java.lang.Exception ex) {
-			ex.printStackTrace();
+			logger.error("Error while acquiring connection ",ex);
 			throw new SQLException(ex.getMessage());
 		}
 	}

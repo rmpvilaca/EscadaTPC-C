@@ -1,6 +1,6 @@
 package escada.tpc.common.clients.jmx;
 
-import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -15,15 +15,15 @@ public class ServerControl {
 
 	private final static Logger logger = Logger.getLogger(ServerControl.class);
 
-	private final HashMap<String, Stage> clientsStage = new HashMap<String, Stage>();
+	private final Hashtable<String, Stage> clientsStage = new Hashtable<String, Stage>();
 
-	private final HashMap<String, Vector<ClientEmulation>> clientsEmulation = new HashMap<String, Vector<ClientEmulation>>();
+	private final Hashtable<String, Vector<ClientEmulation>> clientsEmulation = new Hashtable<String, Vector<ClientEmulation>>();
 
-	private final HashMap<String, String[]> clientConfiguration = new HashMap<String, String[]>();
+	private final Hashtable<String, HashSet<String>> serverClients = new Hashtable<String, HashSet<String>>();
 
-	private final HashMap<String, HashSet<String>> serverClients = new HashMap<String, HashSet<String>>();
+	private final Hashtable<String, Boolean> serverHealth = new Hashtable<String, Boolean>();
 
-	private final HashMap<String, Boolean> serverHealth = new HashMap<String, Boolean>();
+	private final Hashtable<String, String[]> clientConfiguration = new Hashtable<String, String[]>();
 
 	public Stage getClientStage(String key) {
 		return (clientsStage.get(key));
@@ -102,7 +102,7 @@ public class ServerControl {
 	}
 
 	public void removeServer(String key) throws InvalidTransactionException {
-		if (serverClients.containsKey(key)) {
+		if (this.serverClients.containsKey(key)) {
 			this.serverClients.remove(key);
 			this.serverHealth.remove(key);
 		} else {
@@ -115,14 +115,19 @@ public class ServerControl {
 			throws InvalidTransactionException {
 		int ret = 0;
 		if (key == null || key.equals("*")) {
-			Iterator<String> it = clientsEmulation.keySet().iterator();
+			Iterator it = ((Hashtable) clientsEmulation.clone()).keySet()
+					.iterator();
 			while (it.hasNext()) {
-				String keyValue = it.next();
-				ret = ret + clientsEmulation.get(keyValue).size();
+				String keyValue = (String) it.next();
+				Vector clients = (Vector) clientsEmulation.get(keyValue);
+				if (clients != null) {
+					ret = ret + clients.size();
+				}
 			}
 		} else {
-			if (clientsEmulation.containsKey(key)) {
-				ret = ret + clientsEmulation.get(key).size();
+			Vector clients = clientsEmulation.get(key);
+			if (clients != null) {
+				ret = ret + clients.size();
 			} else {
 				throw new InvalidTransactionException(
 						"Error getting number of clients for " + key);
@@ -137,31 +142,30 @@ public class ServerControl {
 
 		if (key == null || key.equals("*")) {
 
-			Iterator<String> itServers = this.serverClients.keySet().iterator();
+			Iterator itServers = ((Hashtable) this.serverClients.clone())
+					.keySet().iterator();
 
 			while (itServers.hasNext()) {
-				String keyValue = itServers.next();
+				String keyValue = (String) itServers.next();
 
-				Iterator<String> itClients = serverClients.get(keyValue)
-						.iterator();
-				while (itClients.hasNext()) {
-
-					keyValue = itClients.next();
-					ret = ret
-							+ (this.clientsEmulation.get(keyValue) != null ? this.clientsEmulation
-									.get(keyValue).size()
-									: 0);
+				HashSet server = serverClients.get(keyValue);
+				if (server != null) {
+					Iterator itClients = ((HashSet) server.clone()).iterator();
+					while (itClients.hasNext()) {
+						keyValue = (String) itClients.next();
+						Vector clients = this.clientsEmulation.get(keyValue);
+						ret = ret + (clients != null ? clients.size() : 0);
+					}
 				}
 			}
 		} else {
-			if (serverClients.containsKey(key)) {
-				Iterator<String> itClients = serverClients.get(key).iterator();
+			HashSet<String> servers = serverClients.get(key);
+			if (servers != null) {
+				Iterator itClients = ((HashSet) servers.clone()).iterator();
 				while (itClients.hasNext()) {
-					String keyValue = itClients.next();
-					ret = ret
-							+ (this.clientsEmulation.get(keyValue) != null ? this.clientsEmulation
-									.get(keyValue).size()
-									: 0);
+					String keyValue = (String) itClients.next();
+					Vector clients = this.clientsEmulation.get(keyValue);
+					ret = ret + (clients != null ? clients.size() : 0);
 				}
 			} else {
 				throw new InvalidTransactionException(
@@ -174,19 +178,19 @@ public class ServerControl {
 	public String findServerClient(String key) {
 		String ret = null;
 
-		if (serverClients.containsKey(key)) {
-			HashSet<String> s = this.serverClients.get(key);
-			Iterator<String> it = s.iterator();
-			while (it.hasNext()) {
-				String client = it.next();
-				if (this.clientsEmulation.containsKey(client)
-						&& this.clientsStage.get(client).equals(Stage.RUNNING)) {
-					ret = client;
+		HashSet<String> servers = serverClients.get(key);
+		if (servers != null) {
+			Iterator itClients = ((HashSet) servers.clone()).iterator();
+			while (itClients.hasNext()) {
+				String keyValue = (String) itClients.next();
+				Vector clients = this.clientsEmulation.get(keyValue);
+				Stage stg = this.clientsStage.get(keyValue);
+				if (clients != null && stg != null && stg.equals(Stage.RUNNING)) {
+					ret = keyValue;
 					break;
 				}
 			}
 		}
-
 		return (ret);
 	}
 
@@ -196,18 +200,22 @@ public class ServerControl {
 
 	public void pauseClient(String key) throws InvalidTransactionException {
 		if (key == null || key.equals("*")) {
-			Iterator<String> it = clientsEmulation.keySet().iterator();
-			while (it.hasNext()) {
-				String keyValue = it.next();
 
-				if (this.clientsStage.get(keyValue) != null
-						&& this.clientsStage.get(keyValue)
-								.equals(Stage.RUNNING)) {
+			Iterator it = ((Hashtable) clientsEmulation.clone()).keySet()
+					.iterator();
+			while (it.hasNext()) {
+				String keyValue = (String) it.next();
+
+				Stage stg = this.clientsStage.get(keyValue);
+
+				if (stg != null && stg.equals(Stage.RUNNING)) {
 
 					this.clientsStage.put(keyValue, Stage.PAUSED);
 
-					if (clientsEmulation.get(keyValue) != null) {
-						for (ClientEmulation e : clientsEmulation.get(keyValue)) {
+					Vector<ClientEmulation> clients = clientsEmulation
+							.get(keyValue);
+					if (clients != null) {
+						for (ClientEmulation e : clients) {
 							e.pause();
 						}
 					}
@@ -215,16 +223,16 @@ public class ServerControl {
 			}
 		} else {
 
-			if (this.clientsStage.get(key) != null
-					&& this.clientsStage.get(key).equals(Stage.RUNNING)) {
+			Stage stg = this.clientsStage.get(key);
+			if (stg != null && stg.equals(Stage.RUNNING)) {
 
 				this.clientsStage.put(key, Stage.PAUSED);
 
-				if (clientsEmulation.get(key) != null) {
-					for (ClientEmulation e : clientsEmulation.get(key)) {
+				Vector<ClientEmulation> clients = clientsEmulation.get(key);
+				if (clients != null) {
+					for (ClientEmulation e : clients) {
 						e.pause();
 					}
-
 				}
 			} else {
 				throw new InvalidTransactionException(key + " pause on "
@@ -235,76 +243,86 @@ public class ServerControl {
 
 	public void resumeClient(String key) throws InvalidTransactionException {
 		if (key == null || key.equals("*")) {
-			Iterator<String> it = clientsEmulation.keySet().iterator();
+			Iterator it = ((Hashtable) clientsEmulation.clone()).keySet()
+					.iterator();
 			while (it.hasNext()) {
-				String keyValue = it.next();
+				String keyValue = (String) it.next();
 
-				if (this.clientsStage.get(keyValue) != null
-						&& this.clientsStage.get(keyValue).equals(Stage.PAUSED)) {
+				Stage stg = this.clientsStage.get(keyValue);
+				if (stg != null && stg.equals(Stage.PAUSED)) {
 
 					this.clientsStage.put(keyValue, Stage.RUNNING);
 
-					if (clientsEmulation.get(keyValue) != null) {
-						for (ClientEmulation e : clientsEmulation.get(keyValue)) {
+					Vector<ClientEmulation> clients = clientsEmulation
+							.get(keyValue);
+					if (clients != null) {
+						for (ClientEmulation e : clients) {
 							e.resume();
 						}
 					}
 				}
 			}
 		} else {
-			if (this.clientsStage.get(key) != null
-					&& this.clientsStage.get(key).equals(Stage.PAUSED)) {
+			Stage stg = this.clientsStage.get(key);
+			if (stg != null && stg.equals(Stage.PAUSED)) {
 
 				this.clientsStage.put(key, Stage.RUNNING);
 
-				if (clientsEmulation.get(key) != null) {
-					for (ClientEmulation e : clientsEmulation.get(key)) {
+				Vector<ClientEmulation> clients = clientsEmulation.get(key);
+				if (clients != null) {
+					for (ClientEmulation e : clients) {
 						e.resume();
 					}
 				}
 			} else {
-				throw new InvalidTransactionException(key + " resume on "
-						+ this.clientsStage.get(key));
+				throw new InvalidTransactionException(key + " resume on " + stg);
 			}
 		}
 	}
 
 	public void stopClient(String key) throws InvalidTransactionException {
 		if (key == null || key.equals("*")) {
-			Iterator it = ((HashMap) clientsEmulation.clone()).keySet().iterator();
+			Iterator it = ((Hashtable) clientsEmulation.clone()).keySet()
+					.iterator();
 			while (it.hasNext()) {
 				String keyValue = (String) it.next();
-				if (this.clientsStage.get(keyValue) != null
-						&& (this.clientsStage.get(keyValue).equals(
-								Stage.RUNNING) || this.clientsStage.get(
-								keyValue).equals(Stage.PAUSED))) {
+				Stage stg = this.clientsStage.get(keyValue);
+				if (stg != null
+						&& (stg.equals(Stage.RUNNING) || stg
+								.equals(Stage.PAUSED))) {
 
-					if (clientsEmulation.get(keyValue) != null) {
-						for (ClientEmulation e : clientsEmulation.get(keyValue)) {
+					Vector<ClientEmulation> clients = clientsEmulation
+							.get(keyValue);
+					if (clients != null) {
+						for (ClientEmulation e : clients) {
 							e.stopit();
 						}
 					}
 
 					this.clientsEmulation.remove(keyValue);
 					this.clientsStage.remove(keyValue);
-					String args[] = this.clientConfiguration.remove(keyValue);
+
+					String args[] = this.clientConfiguration.get(keyValue);
 					int cont = 0;
-					while (cont < args.length) {
-						if (args[cont].startsWith("jdbc")) {
-							break;
+					if (args != null) {
+						while (cont < args.length) {
+							if (args[cont].startsWith("jdbc")) {
+								break;
+							}
+							cont++;
 						}
-						cont++;
+						this.detachClientToServer(keyValue, args[cont]);
 					}
-					this.detachClientToServer(keyValue, args[cont]);
 				}
 			}
 		} else {
-			if (this.clientsStage.get(key) != null
-					&& (this.clientsStage.get(key).equals(Stage.RUNNING) || this.clientsStage
-							.get(key).equals(Stage.PAUSED))) {
+			Stage stg = this.clientsStage.get(key);
+			if (stg != null
+					&& (stg.equals(Stage.RUNNING) || stg.equals(Stage.PAUSED))) {
 
-				if (clientsEmulation.get(key) != null) {
-					for (ClientEmulation e : clientsEmulation.get(key)) {
+				Vector<ClientEmulation> clients = clientsEmulation.get(key);
+				if (clients != null) {
+					for (ClientEmulation e : clients) {
 						e.stopit();
 					}
 				}
@@ -312,8 +330,7 @@ public class ServerControl {
 				this.clientsEmulation.remove(key);
 				this.clientsStage.remove(key);
 			} else {
-				throw new InvalidTransactionException(key + " stop on "
-						+ this.clientsStage.get(key));
+				throw new InvalidTransactionException(key + " stop on " + stg);
 			}
 		}
 	}
@@ -336,24 +353,28 @@ public class ServerControl {
 		String ret = null;
 		int min = Integer.MAX_VALUE;
 
-		Iterator<String> itServers = serverClients.keySet().iterator();
+		Iterator itServers = ((Hashtable) this.serverClients.clone()).keySet()
+				.iterator();
+
 		while (itServers.hasNext()) {
-			String keyServers = itServers.next();
+			String keyServers = (String) itServers.next();
+
 			if (serverHealth.get(keyServers)) {
 				int sum = 0;
-				Iterator<String> itClients = serverClients.get(keyServers)
-						.iterator();
-				while (itClients.hasNext()) {
+				HashSet<String> servers = serverClients.get(keyServers);
+				if (servers != null) {
+					Iterator itClients = ((HashSet) servers.clone()).iterator();
+					while (itClients.hasNext()) {
 
-					String keyValue = itClients.next();
-					sum = sum
-							+ (this.clientsEmulation.get(keyValue) != null ? this.clientsEmulation
-									.get(keyValue).size()
-									: 0);
-				}
-				if (sum < min) {
-					ret = keyServers;
-					min = sum;
+						String keyValue = (String) itClients.next();
+
+						Vector clients = this.clientsEmulation.get(keyValue);
+						sum = sum + (clients != null ? clients.size() : 0);
+					}
+					if (sum < min) {
+						ret = keyServers;
+						min = sum;
+					}
 				}
 			}
 		}

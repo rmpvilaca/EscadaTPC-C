@@ -102,7 +102,7 @@ public class ClientEmulation extends EmulationConfiguration implements
 					.error(
 							"Notifying the master thread to finish execution since something went wrong with this thread.",
 							ex);
-			master.notifyThreadsCompletion(controlKey);
+			master.notifyThreadsError(controlKey);
 		}
 	}
 

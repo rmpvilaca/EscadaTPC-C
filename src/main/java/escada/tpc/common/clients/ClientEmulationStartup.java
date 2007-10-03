@@ -277,5 +277,9 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 	public synchronized void notifyThreadsCompletion(String key) {
 		notifyAll();
 	}
+
+	public synchronized void notifyThreadsError(String key) {
+		notifyAll();
+	}
 }
 // arch-tag: d7a75e9a-a418-4fae-877c-72938e7dadc9

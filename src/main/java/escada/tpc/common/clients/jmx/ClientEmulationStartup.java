@@ -9,17 +9,13 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.apache.log4j.Logger;
@@ -38,6 +34,7 @@ import escada.tpc.common.database.DatabaseManager;
 import escada.tpc.common.resources.DatabaseResources;
 import escada.tpc.common.resources.WorkloadResources;
 import escada.tpc.common.util.Pad;
+import escada.tpc.jmx.JMXTimeOutConnector;
 import escada.tpc.tpcc.TPCCConst;
 
 public class ClientEmulationStartup implements ClientEmulationStartupMBean,
@@ -47,6 +44,9 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			.getLogger(ClientEmulationStartup.class);
 
 	private ExecutorService executor = Executors.newCachedThreadPool();
+
+	private ScheduledExecutorService scheduler = Executors
+			.newSingleThreadScheduledExecutor();
 
 	private DatabaseResources databaseResources;
 
@@ -60,6 +60,16 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	private boolean isFailOverEnabled = false;
 
+	public synchronized boolean getFailOver()
+			throws InvalidTransactionException {
+		return (isFailOverEnabled);
+	}
+
+	public synchronized void setFailOver(boolean isEnabled)
+			throws InvalidTransactionException {
+		isFailOverEnabled = isEnabled;
+	}
+
 	public ClientEmulationStartup() throws InvalidTransactionException {
 		if (logger.isInfoEnabled()) {
 			logger.info("Loading resources!");
@@ -70,40 +80,37 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		databaseResources = new DatabaseResources();
 		workloadResources = new WorkloadResources();
 
-		ScheduledExecutorService executor = Executors
-				.newSingleThreadScheduledExecutor();
-
-		executor.scheduleWithFixedDelay(new Runnable() {
+		scheduler.schedule(new Runnable() {
 			public void run() {
 				balancing();
 			}
-		}, 0, 5000, TimeUnit.MILLISECONDS);
+		}, 30000, TimeUnit.MILLISECONDS);
 	}
 
 	public synchronized void start(String key, String arg, String machine)
 			throws InvalidTransactionException {
 
-		if (this.server.getClientStage(key) == null) {
-
+		Stage stg = this.server.getClientStage(key);
+		if (stg == null) {
 			server.setClientStage(key, Stage.RUNNING);
 
 			String[] args = arg.split("[ ]+");
 
 			this.executor.execute(new Start(key, args, machine));
 		} else {
-			throw new InvalidTransactionException(key + " start on "
-					+ this.server.getClientStage(key));
+			throw new InvalidTransactionException(key + " start on " + stg);
 		}
 	}
 
 	public synchronized void start(String key, String args[], String machine)
 			throws InvalidTransactionException {
-		if (this.server.getClientStage(key) == null) {
+
+		Stage stg = this.server.getClientStage(key);
+		if (stg == null) {
 			server.setClientStage(key, Stage.RUNNING);
 			this.executor.execute(new Start(key, args, machine));
 		} else {
-			throw new InvalidTransactionException(key + " start on "
-					+ this.server.getClientStage(key));
+			throw new InvalidTransactionException(key + " start on " + stg);
 		}
 	}
 
@@ -304,51 +311,50 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			Usage(args, db);
 
+			Class cl = null;
+			Constructor co = null;
+			cl = Class.forName(dbArg.s);
+			try {
+				co = cl.getConstructor(new Class[] { Integer.TYPE });
+			} catch (Exception ex) {
+			}
+			if (co == null) {
+				dbManager = (DatabaseManager) cl.newInstance();
+			} else {
+				dbManager = (DatabaseManager) co
+						.newInstance(new Object[] { new Integer(cli.num) });
+			}
+
+			dbManager.setConnectionPool(true);
+			dbManager.setMaxConnection(poolArg.num);
+			dbManager.setDriverName(driverArg.s);
+			dbManager.setjdbcPath(pathArg.s);
+			dbManager.setUserInfo(usrArg.s, passwdArg.s);
+
+			for (int i = 0; i < cli.num; i++) {
+
+				e = new ClientEmulation();
+
+				e.setFinished(false);
+				e.setTraceInformation(prefix.s);
+				e.setNumberConcurrentEmulators(cli.num);
+				e.setStatusThinkTime(key.flag);
+				e.setStatusReSubmit(resArg.flag);
+				e.setDatabase(dbManager);
+				e.setEmulationName(prefix.s);
+				e.setHostId(Integer.toString(hostArg.num));
+
+				e.create(ebArg.s, stArg.s, i, fragArg.num, this, keyArgs);
+
+				Thread t = new Thread(e);
+				t.setName(prefix.s + "-" + i);
+				e.setThread(t);
+				t.start();
+
+				ebs.add(e);
+			}
+
 			synchronized (this) {
-
-				Class cl = null;
-				Constructor co = null;
-				cl = Class.forName(dbArg.s);
-				try {
-					co = cl.getConstructor(new Class[] { Integer.TYPE });
-				} catch (Exception ex) {
-				}
-				if (co == null) {
-					dbManager = (DatabaseManager) cl.newInstance();
-				} else {
-					dbManager = (DatabaseManager) co
-							.newInstance(new Object[] { new Integer(cli.num) });
-				}
-
-				dbManager.setConnectionPool(true);
-				dbManager.setMaxConnection(poolArg.num);
-				dbManager.setDriverName(driverArg.s);
-				dbManager.setjdbcPath(pathArg.s);
-				dbManager.setUserInfo(usrArg.s, passwdArg.s);
-
-				for (int i = 0; i < cli.num; i++) {
-
-					e = new ClientEmulation();
-
-					e.setFinished(false);
-					e.setTraceInformation(prefix.s);
-					e.setNumberConcurrentEmulators(cli.num);
-					e.setStatusThinkTime(key.flag);
-					e.setStatusReSubmit(resArg.flag);
-					e.setDatabase(dbManager);
-					e.setEmulationName(prefix.s);
-					e.setHostId(Integer.toString(hostArg.num));
-
-					e.create(ebArg.s, stArg.s, i, fragArg.num, this, keyArgs);
-
-					Thread t = new Thread(e);
-					t.setName(prefix.s + "-" + i);
-					e.setThread(t);
-					t.start();
-
-					ebs.add(e);
-				}
-
 				server.setClientEmulations(keyArgs, ebs);
 				server.setClientConfiguration(keyArgs, args);
 				server.attachClientToServer(keyArgs, machine);
@@ -383,10 +389,13 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			doFailOver(keyArgs, args);
 
-			this.server.removeClientEmulations(keyArgs);
-			this.server.removeClientStage(keyArgs);
-			this.server.detachClientToServer(keyArgs, machine);
-			this.server.removeClientConfiguration(keyArgs);
+			synchronized (this) {
+				this.server.removeClientEmulations(keyArgs);
+				this.server.removeClientStage(keyArgs);
+				this.server.detachClientToServer(keyArgs, machine);
+				this.server.removeClientConfiguration(keyArgs);
+				notifyAll();
+			}
 
 			try {
 				dbManager.releaseConnections();
@@ -395,7 +404,6 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			}
 
 			logger.info("Ebs finished their jobs..");
-			notifyAll();
 		}
 	}
 
@@ -415,6 +423,11 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	public synchronized void notifyThreadsCompletion(String key) {
+		server.setClientStage(key, Stage.STOPPED);
+		notifyAll();
+	}
+
+	public synchronized void notifyThreadsError(String key) {
 		server.setClientStage(key, Stage.FAILOVER);
 		notifyAll();
 	}
@@ -471,21 +484,19 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		// constant.
 	}
 
-	public synchronized DatabaseResources getDatabaseResources() {
+	public DatabaseResources getDatabaseResources() {
 		return databaseResources;
 	}
 
-	public synchronized void setDatabaseResources(
-			DatabaseResources databaseResources) {
+	public void setDatabaseResources(DatabaseResources databaseResources) {
 		this.databaseResources = databaseResources;
 	}
 
-	public synchronized WorkloadResources getWorkloadResources() {
+	public WorkloadResources getWorkloadResources() {
 		return workloadResources;
 	}
 
-	public synchronized void setWorkloadResources(
-			WorkloadResources workloadResources) {
+	public void setWorkloadResources(WorkloadResources workloadResources) {
 		this.workloadResources = workloadResources;
 	}
 
@@ -499,12 +510,11 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		this.server.removeServer(key);
 	}
 
-	public synchronized HashSet<String> getClients()
-			throws InvalidTransactionException {
+	public HashSet<String> getClients() throws InvalidTransactionException {
 		return (this.server.getClients());
 	}
 
-	public synchronized int getNumberOfClients(String key)
+	public int getNumberOfClients(String key)
 			throws InvalidTransactionException {
 		return (this.server.getNumberOfClients(key));
 	}
@@ -513,23 +523,20 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		return (this.server.getNumberOfClients("*"));
 	}
 
-	public synchronized int getNumberOfClientsOnServer(String key)
+	public int getNumberOfClientsOnServer(String key)
 			throws InvalidTransactionException {
 		return (this.server.getNumberOfClientsOnServer(key));
 	}
 
-	public synchronized int getNumberOfClientsOnServer()
-			throws InvalidTransactionException {
+	public int getNumberOfClientsOnServer() throws InvalidTransactionException {
 		return (this.server.getNumberOfClientsOnServer("*"));
 	}
 
-	public synchronized HashSet<String> getServers()
-			throws InvalidTransactionException {
+	public HashSet<String> getServers() throws InvalidTransactionException {
 		return (this.server.getServers());
 	}
 
-	public synchronized boolean checkConsistency()
-			throws InvalidTransactionException {
+	public boolean checkConsistency() throws InvalidTransactionException {
 		boolean ret = true;
 		HashSet<String> consistencyBag = new HashSet<String>();
 		int cont = 0;
@@ -572,129 +579,80 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		return (ret);
 	}
 
-	private synchronized void doFailOver(String keyArgs, String args[]) {
-		 
-			try {
+	private void doFailOver(String keyArgs, String args[]) {
 
-				if (server.getClientStage(keyArgs) != null
-						&& server.getClientStage(keyArgs).equals(
-								Stage.FAILOVER)
-						&& isFailOverEnabled == true) {
+		try {
 
-					logger.debug("Doing failover...");
+			if (server.getClientStage(keyArgs) != null
+					&& server.getClientStage(keyArgs).equals(Stage.FAILOVER)
+					&& isFailOverEnabled == true) {
 
-					int cont = 0;
-					int contAvailability = 0;
-					int load = 0;
-					int lowLoad = Integer.MAX_VALUE;
-					String lowLoadServer = null;
-					if (args != null) {
-						
-						// Finds jdbc argument and client argument to replace
-						// them with
-						// update informaiton on this new server.
-						int jdbcArg = 0;
-						cont = 0;
-						while (cont < args.length) {
-							if (args[cont].startsWith("jdbc")) {
-								break;
+				logger.debug("Doing failover...");
+
+				int cont = 0;
+				int contAvailability = 0;
+				int load = 0;
+				int lowLoad = Integer.MAX_VALUE;
+				String lowLoadServer = null;
+				if (args != null) {
+
+					// Finds jdbc argument and client argument to replace
+					// them with
+					// update informaiton on this new server.
+					int jdbcArg = 0;
+					cont = 0;
+					while (cont < args.length) {
+						if (args[cont].startsWith("jdbc")) {
+							break;
+						}
+						cont++;
+					}
+					jdbcArg = cont;
+
+					int clientArg = 0;
+					cont = 0;
+					while (cont < args.length) {
+						if (args[cont].startsWith("client")) {
+							break;
+						}
+						cont++;
+					}
+					clientArg = cont;
+
+					Iterator<String> itServers = server.getServers().iterator();
+					String key = null;
+					while (itServers.hasNext()) {
+						try {
+							key = itServers.next();
+							verifyingAvailability(key);
+							server.setServerHealth(key, true);
+							contAvailability++;
+							load = server.getNumberOfClientsOnServer(key);
+							if (load < lowLoad) {
+								lowLoad = load;
+								lowLoadServer = key;
 							}
-							cont++;
+						} catch (SQLException ex) {
+							logger.warn("Server " + key + " is not available.",
+									ex);
+							server.setServerHealth(key, false);
 						}
-						jdbcArg = cont;
-						
-						int clientArg = 0;							
-						cont = 0;
-						while (cont < args.length) {
-							if (args[cont].startsWith("client")) {
-								break;
-							}
-							cont++;
-						}
-						clientArg = cont; 
-						
-						
-						Iterator<String> itServers = server.getServers()
-								.iterator();
-						String key = null;
-						while (itServers.hasNext()) {
-							try {
-								key = itServers.next();
-								verifyingAvailability(key);
-								server.setServerHealth(key, true);
-								contAvailability++;
-								load = server
-										.getNumberOfClientsOnServer(key);
-								if (load < lowLoad) {
-									lowLoad = load;
-									lowLoadServer = key;
-								}
-							} catch (SQLException ex) {
-								logger.warn("Server " + key
-										+ " is not available.", ex);
-								server.setServerHealth(key, false);
-							}
-						}
-						if (contAvailability >= 1
-								&& !args[jdbcArg].equals(lowLoadServer)) {
-							logger.debug("Let's move to server "
-									+ lowLoadServer);
-							args[jdbcArg] = lowLoadServer;
-							args[clientArg] = server.findFreeClient(); 
-							start(args[clientArg], args,
-									lowLoadServer);
-						}
+					}
+					if (contAvailability >= 1
+							&& !args[jdbcArg].equals(lowLoadServer)) {
+						logger.debug("Let's move to server " + lowLoadServer);
+						args[jdbcArg] = lowLoadServer;
+						args[clientArg] = server.findFreeClient();
+						start(args[clientArg], args, lowLoadServer);
 					}
 				}
 			}
-			catch (Exception exy) {
-				exy.printStackTrace();
-			}
-	}
-
-	private int verifyQueueApply(String key) {
-		int ret = 0;
-
-		int beginIndex = key.indexOf("//");
-		String str1 = key.substring(beginIndex + 2);
-		String str2 = str1.substring(0, str1.indexOf("/"));
-		String hostName = str2.split(":")[0];
-		try {
-			JMXServiceURL url = new JMXServiceURL(
-					"service:jmx:rmi:///jndi/rmi://" + hostName
-							+ ":8999/jmxrmi");
-			// creates the environment to hold the pass and the username
-			HashMap<String, Object> env = new HashMap<String, Object>();
-			;
-			String[] credentials = new String[] { "controlRole", "fat" };
-			env.put("jmx.remote.credentials", credentials);
-			env.put("jmx.invoke.getters", true);
-			JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
-			MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
-			Set<ObjectName> beans;
-			beans = mbsc
-					.queryNames(
-							new ObjectName(
-									"escada.replicator.management.sensors.replica:id=ApplySensor"),
-							null);
-			ObjectName bean = beans.iterator().next();
-			Object retVal = mbsc.getAttribute(bean, "QueuedMessages");
-
-			if (retVal != null) {
-				ret = (Integer) retVal;
-				logger.debug("Queued messages in apply:" + ret);
-			} else {
-				throw new Exception("getQueuedMessages returned null.");
-			}
-
-			jmxc.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception exy) {
+			exy.printStackTrace();
 		}
-		return (ret);
 	}
 
-	private synchronized void balancing() {
+	private void balancing() {
 		int contAvailability = 0;
 		int load = 0;
 		int highLoad = Integer.MIN_VALUE;
@@ -720,21 +678,60 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 						lowLoadServer = key;
 					}
 				} catch (SQLException e) {
-					if (logger.isDebugEnabled())
+					if (logger.isDebugEnabled()) {
 						logger.debug("Server " + key + " is Unavailable");
+					}
 					server.setServerHealth(key, false);
+
+					//
+					// Mandar o clientes de uma replica tem que ser aqui.
+					// Mas existe uma corrida entre isso e o failover.
+					//
 				}
 			}
 
 			if (contAvailability > 1 && isFailOverEnabled == true) {
 				int contClient = server.getNumberOfClients("*");
-				int mean = (contClient / contAvailability)
-						/ TPCConst.getNumMinClients();
-				if (mean > 0) {
-					String client = server.findServerClient(highLoadServer);
+
+				float highMean = ((float) highLoad)
+						/ ((float) TPCConst.getNumMinClients());
+				String client = server.findServerClient(highLoadServer);
+
+				float lowMean = (float) (server.getNumberOfClients(client) + lowLoad)
+						/ ((float) TPCConst.getNumMinClients());
+
+				if (logger.isDebugEnabled()) {
+					logger.debug("Number of available servers is "
+							+ contAvailability + ". Number of clients is "
+							+ contClient + ". Balacing is low " + lowMean
+							+ " and high " + highMean);
+				}
+
+				if (lowMean < highMean) {
+
+					logger.debug("Clients " + client
+							+ " are going to be transfered from server "
+							+ highLoadServer);
 					if (client != null) {
+
+						logger.debug("Stopping clients " + client
+								+ " on server " + highLoadServer);
+
 						String args[] = server.getClientConfiguration(client);
 						stop(client);
+
+						synchronized (this) {
+							while (server.getClientConfiguration(client) != null) {
+								try {
+									wait();
+								} catch (InterruptedException e) {
+								}
+							}
+						}
+
+						logger.debug("Stopped clients " + client
+								+ " on server " + highLoadServer);
+
 						int cont = 0;
 						if (args != null) {
 							while (cont < args.length) {
@@ -748,9 +745,17 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 						}
 					}
 				}
+
 			}
 		} catch (InvalidTransactionException e) {
 			logger.error("Something bad happend !!!", e);
+		} finally {
+			logger.debug("Re-scheduling the load balancer.");
+			scheduler.schedule(new Runnable() {
+				public void run() {
+					balancing();
+				}
+			}, 10000, TimeUnit.MILLISECONDS);
 		}
 	}
 
@@ -760,6 +765,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		String str2 = str1.substring(0, str1.indexOf("/"));
 		String hostName = str2.split(":")[0];
 		boolean isReady = false;
+
 		try {
 			JMXServiceURL url = new JMXServiceURL(
 					"service:jmx:rmi:///jndi/rmi://" + hostName
@@ -770,20 +776,26 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			String[] credentials = new String[] { "controlRole", "fat" };
 			env.put("jmx.remote.credentials", credentials);
 			env.put("jmx.invoke.getters", true);
-			JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
-			MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
-			Set<ObjectName> beans;
-			beans = mbsc
-					.queryNames(
-							new ObjectName(
-									"escada.replicator.management.sensors.replica:id=CaptureSensor"),
-							null);
-			ObjectName bean = beans.iterator().next();
-			isReady = (Boolean) mbsc.invoke(bean, "acceptTransactions", null,
-					null);
-			jmxc.close();
+
+			JMXConnector jmxc = JMXTimeOutConnector.connectWithTimeout(url,
+					env, 500, TimeUnit.MILLISECONDS);
+
+			if (jmxc != null) {
+				Object ret = JMXTimeOutConnector
+						.invokeWithTimeout(
+								jmxc,
+								"escada.replicator.management.sensors.replica:id=CaptureSensor",
+								"acceptTransactions", 500,
+								TimeUnit.MILLISECONDS);
+
+				JMXTimeOutConnector.closeWithTimeout(jmxc, 500,
+						TimeUnit.MILLISECONDS);
+
+				isReady = (ret == null ? false : ((Boolean) ret).booleanValue());
+
+			}
 		} catch (Exception e) {
-			throw new SQLException("Cant connect");
+			throw new SQLException("Cannot connect");
 		}
 		if (!isReady) {
 			throw new SQLException("Doing recovery");
