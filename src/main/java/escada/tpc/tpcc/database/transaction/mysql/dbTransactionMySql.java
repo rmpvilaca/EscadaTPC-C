@@ -1007,7 +1007,7 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 
 			statement = con.createStatement();
 			statement.execute("start transaction");
-			statement.execute("set transaction isolation level serializable");
+			//statement.execute("set transaction isolation level serializable");
 			statement.execute("select '" + strTrans + "'");
 
 			Date NetFinishTime = new java.util.Date();

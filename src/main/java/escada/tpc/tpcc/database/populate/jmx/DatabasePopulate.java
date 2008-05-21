@@ -161,15 +161,15 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 			databaseResources.setDriver("org.postgresql.Driver");
 			databaseResources.setUserName("tpcc");
 			databaseResources
-			.setConnectionString("jdbc:postgresql://192.168.180.32:5432/tpcc");
+			.setConnectionString("jdbc:postgresql://192.168.190.32:5432/tpcc");
 			
 			databaseResources.setPassword("tpcc");
 			workloadResources.setNumberOfWarehouses(4);
 
-			servers.add("jdbc:postgresql://192.168.180.32:5432/tpcc");
-			servers.add("jdbc:postgresql://192.168.180.33:5432/tpcc");
-			servers.add("jdbc:postgresql://192.168.180.34:5432/tpcc");
-			servers.add("jdbc:postgresql://192.168.180.35:5432/tpcc");
+			servers.add("jdbc:postgresql://192.168.190.32:5432/tpcc");
+			servers.add("jdbc:postgresql://192.168.190.33:5432/tpcc");
+			servers.add("jdbc:postgresql://192.168.190.34:5432/tpcc");
+			servers.add("jdbc:postgresql://192.168.190.35:5432/tpcc");
 			
 			TPCConst.setNumMinClients(5);
 			TPCCConst.setNumCustomer(100);
