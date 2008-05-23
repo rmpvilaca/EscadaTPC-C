@@ -157,7 +157,7 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 	private boolean configureScenario(String scenario) {
 		boolean ret = false;
 
-		if (scenario.equalsIgnoreCase("light")) {
+		if (scenario.equalsIgnoreCase("lightPgsql")) {
 			databaseResources.setDriver("org.postgresql.Driver");
 			databaseResources.setUserName("tpcc");
 			databaseResources
@@ -170,6 +170,28 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 			servers.add("jdbc:postgresql://192.168.190.33:5432/tpcc");
 			servers.add("jdbc:postgresql://192.168.190.34:5432/tpcc");
 			servers.add("jdbc:postgresql://192.168.190.35:5432/tpcc");
+			
+			TPCConst.setNumMinClients(5);
+			TPCCConst.setNumCustomer(100);
+			TPCCConst.setNumDistrict(5);
+			TPCCConst.setNumItem(10);
+			TPCCConst.setNumLastName(99);
+
+			ret = true;
+		}
+		else if (scenario.equalsIgnoreCase("lightSequoia")) {
+			databaseResources.setDriver("org.continuent.sequoia.driver.Driver");
+			databaseResources.setUserName("tpcc");
+			databaseResources
+			.setConnectionString("jdbc:sequoia://192.168.190.32/tpcc");
+			
+			databaseResources.setPassword("tpcc");
+			workloadResources.setNumberOfWarehouses(4);
+
+			servers.add("jdbc:sequoia://192.168.190.32/tpcc");
+			servers.add("jdbc:sequoia://192.168.190.33/tpcc");
+			servers.add("jdbc:sequoia://192.168.190.34/tpcc");
+			servers.add("jdbc:sequoia://192.168.190.35/tpcc");
 			
 			TPCConst.setNumMinClients(5);
 			TPCCConst.setNumCustomer(100);

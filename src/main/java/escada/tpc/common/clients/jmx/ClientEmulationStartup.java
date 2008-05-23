@@ -806,7 +806,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			String machine, int fixedFrag, StringBuilder str) {
 		boolean ret = false;
 
-		if (clients > 0 && scenario.equals("light")) {
+		if (clients > 0 && scenario.equals("lightPgsql")) {
 			int frag = (fixedFrag == 0 ? replicas.get(machine) : fixedFrag);
 
 			str
@@ -832,6 +832,59 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			TPCCConst.setNumLastName(99);
 			ret = true;
 		}
+		else if (clients > 0 && scenario.equals("lightSequoia")) {
+			int frag = (fixedFrag == 0 ? replicas.get(machine) : fixedFrag);
+
+			str
+					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
+							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
+							+ clients
+							+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
+							+ " -DBcclass escada.tpc.tpcc.database.transaction.mysql.dbTransactionMySql "
+							+ " -TRACEFLAG TRACE -PREFIX "
+							+ key
+							+ " "
+							+ " -DBpath "
+							+ machine
+							+ " -DBdriver org.continuent.sequoia.driver.Driver"
+							+ " -DBusr tpcc -DBpasswd \"\" -POOL 5 -MI 45 -FRAG "
+							+ frag + " -RESUBMIT false");
+
+			workloadResources.setNumberOfWarehouses(4);
+			TPCConst.setNumMinClients(5);
+			TPCCConst.setNumCustomer(100);
+			TPCCConst.setNumDistrict(5);
+			TPCCConst.setNumItem(10);
+			TPCCConst.setNumLastName(99);
+			ret = true;
+		}
+		if (clients > 0 && scenario.equals("lightSequoia")) {
+			int frag = (fixedFrag == 0 ? replicas.get(machine) : fixedFrag);
+
+			str
+					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
+							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
+							+ clients
+							+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
+							+ " -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
+							+ " -TRACEFLAG TRACE -PREFIX "
+							+ key
+							+ " "
+							+ " -DBpath "
+							+ machine
+							+ " -DBdriver org.postgresql.Driver "
+							+ " -DBusr tpcc -DBpasswd tpcc -POOL 5 -MI 45 -FRAG "
+							+ frag + " -RESUBMIT false");
+
+			workloadResources.setNumberOfWarehouses(4);
+			TPCConst.setNumMinClients(5);
+			TPCCConst.setNumCustomer(100);
+			TPCCConst.setNumDistrict(5);
+			TPCCConst.setNumItem(10);
+			TPCCConst.setNumLastName(99);
+			ret = true;
+		}
+
 
 		if (clients > 0 && scenario.equals("heavy")) {
 			int frag = (fixedFrag == 0 ? replicas.get(machine) : fixedFrag);
