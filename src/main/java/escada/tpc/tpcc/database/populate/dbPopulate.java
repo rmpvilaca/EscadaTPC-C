@@ -28,40 +28,40 @@ public class dbPopulate {
 		PreparedStatement pstmt = null;
 
 		try {
-			pstmt = conn.prepareStatement("truncate warehouse");
+			pstmt = conn.prepareStatement("delete from warehouse");
 
 			pstmt.execute();
 			conn.commit();
 
-			pstmt = conn.prepareStatement("truncate district");
+			pstmt = conn.prepareStatement("delete from district");
 			pstmt.execute();
 			conn.commit();
 
-			pstmt = conn.prepareStatement("truncate customer");
+			pstmt = conn.prepareStatement("delete from customer");
 			pstmt.execute();
 			conn.commit();
 
-			pstmt = conn.prepareStatement("truncate item");
+			pstmt = conn.prepareStatement("delete from item");
 			pstmt.execute();
 			conn.commit();
 
-			pstmt = conn.prepareStatement("truncate stock");
+			pstmt = conn.prepareStatement("delete from stock");
 			pstmt.execute();
 			conn.commit();
 
-			pstmt = conn.prepareStatement("truncate orders");
+			pstmt = conn.prepareStatement("delete from orders");
 			pstmt.execute();
 			conn.commit();
 
-			pstmt = conn.prepareStatement("truncate order_line");
+			pstmt = conn.prepareStatement("delete from order_line");
 			pstmt.execute();
 			conn.commit();
 
-			pstmt = conn.prepareStatement("truncate history");
+			pstmt = conn.prepareStatement("delete from history");
 			pstmt.execute();
 			conn.commit();
 
-			pstmt = conn.prepareStatement("truncate new_order");
+			pstmt = conn.prepareStatement("delete from new_order");
 			pstmt.execute();
 			conn.commit();
 

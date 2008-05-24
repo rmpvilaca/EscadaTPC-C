@@ -111,12 +111,17 @@ public class ServerControl {
 		}
 	}
 
+	public void clearServers() throws InvalidTransactionException {
+		this.serverClients.clear();
+		this.serverHealth.clear();
+	}
+
 	public int getNumberOfClients(String key)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		int ret = 0;
 		if (key == null || key.equals("*")) {
 			Iterator it = ((Hashtable) clientsEmulation.clone()).keySet()
-					.iterator();
+			.iterator();
 			while (it.hasNext()) {
 				String keyValue = (String) it.next();
 				Vector clients = (Vector) clientsEmulation.get(keyValue);
@@ -137,13 +142,13 @@ public class ServerControl {
 	}
 
 	public int getNumberOfClientsOnServer(String key)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		int ret = 0;
 
 		if (key == null || key.equals("*")) {
 
 			Iterator itServers = ((Hashtable) this.serverClients.clone())
-					.keySet().iterator();
+			.keySet().iterator();
 
 			while (itServers.hasNext()) {
 				String keyValue = (String) itServers.next();
@@ -202,7 +207,7 @@ public class ServerControl {
 		if (key == null || key.equals("*")) {
 
 			Iterator it = ((Hashtable) clientsEmulation.clone()).keySet()
-					.iterator();
+			.iterator();
 			while (it.hasNext()) {
 				String keyValue = (String) it.next();
 
@@ -213,7 +218,7 @@ public class ServerControl {
 					this.clientsStage.put(keyValue, Stage.PAUSED);
 
 					Vector<ClientEmulation> clients = clientsEmulation
-							.get(keyValue);
+					.get(keyValue);
 					if (clients != null) {
 						for (ClientEmulation e : clients) {
 							e.pause();
@@ -244,7 +249,7 @@ public class ServerControl {
 	public void resumeClient(String key) throws InvalidTransactionException {
 		if (key == null || key.equals("*")) {
 			Iterator it = ((Hashtable) clientsEmulation.clone()).keySet()
-					.iterator();
+			.iterator();
 			while (it.hasNext()) {
 				String keyValue = (String) it.next();
 
@@ -254,7 +259,7 @@ public class ServerControl {
 					this.clientsStage.put(keyValue, Stage.RUNNING);
 
 					Vector<ClientEmulation> clients = clientsEmulation
-							.get(keyValue);
+					.get(keyValue);
 					if (clients != null) {
 						for (ClientEmulation e : clients) {
 							e.resume();
@@ -283,7 +288,7 @@ public class ServerControl {
 	public void stopClient(String key) throws InvalidTransactionException {
 		if (key == null || key.equals("*")) {
 			Iterator it = ((Hashtable) clientsEmulation.clone()).keySet()
-					.iterator();
+			.iterator();
 			while (it.hasNext()) {
 				String keyValue = (String) it.next();
 				Stage stg = this.clientsStage.get(keyValue);
@@ -292,7 +297,7 @@ public class ServerControl {
 								.equals(Stage.PAUSED))) {
 
 					Vector<ClientEmulation> clients = clientsEmulation
-							.get(keyValue);
+					.get(keyValue);
 					if (clients != null) {
 						for (ClientEmulation e : clients) {
 							e.stopit();
@@ -354,7 +359,7 @@ public class ServerControl {
 		int min = Integer.MAX_VALUE;
 
 		Iterator itServers = ((Hashtable) this.serverClients.clone()).keySet()
-				.iterator();
+		.iterator();
 
 		while (itServers.hasNext()) {
 			String keyServers = (String) itServers.next();

@@ -38,15 +38,15 @@ import escada.tpc.jmx.JMXTimeOutConnector;
 import escada.tpc.tpcc.TPCCConst;
 
 public class ClientEmulationStartup implements ClientEmulationStartupMBean,
-		ClientEmulationMaster {
+ClientEmulationMaster {
 
 	private final static Logger logger = Logger
-			.getLogger(ClientEmulationStartup.class);
+	.getLogger(ClientEmulationStartup.class);
 
 	private ExecutorService executor = Executors.newCachedThreadPool();
 
 	private ScheduledExecutorService scheduler = Executors
-			.newSingleThreadScheduledExecutor();
+	.newSingleThreadScheduledExecutor();
 
 	private DatabaseResources databaseResources;
 
@@ -61,12 +61,12 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	private boolean isFailOverEnabled = false;
 
 	public synchronized boolean getFailOver()
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		return (isFailOverEnabled);
 	}
 
 	public synchronized void setFailOver(boolean isEnabled)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		isFailOverEnabled = isEnabled;
 	}
 
@@ -75,7 +75,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			logger.info("Loading resources!");
 		}
 
-		configure();
+		configure("lightPgsql");
 
 		databaseResources = new DatabaseResources();
 		workloadResources = new WorkloadResources();
@@ -88,7 +88,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	public synchronized void start(String key, String arg, String machine)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 
 		Stage stg = this.server.getClientStage(key);
 		if (stg == null) {
@@ -103,7 +103,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	public synchronized void start(String key, String args[], String machine)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 
 		Stage stg = this.server.getClientStage(key);
 		if (stg == null) {
@@ -115,7 +115,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	public synchronized String startScenario(int clients, String scenario)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		logger.info("Starting scenario " + scenario);
 
 		StringBuilder str = new StringBuilder();
@@ -131,12 +131,12 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			} else {
 				logger.error("There is something wrong with the parameters");
 				throw new InvalidTransactionException(
-						"There is something wrong with the parameters");
+				"There is something wrong with the parameters");
 			}
 		} else {
 			logger.info("There is no replica avaiable. Please define one.");
 			throw new InvalidTransactionException(
-					"There is no replica avaiable. Please define one.");
+			"There is no replica avaiable. Please define one.");
 		}
 
 		logger.info("It is done for scenario " + scenario);
@@ -163,17 +163,17 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	public synchronized void pause(String key)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		server.pauseClient(key);
 	}
 
 	public synchronized void resume(String key)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		server.resumeClient(key);
 	}
 
 	public synchronized void stop(String key)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		server.stopClient(key);
 	}
 
@@ -240,8 +240,8 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			DateArg st = new DateArg("-ST", "Starting time for ramp-up",
 					"% Time (such as Nov 2, 1999 11:30:00 AM CST) "
-							+ "at which to start ramp-up."
-							+ "  Useful for synchronizing multiple RBEs.",
+					+ "at which to start ramp-up."
+					+ "  Useful for synchronizing multiple RBEs.",
 					System.currentTimeMillis() + 2000L, db);
 
 			IntArg ru = new IntArg("-RU", "Ramp-up time",
@@ -253,12 +253,12 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			IntArg rd = new IntArg("-RD", "Ramp-down time",
 					"% Seconds of steady-state operation following "
-							+ "measurment interval.", 5 * 60, db);
+					+ "measurment interval.", 5 * 60, db);
 
 			DoubleArg slow = new DoubleArg("-SLOW", "Slow-down factor",
 					"% 1000 means one thousand real seconds equals one "
-							+ "simulated second.  "
-							+ "Accepts factional values and E notation.", 1.0,
+					+ "simulated second.  "
+					+ "Accepts factional values and E notation.", 1.0,
 					db);
 
 			BooleanArg key = new BooleanArg("-KEY", "Enable thinktime.",
@@ -272,7 +272,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 					"-PREFIX",
 					"Emulation identification and also used as part of the emulation id",
 					"% It defines the compositon of the trace file identification and is also used as a component of the "
-							+ "emulator id.", db);
+					+ "emulator id.", db);
 
 			StringArg traceFlag = new StringArg(
 					"-TRACEflag",
@@ -306,7 +306,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			logger.info("Starting up the client application.");
 			logger.info("Remote Emulator for Database Benchmark ...");
 			logger
-					.info("Universidade do Minho (Grupo de Sistemas Distribuidos)");
+			.info("Universidade do Minho (Grupo de Sistemas Distribuidos)");
 			logger.info("Version 0.1");
 
 			Usage(args, db);
@@ -322,7 +322,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 				dbManager = (DatabaseManager) cl.newInstance();
 			} else {
 				dbManager = (DatabaseManager) co
-						.newInstance(new Object[] { new Integer(cli.num) });
+				.newInstance(new Object[] { new Integer(cli.num) });
 			}
 
 			dbManager.setConnectionPool(true);
@@ -501,12 +501,12 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	public synchronized void addServer(String key)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		this.server.addServer(key);
 	}
 
 	public synchronized void removeServer(String key)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		this.server.removeServer(key);
 	}
 
@@ -515,7 +515,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	public int getNumberOfClients(String key)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		return (this.server.getNumberOfClients(key));
 	}
 
@@ -524,7 +524,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	}
 
 	public int getNumberOfClientsOnServer(String key)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		return (this.server.getNumberOfClientsOnServer(key));
 	}
 
@@ -551,7 +551,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 						con.setAutoCommit(true);
 
 						String command = "select check_consistency('"
-								+ tables[cont] + "','key');";
+							+ tables[cont] + "','key');";
 
 						System.out.println("command " + command);
 
@@ -694,11 +694,11 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 				int contClient = server.getNumberOfClients("*");
 
 				float highMean = ((float) highLoad)
-						/ ((float) TPCConst.getNumMinClients());
+				/ ((float) TPCConst.getNumMinClients());
 				String client = server.findServerClient(highLoadServer);
 
 				float lowMean = (float) (server.getNumberOfClients(client) + lowLoad)
-						/ ((float) TPCConst.getNumMinClients());
+				/ ((float) TPCConst.getNumMinClients());
 
 				if (logger.isDebugEnabled()) {
 					logger.debug("Number of available servers is "
@@ -769,7 +769,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		try {
 			JMXServiceURL url = new JMXServiceURL(
 					"service:jmx:rmi:///jndi/rmi://" + hostName
-							+ ":8999/jmxrmi");
+					+ ":8999/jmxrmi");
 			// creates the environment to hold the pass and the username
 			HashMap<String, Object> env = new HashMap<String, Object>();
 			;
@@ -782,11 +782,11 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 			if (jmxc != null) {
 				Object ret = JMXTimeOutConnector
-						.invokeWithTimeout(
-								jmxc,
-								"escada.replicator.management.sensors.replica:id=CaptureSensor",
-								"acceptTransactions", 500,
-								TimeUnit.MILLISECONDS);
+				.invokeWithTimeout(
+						jmxc,
+						"escada.replicator.management.sensors.replica:id=CaptureSensor",
+						"acceptTransactions", 500,
+						TimeUnit.MILLISECONDS);
 
 				JMXTimeOutConnector.closeWithTimeout(jmxc, 500,
 						TimeUnit.MILLISECONDS);
@@ -810,19 +810,19 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			int frag = (fixedFrag == 0 ? replicas.get(machine) : fixedFrag);
 
 			str
-					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
-							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
-							+ clients
-							+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
-							+ " -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
-							+ " -TRACEFLAG TRACE -PREFIX "
-							+ key
-							+ " "
-							+ " -DBpath "
-							+ machine
-							+ " -DBdriver org.postgresql.Driver "
-							+ " -DBusr tpcc -DBpasswd tpcc -POOL 5 -MI 45 -FRAG "
-							+ frag + " -RESUBMIT false");
+			.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
+					+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
+					+ clients
+					+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
+					+ " -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
+					+ " -TRACEFLAG TRACE -PREFIX "
+					+ key
+					+ " "
+					+ " -DBpath "
+					+ machine
+					+ " -DBdriver org.postgresql.Driver "
+					+ " -DBusr tpcc -DBpasswd tpcc -POOL 5 -MI 45 -FRAG "
+					+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(4);
 			TPCConst.setNumMinClients(5);
@@ -836,19 +836,19 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			int frag = (fixedFrag == 0 ? replicas.get(machine) : fixedFrag);
 
 			str
-					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
-							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
-							+ clients
-							+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
-							+ " -DBcclass escada.tpc.tpcc.database.transaction.mysql.dbTransactionMySql "
-							+ " -TRACEFLAG TRACE -PREFIX "
-							+ key
-							+ " "
-							+ " -DBpath "
-							+ machine
-							+ " -DBdriver org.continuent.sequoia.driver.Driver"
-							+ " -DBusr tpcc -DBpasswd \"\" -POOL 5 -MI 45 -FRAG "
-							+ frag + " -RESUBMIT false");
+			.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
+					+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
+					+ clients
+					+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
+					+ " -DBcclass escada.tpc.tpcc.database.transaction.mysql.dbTransactionMySql "
+					+ " -TRACEFLAG TRACE -PREFIX "
+					+ key
+					+ " "
+					+ " -DBpath "
+					+ machine
+					+ " -DBdriver org.continuent.sequoia.driver.Driver"
+					+ " -DBusr tpcc -DBpasswd \"\" -POOL 5 -MI 45 -FRAG "
+					+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(4);
 			TPCConst.setNumMinClients(5);
@@ -858,52 +858,24 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 			TPCCConst.setNumLastName(99);
 			ret = true;
 		}
-		if (clients > 0 && scenario.equals("lightSequoia")) {
-			int frag = (fixedFrag == 0 ? replicas.get(machine) : fixedFrag);
-
-			str
-					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
-							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
-							+ clients
-							+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
-							+ " -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
-							+ " -TRACEFLAG TRACE -PREFIX "
-							+ key
-							+ " "
-							+ " -DBpath "
-							+ machine
-							+ " -DBdriver org.postgresql.Driver "
-							+ " -DBusr tpcc -DBpasswd tpcc -POOL 5 -MI 45 -FRAG "
-							+ frag + " -RESUBMIT false");
-
-			workloadResources.setNumberOfWarehouses(4);
-			TPCConst.setNumMinClients(5);
-			TPCCConst.setNumCustomer(100);
-			TPCCConst.setNumDistrict(5);
-			TPCCConst.setNumItem(10);
-			TPCCConst.setNumLastName(99);
-			ret = true;
-		}
-
-
 		if (clients > 0 && scenario.equals("heavy")) {
 			int frag = (fixedFrag == 0 ? replicas.get(machine) : fixedFrag);
 			frag = 1 + ((frag - 1) * 5);
 
 			str
-					.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
-							+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
-							+ clients
-							+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
-							+ " -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
-							+ " -TRACEFLAG TRACE -PREFIX "
-							+ key
-							+ " "
-							+ " -DBpath "
-							+ machine
-							+ " -DBdriver org.postgresql.Driver "
-							+ " -DBusr tpcc -DBpasswd tpcc -POOL 50 -MI 45 -FRAG "
-							+ frag + " -RESUBMIT false");
+			.append("-EBclass escada.tpc.tpcc.TPCCEmulation "
+					+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
+					+ clients
+					+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
+					+ " -DBclass escada.tpc.tpcc.database.transaction.postgresql.dbPostgresql "
+					+ " -TRACEFLAG TRACE -PREFIX "
+					+ key
+					+ " "
+					+ " -DBpath "
+					+ machine
+					+ " -DBdriver org.postgresql.Driver "
+					+ " -DBusr tpcc -DBpasswd tpcc -POOL 50 -MI 45 -FRAG "
+					+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(15);
 			TPCConst.setNumMinClients(10);
@@ -917,65 +889,81 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 		return (ret);
 	}
 
-	private void configure() throws InvalidTransactionException {
+	private void configure(String scenario) throws InvalidTransactionException {
 
-		server
-				.addServer("jdbc:postgresql://192.168.190.32:5432/tpcc?user=tpcc&password=123456");
-		server
-				.addServer("jdbc:postgresql://192.168.190.33:5432/tpcc?user=tpcc&password=123456");
-		server
-				.addServer("jdbc:postgresql://192.168.190.34:5432/tpcc?user=tpcc&password=123456");
-		server
-				.addServer("jdbc:postgresql://192.168.190.35:5432/tpcc?user=tpcc&password=123456");
+		this.server.clearServers();
+		this.replicas.clear();
+		
+		if (scenario.equals("lightPgsql")) {
+			server
+			.addServer("jdbc:postgresql://192.168.190.32:5432/tpcc?user=tpcc&password=123456");
+			server
+			.addServer("jdbc:postgresql://192.168.190.33:5432/tpcc?user=tpcc&password=123456");
+			server
+			.addServer("jdbc:postgresql://192.168.190.34:5432/tpcc?user=tpcc&password=123456");
+			server
+			.addServer("jdbc:postgresql://192.168.190.35:5432/tpcc?user=tpcc&password=123456");
 
-		replicas
-				.put(
-						"jdbc:postgresql://192.168.190.32:5432/tpcc?user=tpcc&password=123456",
-						1);
+			replicas
+			.put(
+					"jdbc:postgresql://192.168.190.32:5432/tpcc?user=tpcc&password=123456",
+					1);
 
-		replicas
-				.put(
-						"jdbc:postgresql://192.168.190.33:5432/tpcc?user=tpcc&password=123456",
-						2);
+			replicas
+			.put(
+					"jdbc:postgresql://192.168.190.33:5432/tpcc?user=tpcc&password=123456",
+					2);
 
-		replicas
-				.put(
-						"jdbc:postgresql://192.168.190.34:5432/tpcc?user=tpcc&password=123456",
-						3);
+			replicas
+			.put(
+					"jdbc:postgresql://192.168.190.34:5432/tpcc?user=tpcc&password=123456",
+					3);
 
-		replicas
-				.put(
-						"jdbc:postgresql://192.168.190.35:5432/tpcc?user=tpcc&password=123456",
-						4);
-
-		/*
-		 * server
-		 * .addServer("jdbc:postgresql://192.168.82.132:5432/tpcc?user=tpcc&password=123456");
-		 * server
-		 * .addServer("jdbc:postgresql://192.168.82.132:5433/tpcc?user=tpcc&password=123456");
-		 * server
-		 * .addServer("jdbc:postgresql://192.168.82.132:5434/tpcc?user=tpcc&password=123456");
-		 * 
-		 * replicas .put(
-		 * "jdbc:postgresql://192.168.82.132:5432/tpcc?user=tpcc&password=123456",
-		 * 1);
-		 * 
-		 * replicas .put(
-		 * "jdbc:postgresql://192.168.82.132:5433/tpcc?user=tpcc&password=123456",
-		 * 2);
-		 * 
-		 * replicas .put(
-		 * "jdbc:postgresql://192.168.82.132:5434/tpcc?user=tpcc&password=123456",
-		 * 3);
-		 */
-
-		tables = new String[] { "warehouse", "district", "item", "stock",
-				"customer", "orders", "order_line", "new_order", "history" };
-
-		try {
-			Class.forName("org.postgresql.Driver");
-		} catch (java.lang.Exception ex) {
-
+			replicas
+			.put(
+					"jdbc:postgresql://192.168.190.35:5432/tpcc?user=tpcc&password=123456",
+					4);
 		}
+		else if (scenario.equals("lightSequoia"))
+		{
+			server
+			.addServer("jdbc:sequoia://192.168.190.32:5432/tpcc?user=tpcc");
+			server
+			.addServer("jdbc:sequoia://192.168.190.33:5432/tpcc?user=tpcc");
+			server
+			.addServer("jdbc:sequoia://192.168.190.34:5432/tpcc?user=tpcc");
+			server
+			.addServer("jdbc:sequoia://192.168.190.35:5432/tpcc?user=tpcc");
+
+			replicas
+			.put(
+					"jdbc:sequoia://192.168.190.32:5432/tpcc?user=tpcc",
+					1);
+
+			replicas
+			.put(
+					"jdbc:sequoia://192.168.190.33:5432/tpcc?user=tpcc",
+					2);
+
+			replicas
+			.put(
+					"jdbc:sequoia://192.168.190.34:5432/tpcc?user=tpcc",
+					3);
+
+			replicas
+			.put(
+					"jdbc:sequoia://192.168.190.35:5432/tpcc?user=tpcc",
+					4);
+		}
+
+
+	tables = new String[] { "warehouse", "district", "item", "stock",
+			"customer", "orders", "order_line", "new_order", "history" };
+
+	try {
+		Class.forName("org.postgresql.Driver");
+	} catch (java.lang.Exception ex) {
+
 	}
+}
 }
