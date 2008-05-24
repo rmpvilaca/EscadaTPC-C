@@ -75,8 +75,6 @@ ClientEmulationMaster {
 			logger.info("Loading resources!");
 		}
 
-		configure("lightPgsql");
-
 		databaseResources = new DatabaseResources();
 		workloadResources = new WorkloadResources();
 
@@ -119,6 +117,11 @@ ClientEmulationMaster {
 		logger.info("Starting scenario " + scenario);
 
 		StringBuilder str = new StringBuilder();
+		if (replicas.isEmpty())
+			{
+				this.configure(scenario);
+				
+			}
 		String client = server.findFreeClient();
 
 		logger.info("The set of clients is indentifed as " + client);
