@@ -185,7 +185,7 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 			databaseResources
 			.setConnectionString("jdbc:sequoia://192.168.190.32/tpcc");
 			
-			databaseResources.setPassword("tpcc");
+			databaseResources.setPassword("");
 			workloadResources.setNumberOfWarehouses(4);
 
 			servers.add("jdbc:sequoia://192.168.190.32/tpcc");
