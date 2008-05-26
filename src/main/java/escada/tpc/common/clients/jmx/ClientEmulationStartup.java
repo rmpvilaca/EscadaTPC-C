@@ -58,6 +58,7 @@ ClientEmulationMaster {
 
 	private String tables[];
 
+	private String currentScenario="";
 	private boolean isFailOverEnabled = false;
 
 	public synchronized boolean getFailOver()
@@ -117,9 +118,11 @@ ClientEmulationMaster {
 		logger.info("Starting scenario " + scenario);
 
 		StringBuilder str = new StringBuilder();
-		if (replicas.isEmpty())
+		if ((replicas.isEmpty()) || !scenario.equals(this.currentScenario))
 			{
+				logger.info("Configuring scenario " + scenario);
 				this.configure(scenario);
+				this.currentScenario=scenario;
 				
 			}
 		String client = server.findFreeClient();
@@ -843,7 +846,7 @@ ClientEmulationMaster {
 					+ "-LOGconfig configuration.files/logger.xml -KEY true -CLI "
 					+ clients
 					+ " -STclass escada.tpc.tpcc.TPCCStateTransition "
-					+ " -DBcclass escada.tpc.tpcc.database.transaction.mysql.dbTransactionMySql "
+					+ " -DBclass escada.tpc.tpcc.database.transaction.mysql.dbTransactionMySql "
 					+ " -TRACEFLAG TRACE -PREFIX "
 					+ key
 					+ " "
@@ -894,9 +897,7 @@ ClientEmulationMaster {
 
 	private void configure(String scenario) throws InvalidTransactionException {
 
-		this.server.clearServers();
-		this.replicas.clear();
-		
+			
 		if (scenario.equals("lightPgsql")) {
 			server
 			.addServer("jdbc:postgresql://192.168.190.32:5432/tpcc?user=tpcc&password=123456");
@@ -930,33 +931,13 @@ ClientEmulationMaster {
 		else if (scenario.equals("lightSequoia"))
 		{
 			server
-			.addServer("jdbc:sequoia://192.168.190.32:5432/tpcc?user=tpcc");
-			server
-			.addServer("jdbc:sequoia://192.168.190.33:5432/tpcc?user=tpcc");
-			server
-			.addServer("jdbc:sequoia://192.168.190.34:5432/tpcc?user=tpcc");
-			server
-			.addServer("jdbc:sequoia://192.168.190.35:5432/tpcc?user=tpcc");
-
+			.addServer("jdbc:sequoia://192.168.190.32/tpcc?user=tpcc&password=");
+			server.setServerHealth("jdbc:sequoia://192.168.190.32/tpcc?user=tpcc&password=", true);
+		
 			replicas
 			.put(
-					"jdbc:sequoia://192.168.190.32:5432/tpcc?user=tpcc",
+					"jdbc:sequoia://192.168.190.32/tpcc?user=tpcc&password=",
 					1);
-
-			replicas
-			.put(
-					"jdbc:sequoia://192.168.190.33:5432/tpcc?user=tpcc",
-					2);
-
-			replicas
-			.put(
-					"jdbc:sequoia://192.168.190.34:5432/tpcc?user=tpcc",
-					3);
-
-			replicas
-			.put(
-					"jdbc:sequoia://192.168.190.35:5432/tpcc?user=tpcc",
-					4);
 		}
 
 
@@ -965,6 +946,7 @@ ClientEmulationMaster {
 
 	try {
 		Class.forName("org.postgresql.Driver");
+		Class.forName("org.continuent.sequoia.driver.Driver");
 	} catch (java.lang.Exception ex) {
 
 	}
