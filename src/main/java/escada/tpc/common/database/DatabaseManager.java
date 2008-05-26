@@ -15,8 +15,6 @@ public class DatabaseManager {
 
 	private ConnectionManager cn = new ConnectionManager();
 
-	private boolean connectionpool = true;
-
 	private Date baseTime = new java.util.Date();
 
 	/**
@@ -46,11 +44,11 @@ public class DatabaseManager {
 	 *            connection pool
 	 */
 	public void setConnectionPool(boolean pool) {
-		connectionpool = pool;
+		cn.setConnectionPool(pool);
 	}
-	
+
 	public boolean getConnectionPool() {
-		return(connectionpool);
+		return (cn.getConnectionPool());
 	}
 
 	/**
@@ -99,11 +97,7 @@ public class DatabaseManager {
 	 * the maximun configured value.
 	 */
 	public Connection getConnection() throws SQLException {
-		if (!connectionpool)
-			return cn.createConnection();
-		else {
-			return cn.getConnection();
-		}
+		return cn.getConnection();
 	}
 
 	public void releaseConnections() throws SQLException {
@@ -118,10 +112,7 @@ public class DatabaseManager {
 	 *            the connection be released and stored into the pool
 	 */
 	public void returnConnection(Connection con) {
-		if (!connectionpool)
-			cn.closeConnection(con);
-		else
-			cn.returnConnection(con);
+		cn.returnConnection(con);
 	}
 
 	public void processLog(Date startTime, Date finishTime, String transResult,

@@ -3,6 +3,7 @@ package escada.tpc.common.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Vector;
 
 import oracle.jdbc.pool.OracleDataSource;
@@ -13,6 +14,10 @@ public class ConnectionManager {
 	private static Logger logger = Logger.getLogger(ConnectionManager.class);
 
 	private Vector availConn = new Vector(0);
+
+	private boolean connectionpool = true;
+
+	private HashMap<Long, Connection> thread_conn = new HashMap<Long, Connection>();
 
 	private int checkedOut = 0;
 
@@ -90,7 +95,7 @@ public class ConnectionManager {
 		Connection con = null;
 		boolean acquiredResource = false;
 		while (!acquiredResource) {
-			if (availConn.size() > 0) {
+			if (availConn.size() > 0 && (connectionpool == true)) {
 				con = (Connection) availConn.firstElement();
 				availConn.removeElementAt(0);
 				if (con.isClosed()) {
@@ -98,8 +103,19 @@ public class ConnectionManager {
 					continue;
 				}
 				acquiredResource = true;
-			} else if ((maxConn == 0) || (totalConnections < maxConn)) {
-				con = createConnection();
+			} else if ((connectionpool == false)
+					|| (totalConnections < maxConn)) {
+				if (connectionpool == false) {
+					Long thread_id = Thread.currentThread().getId();
+					con = thread_conn.get(thread_id);
+					if (con != null) {
+						availConn.remove(con);
+						thread_conn.remove(thread_id);
+					}
+				}
+				if (con == null) {
+					con = createConnection();
+				}
 				acquiredResource = true;
 			} else if (!(checkedOut < totalConnections)) {
 				try {
@@ -123,6 +139,7 @@ public class ConnectionManager {
 	public synchronized void releaseConnections() throws SQLException {
 		Connection con;
 
+		thread_conn.clear();
 		while (availConn.size() > 0) {
 			con = (Connection) availConn.firstElement();
 			availConn.removeElementAt(0);
@@ -147,8 +164,21 @@ public class ConnectionManager {
 		if (con != null) {
 			checkedOut--;
 			availConn.addElement(con);
+
+			if (connectionpool == false) {
+				thread_conn.put(Thread.currentThread().getId(), con);
+			}
+
 			notify();
 		}
+	}
+
+	public void setConnectionPool(boolean pool) {
+		this.connectionpool = pool;
+	}
+
+	public boolean getConnectionPool() {
+		return (this.connectionpool);
 	}
 
 	/**
@@ -157,7 +187,7 @@ public class ConnectionManager {
 	 * 
 	 * @return the new connection
 	 */
-	public synchronized Connection createConnection() throws SQLException {
+	private synchronized Connection createConnection() throws SQLException {
 		try {
 			Class.forName(driverName);
 			Connection con;
@@ -177,21 +207,8 @@ public class ConnectionManager {
 			totalConnections++;
 			return con;
 		} catch (java.lang.Exception ex) {
-			logger.error("Error while acquiring connection ",ex);
+			logger.error("Error while acquiring connection ", ex);
 			throw new SQLException(ex.getMessage());
-		}
-	}
-
-	public synchronized void closeConnection(Connection con) {
-		try {
-			if (con != null) {
-				con.close();
-			}
-			totalConnections--;
-
-		} catch (Exception ex) {
-			logger.error("Error closing connection.");
-			ex.printStackTrace(System.err);
 		}
 	}
 }
