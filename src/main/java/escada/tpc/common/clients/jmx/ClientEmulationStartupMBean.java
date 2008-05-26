@@ -7,9 +7,9 @@ public interface ClientEmulationStartupMBean {
 		INIT, PAUSED, RUNNING, STOPPED, FAILOVER
 	};
 	
-	public void setFailOver(boolean isEnabled) throws InvalidTransactionException;
+	public void failOverPut(boolean isEnabled) throws InvalidTransactionException;
 	
-	public boolean getFailOver() throws InvalidTransactionException;
+	public boolean failOverGet() throws InvalidTransactionException;
 
 	public void start(String key, String arg, String machine)
 			throws InvalidTransactionException;

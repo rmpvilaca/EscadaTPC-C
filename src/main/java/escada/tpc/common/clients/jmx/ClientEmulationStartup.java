@@ -61,13 +61,13 @@ ClientEmulationMaster {
 	private String currentScenario="";
 	private boolean isFailOverEnabled = false;
 
-	public synchronized boolean getFailOver()
-	throws InvalidTransactionException {
+	public synchronized boolean failOverGet()
+			throws InvalidTransactionException {
 		return (isFailOverEnabled);
 	}
 
-	public synchronized void setFailOver(boolean isEnabled)
-	throws InvalidTransactionException {
+	public synchronized void failOverPut(boolean isEnabled)
+			throws InvalidTransactionException {
 		isFailOverEnabled = isEnabled;
 	}
 
