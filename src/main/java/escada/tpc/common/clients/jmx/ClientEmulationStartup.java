@@ -59,7 +59,7 @@ ClientEmulationMaster {
 	private String tables[];
 
 	private String currentScenario="";
-	private boolean isFailOverEnabled = false;
+	private boolean isFailOverEnabled = true;
 
 	public synchronized boolean failOverGet()
 			throws InvalidTransactionException {
