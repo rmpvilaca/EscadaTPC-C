@@ -49,7 +49,7 @@ public class DatabaseManager {
 		connectionpool = pool;
 	}
 	
-	public boolean ConnectionPool() {
+	public boolean getConnectionPool() {
 		return(connectionpool);
 	}
 
