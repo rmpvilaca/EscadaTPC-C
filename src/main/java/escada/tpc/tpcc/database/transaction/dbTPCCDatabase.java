@@ -17,6 +17,7 @@ import escada.tpc.common.database.DatabaseManager;
 abstract public class dbTPCCDatabase extends DatabaseManager {
 
 	private static Logger logger = Logger.getLogger(dbTPCCDatabase.class);
+	private Connection con = null;
 
 	/**
 	 * It defines the behavior of the transaction new order.
@@ -31,7 +32,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 	public Object TraceNewOrderDB(Properties obj, String hid)
 			throws java.sql.SQLException {
 
-		Connection con = null;
+		
 		HashSet dbtrace = null;
 
 		try {
@@ -39,7 +40,12 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 
 			Date NetStartTime = new java.util.Date();
 
-			con = getConnection();
+			if (getConnectionPool()) {
+				con = getConnection();
+			}
+			else if (con == null){
+				 con = getConnection(); 
+			}
 
 			InitTransaction(con, "tx neworder", "w");
 
@@ -63,12 +69,15 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)) {
 				if (con != null) {
 					con.close();
+					con = null;
 				}
 				throw sqlex;
 				
 			}
 		} finally {
-			returnConnection(con);
+			if (getConnectionPool()) {
+				returnConnection(con);
+			}
 		}
 		return (dbtrace);
 	}
@@ -94,7 +103,12 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 
 			Date NetStartTime = new java.util.Date();
 
-			con = getConnection();
+			if (getConnectionPool()) {
+				con = getConnection();
+			}
+			else if (con == null){
+				 con = getConnection(); 
+			}
 
 			InitTransaction(con, "tx delivery", "w");
 
@@ -120,11 +134,14 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 			{
 				if (con != null) {
 					con.close();
+					con = null;
 				}				
 				throw sqlex;
 			}
 		} finally {
-			returnConnection(con);
+			if (getConnectionPool()) {
+				returnConnection(con);
+			}
 		}
 		return (dbtrace);
 	}
@@ -152,7 +169,13 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 			if (str.equals("0")) {
 				Date NetStartTime = new java.util.Date();
 
-				con = getConnection();
+				if (getConnectionPool()) {
+					con = getConnection();
+				}
+				else if (con == null){
+					 con = getConnection(); 
+				}
+				
 				InitTransaction(con, "tx orderstatus 01", "r");
 				dbtrace = OrderStatusDB(obj, con);
 				CommitTransaction(con, "tx orderstatus 01", "r");
@@ -164,7 +187,13 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 			} else {
 				Date NetStartTime = new java.util.Date();
 
-				con = getConnection();
+				if (getConnectionPool()) {
+					con = getConnection();
+				}
+				else if (con == null){
+					 con = getConnection(); 
+				}
+				
 				InitTransaction(con, "tx orderstatus 02", "r");
 				dbtrace = OrderStatusDB(obj, con);
 				CommitTransaction(con, "tx orderstatus 02", "r");
@@ -187,11 +216,14 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Before start of result set") == -1)) {
 				if (con != null) {
 					con.close();
+					con = null;
 				}				
 				throw sqlex;
 			}
 		} finally {
-			returnConnection(con);
+			if (getConnectionPool()) {
+				returnConnection(con);
+			}
 		}
 		return (dbtrace);
 	}
@@ -219,7 +251,12 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 			if (str.equals("0")) {
 				Date NetStartTime = new java.util.Date();
 
-				con = getConnection();
+				if (getConnectionPool()) {
+					con = getConnection();
+				}
+				else if (con == null){
+					 con = getConnection(); 
+				}
 
 				InitTransaction(con, "tx payment 01", "w");
 
@@ -235,7 +272,12 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 			} else {
 				Date NetStartTime = new java.util.Date();
 
-				con = getConnection();
+				if (getConnectionPool()) {
+					con = getConnection();
+				}
+				else if (con == null){
+					 con = getConnection(); 
+				}
 
 				InitTransaction(con, "tx payment 02", "w");
 				dbtrace = PaymentDB(obj, con);
@@ -262,11 +304,14 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Before start of result set") == -1)) {
 				if (con != null) {
 					con.close();
+					con = null;
 				}				
 				throw sqlex;
 			}
 		} finally {
-			returnConnection(con);
+			if (getConnectionPool()) {
+				returnConnection(con);
+			}
 		}
 		return (dbtrace);
 	}
@@ -292,7 +337,12 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 
 			Date NetStartTime = new java.util.Date();
 
-			con = getConnection();
+			if (getConnectionPool()) {
+				con = getConnection();
+			}
+			else if (con == null){
+				 con = getConnection(); 
+			}
 
 			InitTransaction(con, "tx stocklevel", "r");
 
@@ -317,11 +367,14 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Before start of result set") == -1)) {
 				if (con != null) {
 					con.close();
+					con = null;
 				}				
 				throw sqlex;
 			}
 		} finally {
-			returnConnection(con);
+			if (getConnectionPool()) {
+				returnConnection(con);
+			}
 		}
 		return (dbtrace);
 	}

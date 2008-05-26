@@ -17,28 +17,12 @@ public class DatabaseManager {
 
 	private boolean connectionpool = true;
 
-	private boolean virtualdatabase = false;
-
 	private Date baseTime = new java.util.Date();
 
 	/**
 	 * It instanciates the CommonDatabase class.
 	 */
 	public DatabaseManager() {
-	}
-
-	/**
-	 * It defines the bahaivor of the database. It it is defined as virtual, in
-	 * fact nothing is done to acquire and release connections.
-	 * 
-	 * @param boolean
-	 *            (true) the database is virtual, (false) it is a normal
-	 *            database
-	 * 
-	 * TODO: SUMIR COM ESSA IDEIA DE BASE VIRTUAL
-	 */
-	public void setVirtualDatabase(boolean v) {
-		virtualdatabase = v;
 	}
 
 	/**
@@ -51,8 +35,7 @@ public class DatabaseManager {
 	 *            the maximum number of connections
 	 */
 	public void setMaxConnection(int mConn) {
-		if (!virtualdatabase)
-			cn.setMaxConnection(mConn);
+		cn.setMaxConnection(mConn);
 	}
 
 	/**
@@ -63,8 +46,11 @@ public class DatabaseManager {
 	 *            connection pool
 	 */
 	public void setConnectionPool(boolean pool) {
-		if (!virtualdatabase)
-			connectionpool = pool;
+		connectionpool = pool;
+	}
+	
+	public boolean ConnectionPool() {
+		return(connectionpool);
 	}
 
 	/**
@@ -77,8 +63,7 @@ public class DatabaseManager {
 	 *            the driver
 	 */
 	public void setDriverName(String dName) {
-		if (!virtualdatabase)
-			cn.setDriverName(dName);
+		cn.setDriverName(dName);
 	}
 
 	/**
@@ -90,8 +75,7 @@ public class DatabaseManager {
 	 *            the jdbc path
 	 */
 	public void setjdbcPath(String jdbc) {
-		if (!virtualdatabase)
-			cn.setjdbcPath(jdbc);
+		cn.setjdbcPath(jdbc);
 	}
 
 	/**
@@ -104,8 +88,7 @@ public class DatabaseManager {
 	 *            the password used to connect
 	 */
 	public void setUserInfo(String usr, String pass) {
-		if (!virtualdatabase)
-			cn.setUserInfo(usr, pass);
+		cn.setUserInfo(usr, pass);
 	}
 
 	/**
@@ -116,13 +99,11 @@ public class DatabaseManager {
 	 * the maximun configured value.
 	 */
 	public Connection getConnection() throws SQLException {
-		if (!virtualdatabase)
-			if (!connectionpool)
-				return cn.createConnection();
-			else {
-				return cn.getConnection();
-			}
-		return (null);
+		if (!connectionpool)
+			return cn.createConnection();
+		else {
+			return cn.getConnection();
+		}
 	}
 
 	public void releaseConnections() throws SQLException {
@@ -137,11 +118,10 @@ public class DatabaseManager {
 	 *            the connection be released and stored into the pool
 	 */
 	public void returnConnection(Connection con) {
-		if (!virtualdatabase)
-			if (!connectionpool)
-				cn.closeConnection(con);
-			else
-				cn.returnConnection(con);
+		if (!connectionpool)
+			cn.closeConnection(con);
+		else
+			cn.returnConnection(con);
 	}
 
 	public void processLog(Date startTime, Date finishTime, String transResult,
@@ -156,9 +136,10 @@ public class DatabaseManager {
 			} else if (transResult.equalsIgnoreCase("committing")) {
 
 				PerformanceCounters.setCommitRate();
-				
+
 				// register latency time
-				PerformanceCounters.setLatency(finishTime.getTime() - startTime.getTime());
+				PerformanceCounters.setLatency(finishTime.getTime()
+						- startTime.getTime());
 
 			} else if (transResult.equalsIgnoreCase("aborting")) {
 

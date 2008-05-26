@@ -242,8 +242,8 @@ ClientEmulationMaster {
 					"% String <passwd> which specifies the password correpondent to user connecting to the database.",
 					db);
 
-			IntArg poolArg = new IntArg("-POOL", "Connection Pool",
-					"% The number of entries available for connection pool...",
+			IntArg poolArg = new IntArg("-POOL", "Number of Connections",
+					"% The number of entries available for connection...",
 					db);
 
 			DateArg st = new DateArg("-ST", "Starting time for ramp-up",
@@ -300,9 +300,12 @@ ClientEmulationMaster {
 					"% It enables the transaction resubmition when an error occurs.",
 					true, db);
 
-			IntArg hostArg = new IntArg("-HOST", "Connection Pool",
-					"% The number of entries available for connection pool...",
+			IntArg hostArg = new IntArg("-HOST", "Information on host...",
+					"% Information on host...",
 					0, db);
+			
+			BooleanArg isConnectionPoolEnabled = new BooleanArg("-enabledPOOL", "Enable POOL.",
+					"% It enables or disables the connection pool.", true, db);
 
 			if (args.length == 0) {
 				Usage(args, db);
@@ -333,7 +336,7 @@ ClientEmulationMaster {
 				.newInstance(new Object[] { new Integer(cli.num) });
 			}
 
-			dbManager.setConnectionPool(true);
+			dbManager.setConnectionPool(isConnectionPoolEnabled.flag);
 			dbManager.setMaxConnection(poolArg.num);
 			dbManager.setDriverName(driverArg.s);
 			dbManager.setjdbcPath(pathArg.s);
@@ -829,7 +832,7 @@ ClientEmulationMaster {
 					+ " -DBpath "
 					+ machine
 					+ " -DBdriver org.postgresql.Driver "
-					+ " -DBusr tpcc -DBpasswd tpcc -POOL 5 -MI 45 -FRAG "
+					+ " -DBusr tpcc -DBpasswd tpcc -POOL 0 -enabledPOOL false -MI 45 -FRAG "
 					+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(4);
@@ -855,7 +858,7 @@ ClientEmulationMaster {
 					+ " -DBpath "
 					+ machine
 					+ " -DBdriver org.continuent.sequoia.driver.Driver"
-					+ " -DBusr tpcc -DBpasswd \"\" -POOL 5 -MI 45 -FRAG "
+					+ " -DBusr tpcc -DBpasswd \"\" -POOL 0 -enabledPOOL false -MI 45 -FRAG "
 					+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(4);
@@ -882,7 +885,7 @@ ClientEmulationMaster {
 					+ " -DBpath "
 					+ machine
 					+ " -DBdriver org.postgresql.Driver "
-					+ " -DBusr tpcc -DBpasswd tpcc -POOL 50 -MI 45 -FRAG "
+					+ " -DBusr tpcc -DBpasswd tpcc -POOL 0 -enabledPOOL false -MI 45 -FRAG "
 					+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(15);
