@@ -60,12 +60,12 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 	private boolean isFailOverEnabled = false;
 
-	public synchronized boolean getFailOver()
+	public synchronized boolean failOverGet()
 			throws InvalidTransactionException {
 		return (isFailOverEnabled);
 	}
 
-	public synchronized void setFailOver(boolean isEnabled)
+	public synchronized void failOverPut(boolean isEnabled)
 			throws InvalidTransactionException {
 		isFailOverEnabled = isEnabled;
 	}
@@ -867,32 +867,32 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 	private void configure() throws InvalidTransactionException {
 
 		server
-				.addServer("jdbc:postgresql://192.168.180.32:5432/tpcc?user=tpcc&password=123456");
+				.addServer("jdbc:postgresql://192.168.190.32:5432/tpcc?user=tpcc&password=123456");
 		server
-				.addServer("jdbc:postgresql://192.168.180.33:5432/tpcc?user=tpcc&password=123456");
+				.addServer("jdbc:postgresql://192.168.190.33:5432/tpcc?user=tpcc&password=123456");
 		server
-				.addServer("jdbc:postgresql://192.168.180.34:5432/tpcc?user=tpcc&password=123456");
+				.addServer("jdbc:postgresql://192.168.190.34:5432/tpcc?user=tpcc&password=123456");
 		server
-				.addServer("jdbc:postgresql://192.168.180.35:5432/tpcc?user=tpcc&password=123456");
+				.addServer("jdbc:postgresql://192.168.190.35:5432/tpcc?user=tpcc&password=123456");
 
 		replicas
 				.put(
-						"jdbc:postgresql://192.168.180.32:5432/tpcc?user=tpcc&password=123456",
+						"jdbc:postgresql://192.168.190.32:5432/tpcc?user=tpcc&password=123456",
 						1);
 
 		replicas
 				.put(
-						"jdbc:postgresql://192.168.180.33:5432/tpcc?user=tpcc&password=123456",
+						"jdbc:postgresql://192.168.190.33:5432/tpcc?user=tpcc&password=123456",
 						2);
 
 		replicas
 				.put(
-						"jdbc:postgresql://192.168.180.34:5432/tpcc?user=tpcc&password=123456",
+						"jdbc:postgresql://192.168.190.34:5432/tpcc?user=tpcc&password=123456",
 						3);
 
 		replicas
 				.put(
-						"jdbc:postgresql://192.168.180.35:5432/tpcc?user=tpcc&password=123456",
+						"jdbc:postgresql://192.168.190.35:5432/tpcc?user=tpcc&password=123456",
 						4);
 
 		/*
