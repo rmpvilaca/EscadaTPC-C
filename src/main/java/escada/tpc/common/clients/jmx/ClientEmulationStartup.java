@@ -79,6 +79,8 @@ ClientEmulationMaster {
 		databaseResources = new DatabaseResources();
 		workloadResources = new WorkloadResources();
 
+		this.configure("lightPgsql");
+		
 		scheduler.schedule(new Runnable() {
 			public void run() {
 				balancing();
@@ -897,7 +899,8 @@ ClientEmulationMaster {
 
 	private void configure(String scenario) throws InvalidTransactionException {
 
-			
+		this.server.clearServers();
+		this.replicas.clear();
 		if (scenario.equals("lightPgsql")) {
 			server
 			.addServer("jdbc:postgresql://192.168.190.32:5432/tpcc?user=tpcc&password=123456");
