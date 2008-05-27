@@ -142,9 +142,12 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 					"% It enables the transaction resubmition when an error occurs.",
 					true, db);
 
-			IntArg hostArg = new IntArg("-HOST", "Connection Pool",
-					"% The number of entries available for connection pool...",
+			IntArg hostArg = new IntArg("-HOST", "Information on host...",
+					"% Information on host...",
 					0, db);
+			
+			BooleanArg isConnectionPoolEnabled = new BooleanArg("-enabledPOOL", "Enable POOL.",
+					"% It enables or disables the connection pool.", true, db);
 
 			if (args.length == 0) {
 				Usage(args, db);
@@ -179,7 +182,7 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 						.newInstance(new Object[] { new Integer(cli.num) });
 			}
 
-			dbManager.setConnectionPool(true);
+			dbManager.setConnectionPool(isConnectionPoolEnabled.flag);
 			dbManager.setMaxConnection(poolArg.num);
 			dbManager.setDriverName(driverArg.s);
 			dbManager.setjdbcPath(pathArg.s);

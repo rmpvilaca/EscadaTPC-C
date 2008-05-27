@@ -1,6 +1,5 @@
 package escada.tpc.common.clients.jmx;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -63,7 +62,7 @@ ClientEmulationMaster {
 	private String tables[];
 
 	private String currentScenario="";
-	private boolean isFailOverEnabled = false;
+	private boolean isFailOverEnabled = true;
 
 	public synchronized boolean failOverGet()
 	throws InvalidTransactionException {
@@ -308,6 +307,9 @@ ClientEmulationMaster {
 			IntArg hostArg = new IntArg("-HOST", "Connection Pool",
 					"% The number of entries available for connection pool...",
 					0, db);
+			
+			BooleanArg isConnectionPoolEnabled = new BooleanArg("-enabledPOOL", "Enable POOL.",
+					"% It enables or disables the connection pool.", true, db);
 
 			if (args.length == 0) {
 				Usage(args, db);
@@ -338,7 +340,7 @@ ClientEmulationMaster {
 				.newInstance(new Object[] { new Integer(cli.num) });
 			}
 
-			dbManager.setConnectionPool(true);
+			dbManager.setConnectionPool(isConnectionPoolEnabled.flag);
 			dbManager.setMaxConnection(poolArg.num);
 			dbManager.setDriverName(driverArg.s);
 			dbManager.setjdbcPath(pathArg.s);
@@ -860,7 +862,7 @@ ClientEmulationMaster {
 					+ " -DBpath "
 					+ machine
 					+ " -DBdriver org.postgresql.Driver "
-					+ " -DBusr tpcc -DBpasswd tpcc -POOL 5 -MI 45 -FRAG "
+					+ " -DBusr tpcc -DBpasswd tpcc -POOL 0 -enabledPOOL false -MI 45 -FRAG "
 					+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(4);
@@ -886,7 +888,7 @@ ClientEmulationMaster {
 					+ " -DBpath "
 					+ machine
 					+ " -DBdriver org.continuent.sequoia.driver.Driver"
-					+ " -DBusr tpcc -DBpasswd \"\" -POOL 20 -MI 45 -FRAG "
+					+ " -DBusr tpcc -DBpasswd \"\" -POOL 0 -enabledPOOL false -MI 45 -FRAG "
 					+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(4);
@@ -913,7 +915,7 @@ ClientEmulationMaster {
 					+ " -DBpath "
 					+ machine
 					+ " -DBdriver org.postgresql.Driver "
-					+ " -DBusr tpcc -DBpasswd tpcc -POOL 50 -MI 45 -FRAG "
+					+ " -DBusr tpcc -DBpasswd tpcc -POOL 0 -enabledPOOL false -MI 45 -FRAG "
 					+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(15);

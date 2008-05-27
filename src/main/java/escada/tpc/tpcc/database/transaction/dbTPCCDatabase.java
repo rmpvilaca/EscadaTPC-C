@@ -31,7 +31,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 	public Object TraceNewOrderDB(Properties obj, String hid)
 			throws java.sql.SQLException {
 
-		Connection con = null;
+		Connection con = null;		
 		HashSet dbtrace = null;
 
 		try {
@@ -63,12 +63,13 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)) {
 				if (con != null) {
 					con.close();
+					con = null;
 				}
 				throw sqlex;
 				
 			}
 		} finally {
-			returnConnection(con);
+				returnConnection(con);
 		}
 		return (dbtrace);
 	}
@@ -94,7 +95,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 
 			Date NetStartTime = new java.util.Date();
 
-			con = getConnection();
+			con = getConnection(); 
 
 			InitTransaction(con, "tx delivery", "w");
 
@@ -120,6 +121,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 			{
 				if (con != null) {
 					con.close();
+					con = null;
 				}				
 				throw sqlex;
 			}
@@ -153,6 +155,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 				Date NetStartTime = new java.util.Date();
 
 				con = getConnection();
+				
 				InitTransaction(con, "tx orderstatus 01", "r");
 				dbtrace = OrderStatusDB(obj, con);
 				CommitTransaction(con, "tx orderstatus 01", "r");
@@ -165,6 +168,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 				Date NetStartTime = new java.util.Date();
 
 				con = getConnection();
+				
 				InitTransaction(con, "tx orderstatus 02", "r");
 				dbtrace = OrderStatusDB(obj, con);
 				CommitTransaction(con, "tx orderstatus 02", "r");
@@ -187,11 +191,12 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Before start of result set") == -1)) {
 				if (con != null) {
 					con.close();
+					con = null;
 				}				
 				throw sqlex;
 			}
 		} finally {
-			returnConnection(con);
+				returnConnection(con);
 		}
 		return (dbtrace);
 	}
@@ -262,6 +267,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Before start of result set") == -1)) {
 				if (con != null) {
 					con.close();
+					con = null;
 				}				
 				throw sqlex;
 			}
@@ -317,6 +323,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 					&& (sqlex.getMessage().indexOf("Before start of result set") == -1)) {
 				if (con != null) {
 					con.close();
+					con = null;
 				}				
 				throw sqlex;
 			}
