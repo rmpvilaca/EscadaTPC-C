@@ -1,5 +1,9 @@
 package escada.tpc.common.clients.jmx;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -62,12 +66,12 @@ ClientEmulationMaster {
 	private boolean isFailOverEnabled = false;
 
 	public synchronized boolean failOverGet()
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		return (isFailOverEnabled);
 	}
 
 	public synchronized void failOverPut(boolean isEnabled)
-			throws InvalidTransactionException {
+	throws InvalidTransactionException {
 		isFailOverEnabled = isEnabled;
 	}
 
@@ -80,7 +84,8 @@ ClientEmulationMaster {
 		workloadResources = new WorkloadResources();
 
 		this.configure("lightPgsql");
-		
+		this.currentScenario="lightPgsql";
+
 		scheduler.schedule(new Runnable() {
 			public void run() {
 				balancing();
@@ -121,12 +126,12 @@ ClientEmulationMaster {
 
 		StringBuilder str = new StringBuilder();
 		if ((replicas.isEmpty()) || !scenario.equals(this.currentScenario))
-			{
-				logger.info("Configuring scenario " + scenario);
-				this.configure(scenario);
-				this.currentScenario=scenario;
-				
-			}
+		{
+			logger.info("Configuring scenario " + scenario);
+			this.configure(scenario);
+			this.currentScenario=scenario;
+
+		}
 		String client = server.findFreeClient();
 
 		logger.info("The set of clients is indentifed as " + client);
@@ -549,40 +554,66 @@ ClientEmulationMaster {
 		HashSet<String> consistencyBag = new HashSet<String>();
 		int cont = 0;
 
-		while (cont < 9 && ret == true) {
-			Iterator<String> itServers = server.getServers().iterator();
-			while (itServers.hasNext()) {
-				String key = itServers.next();
-				if (server.isServerHealth(key)) {
-					try {
-						Connection con = DriverManager.getConnection(key);
-						con.setAutoCommit(true);
+		if (this.currentScenario.equals("lightPgsql"))
+		{
+			while (cont < 9 && ret == true) {
+				Iterator<String> itServers = server.getServers().iterator();
+				while (itServers.hasNext()) {
+					String key = itServers.next();
+					if (server.isServerHealth(key)) {
+						try {
+							Connection con = DriverManager.getConnection(key);
+							con.setAutoCommit(true);
 
-						String command = "select check_consistency('"
-							+ tables[cont] + "','key');";
+							String command = "select check_consistency('"
+								+ tables[cont] + "','key');";
 
-						System.out.println("command " + command);
+							System.out.println("command " + command);
 
-						Statement st = con.createStatement();
+							Statement st = con.createStatement();
 
-						ResultSet rs = st.executeQuery(command);
+							ResultSet rs = st.executeQuery(command);
 
-						if (rs.next()) {
-							consistencyBag.add(rs.getString(1));
+							if (rs.next()) {
+								consistencyBag.add(rs.getString(1));
+							}
+							rs.close();
+							st.close();
+							con.close();
+						} catch (SQLException e) {
+							logger.error("Error while connecting to a database", e);
 						}
-						rs.close();
-						st.close();
-						con.close();
-					} catch (SQLException e) {
-						logger.error("Error while connecting to a database", e);
 					}
 				}
+				if (consistencyBag.size() > 1) {
+					ret = false;
+				}
+				consistencyBag.clear();
+				cont++;
 			}
-			if (consistencyBag.size() > 1) {
-				ret = false;
-			}
-			consistencyBag.clear();
-			cont++;
+		}
+		else if (this.currentScenario.equals("lightSequoia"))
+		{
+			logger.info("Checking Consistency on scenario lightSequoia");
+			try {
+				Runtime r = Runtime.getRuntime();
+				Process p = r.exec("/home/gorda/compare.sh");
+				BufferedReader in=new BufferedReader(new InputStreamReader(p.getInputStream()));
+				int nLines=0;
+				String str=null;
+				while((str=in.readLine())!=null)
+				{
+					logger.info(str);
+					nLines++;
+				}
+				logger.info("Read "+nLines+" lines");
+				if (nLines>0)
+					ret=false;
+			} catch (IOException e) {
+				e.printStackTrace();
+			} /*catch (InterruptedException e) {
+				e.printStackTrace();
+			}*/
 		}
 		return (ret);
 	}
@@ -855,7 +886,7 @@ ClientEmulationMaster {
 					+ " -DBpath "
 					+ machine
 					+ " -DBdriver org.continuent.sequoia.driver.Driver"
-					+ " -DBusr tpcc -DBpasswd \"\" -POOL 5 -MI 45 -FRAG "
+					+ " -DBusr tpcc -DBpasswd \"\" -POOL 20 -MI 45 -FRAG "
 					+ frag + " -RESUBMIT false");
 
 			workloadResources.setNumberOfWarehouses(4);
@@ -936,7 +967,7 @@ ClientEmulationMaster {
 			server
 			.addServer("jdbc:sequoia://192.168.190.32/tpcc?user=tpcc&password=");
 			server.setServerHealth("jdbc:sequoia://192.168.190.32/tpcc?user=tpcc&password=", true);
-		
+
 			replicas
 			.put(
 					"jdbc:sequoia://192.168.190.32/tpcc?user=tpcc&password=",
@@ -944,14 +975,14 @@ ClientEmulationMaster {
 		}
 
 
-	tables = new String[] { "warehouse", "district", "item", "stock",
-			"customer", "orders", "order_line", "new_order", "history" };
+		tables = new String[] { "warehouse", "district", "item", "stock",
+				"customer", "orders", "order_line", "new_order", "history" };
 
-	try {
-		Class.forName("org.postgresql.Driver");
-		Class.forName("org.continuent.sequoia.driver.Driver");
-	} catch (java.lang.Exception ex) {
+		try {
+			Class.forName("org.postgresql.Driver");
+			Class.forName("org.continuent.sequoia.driver.Driver");
+		} catch (java.lang.Exception ex) {
 
+		}
 	}
-}
 }
