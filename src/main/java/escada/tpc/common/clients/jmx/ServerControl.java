@@ -385,4 +385,16 @@ public class ServerControl {
 		}
 		return (ret);
 	}
+
+	public void stopFirstClient() throws InvalidTransactionException {
+		if (this.clientsStage.size()>0)
+		{
+			String clients=this.clientsStage.keySet().iterator().next();
+			logger.info("Stopping clients:"+clients);
+			this.stopClient(clients);
+		}
+		else
+			logger.info("No clients to stop");
+		
+	}
 }

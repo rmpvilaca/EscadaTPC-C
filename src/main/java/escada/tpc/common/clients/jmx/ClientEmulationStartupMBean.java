@@ -23,6 +23,8 @@ public interface ClientEmulationStartupMBean {
 
 	public void stop(String key) throws InvalidTransactionException;
 	
+	public void stop() throws InvalidTransactionException;
+	
 	public void addServer(String key) throws InvalidTransactionException;
 	
 	public void removeServer(String key) throws InvalidTransactionException;

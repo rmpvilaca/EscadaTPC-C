@@ -987,4 +987,9 @@ ClientEmulationMaster {
 
 		}
 	}
+
+	public void stop() throws InvalidTransactionException {
+		server.stopFirstClient();
+		
+	}
 }
