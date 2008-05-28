@@ -596,13 +596,37 @@ ClientEmulationMaster {
 		}
 		else if (this.currentScenario.equals("lightSequoia"))
 		{
-			logger.info("Checking Consistency on scenario lightSequoia");
+			
 			try {
+				StringBuilder alive=new StringBuilder();
+				Iterator<String> itServers = server.getServers().iterator();
+				while (itServers.hasNext()) {
+					String key = itServers.next();
+					try {
+						Connection con = DriverManager.getConnection(key);
+						con.close();
+						logger.info("key:"+key);
+						String tmp=key.substring(key.indexOf("//")+2);
+						alive.append(tmp.substring(0,tmp.indexOf('/')));
+						alive.append(" ");
+					}
+					catch (SQLException e) {
+						logger.warn("Server "+key+" is not available");
+					}
+				}
+				if (logger.isInfoEnabled())
+					logger.info("Checking Consistency on scenario lightSequoia with alive replicas:"+alive);
 				Runtime r = Runtime.getRuntime();
-				Process p = r.exec("/home/gorda/compare.sh");
+				Process p = r.exec("/home/gorda/compare.sh "+alive);
+				BufferedReader err=new BufferedReader(new InputStreamReader(p.getErrorStream()));
+				String str=null;
+				while((str=err.readLine())!=null)
+				{
+					logger.warn(str);
+				}
 				BufferedReader in=new BufferedReader(new InputStreamReader(p.getInputStream()));
 				int nLines=0;
-				String str=null;
+				str=null;
 				while((str=in.readLine())!=null)
 				{
 					logger.info(str);
@@ -613,9 +637,7 @@ ClientEmulationMaster {
 					ret=false;
 			} catch (IOException e) {
 				e.printStackTrace();
-			} /*catch (InterruptedException e) {
-				e.printStackTrace();
-			}*/
+			} 
 		}
 		return (ret);
 	}
@@ -974,8 +996,6 @@ ClientEmulationMaster {
 			.addServer("jdbc:sequoia://192.168.190.34/tpcc?user=tpcc&password=");
 			server
 			.addServer("jdbc:sequoia://192.168.190.35/tpcc?user=tpcc&password=");
-			server.setServerHealth("jdbc:sequoia://192.168.190.32/tpcc?user=tpcc&password=", true);
-
 			replicas
 			.put(
 					"jdbc:sequoia://192.168.190.32/tpcc?user=tpcc&password=",
