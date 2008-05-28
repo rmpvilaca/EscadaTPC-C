@@ -968,12 +968,30 @@ ClientEmulationMaster {
 		{
 			server
 			.addServer("jdbc:sequoia://192.168.190.32/tpcc?user=tpcc&password=");
+			server
+			.addServer("jdbc:sequoia://192.168.190.33/tpcc?user=tpcc&password=");
+			server
+			.addServer("jdbc:sequoia://192.168.190.34/tpcc?user=tpcc&password=");
+			server
+			.addServer("jdbc:sequoia://192.168.190.35/tpcc?user=tpcc&password=");
 			server.setServerHealth("jdbc:sequoia://192.168.190.32/tpcc?user=tpcc&password=", true);
 
 			replicas
 			.put(
 					"jdbc:sequoia://192.168.190.32/tpcc?user=tpcc&password=",
 					1);
+			replicas
+			.put(
+					"jdbc:sequoia://192.168.190.33/tpcc?user=tpcc&password=",
+					2);
+			replicas
+			.put(
+					"jdbc:sequoia://192.168.190.34/tpcc?user=tpcc&password=",
+					3);
+			replicas
+			.put(
+					"jdbc:sequoia://192.168.190.35/tpcc?user=tpcc&password=",
+					4);
 		}
 
 
