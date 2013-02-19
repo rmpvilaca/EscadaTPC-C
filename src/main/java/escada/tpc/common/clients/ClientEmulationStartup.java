@@ -1,21 +1,28 @@
+/*
+ * Copyright 2013 Universidade do Minho
+ *
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ *
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software   distributed under the License is distributed on an "AS IS" BASIS,   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and limitations under the License.
+ */
+
 package escada.tpc.common.clients;
 
-import java.lang.reflect.Constructor;
-import java.util.Vector;
-
+import escada.tpc.common.args.*;
+import escada.tpc.common.database.DatabaseManager;
+import escada.tpc.common.util.Pad;
+import escada.tpc.logger.PerformanceLogger;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 
-import escada.tpc.common.Emulation;
-import escada.tpc.common.args.Arg;
-import escada.tpc.common.args.ArgDB;
-import escada.tpc.common.args.BooleanArg;
-import escada.tpc.common.args.DateArg;
-import escada.tpc.common.args.DoubleArg;
-import escada.tpc.common.args.IntArg;
-import escada.tpc.common.args.StringArg;
-import escada.tpc.common.database.DatabaseManager;
-import escada.tpc.common.util.Pad;
+import java.lang.reflect.Constructor;
+import java.util.Vector;
 
 public class ClientEmulationStartup implements ClientEmulationMaster {
 
@@ -30,14 +37,7 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 	private static Logger logger = Logger
 			.getLogger(ClientEmulationStartup.class);
 
-	public static void main(String args[]) {
-		try {
-			ClientEmulationStartup c = new ClientEmulationStartup(args);
-		} catch (Exception ex) {
-			Thread.dumpStack();
-			System.exit(-1);
-		}
-	}
+
 
 	public ClientEmulationStartup(String args[]) {
 		Vector<ClientEmulation> ebs = new Vector<ClientEmulation>(0);
@@ -159,13 +159,12 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 			DOMConfigurator.configure(log4jArg.s);
 
 			logger.info("Starting up the client application.");
-			logger.info("Remote Emulator for Database Benchmark ...");
 			logger
 					.info("Universidade do Minho (Grupo de Sistemas Distribuidos)");
 			logger.info("Version 0.1");
 
 			Usage(args, db);
-
+            Thread.sleep(5000);
 			DatabaseManager dbManager = null;
 
 			Class cl = null;
@@ -181,6 +180,7 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 				dbManager = (DatabaseManager) co
 						.newInstance(new Object[] { new Integer(cli.num) });
 			}
+            PerformanceLogger.setPrintWriter("TPCC-"+prefix.s+"-time-"+mi.num+"-clients-"+cli.num+"-frag-"+fragArg.num+"-think-"+key.flag+".dat");
 
 			dbManager.setConnectionPool(isConnectionPoolEnabled.flag);
 			dbManager.setMaxConnection(poolArg.num);
@@ -228,7 +228,7 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 				}
 			}
 
-			logger.info("EBs finished.");
+
 
 		} catch (Arg.Exception ae) {
 			logger.info("Error:");
@@ -236,6 +236,7 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 			Usage(args, db);
 			return;
 		} catch (Exception ex) {
+            ex.printStackTrace();
 			logger.fatal("Error: Invalid parameters.");
 			System.exit(-1);
 		}
@@ -285,4 +286,3 @@ public class ClientEmulationStartup implements ClientEmulationMaster {
 		notifyAll();
 	}
 }
-// arch-tag: d7a75e9a-a418-4fae-877c-72938e7dadc9

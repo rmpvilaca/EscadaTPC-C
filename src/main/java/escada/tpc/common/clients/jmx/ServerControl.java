@@ -1,15 +1,24 @@
+/*
+ * Copyright 2013 Universidade do Minho
+ *
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ *
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software   distributed under the License is distributed on an "AS IS" BASIS,   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and limitations under the License.
+ */
+
 package escada.tpc.common.clients.jmx;
-
-import java.util.Hashtable;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.TreeSet;
-import java.util.Vector;
-
-import org.apache.log4j.Logger;
 
 import escada.tpc.common.clients.ClientEmulation;
 import escada.tpc.common.clients.jmx.ClientEmulationStartupMBean.Stage;
+import org.apache.log4j.Logger;
+
+import java.util.*;
 
 public class ServerControl {
 
@@ -20,8 +29,6 @@ public class ServerControl {
 	private final Hashtable<String, Vector<ClientEmulation>> clientsEmulation = new Hashtable<String, Vector<ClientEmulation>>();
 
 	private final Hashtable<String, HashSet<String>> serverClients = new Hashtable<String, HashSet<String>>();
-
-	private final Hashtable<String, Boolean> serverHealth = new Hashtable<String, Boolean>();
 
 	private final Hashtable<String, String[]> clientConfiguration = new Hashtable<String, String[]>();
 
@@ -71,21 +78,6 @@ public class ServerControl {
 		s.remove(client);
 	}
 
-	public boolean isServerHealth(String machine) {
-		boolean ret = false;
-		if (this.serverHealth.containsKey(machine)
-				&& this.serverHealth.get(machine)) {
-			ret = true;
-		}
-		return (ret);
-	}
-
-	public void setServerHealth(String machine, boolean health) {
-		if (this.serverHealth.containsKey(machine)) {
-			this.serverHealth.put(machine, health);
-		}
-	}
-
 	public HashSet<String> getClients() {
 		HashSet<String> ret = new HashSet<String>();
 		ret.addAll(this.clientsEmulation.keySet());
@@ -95,7 +87,6 @@ public class ServerControl {
 	public void addServer(String key) throws InvalidTransactionException {
 		if (!this.serverClients.containsKey(key)) {
 			this.serverClients.put(key, new HashSet<String>());
-			this.serverHealth.put(key, false);
 		} else {
 			throw new InvalidTransactionException("Error adding server " + key);
 		}
@@ -104,16 +95,15 @@ public class ServerControl {
 	public void removeServer(String key) throws InvalidTransactionException {
 		if (this.serverClients.containsKey(key)) {
 			this.serverClients.remove(key);
-			this.serverHealth.remove(key);
 		} else {
 			throw new InvalidTransactionException("Error removing server "
 					+ key);
 		}
 	}
 
-	public void clearServers() throws InvalidTransactionException {
+	public void clearServers()
+    {
 		this.serverClients.clear();
-		this.serverHealth.clear();
 	}
 
 	public int getNumberOfClients(String key)
@@ -338,52 +328,6 @@ public class ServerControl {
 				throw new InvalidTransactionException(key + " stop on " + stg);
 			}
 		}
-	}
-
-	public String findFreeClient() {
-		String ret = null;
-		TreeSet<String> keyRet = new TreeSet<String>(this.clientsEmulation
-				.keySet());
-		if (keyRet.size() > 0) {
-			String info[] = keyRet.last().split("-");
-			int next = Integer.parseInt(info[1]) + 1;
-			ret = "client-" + next;
-		} else {
-			ret = "client-0";
-		}
-		return (ret);
-	}
-
-	public String findFreeMachine() {
-		String ret = null;
-		int min = Integer.MAX_VALUE;
-
-		Iterator itServers = ((Hashtable) this.serverClients.clone()).keySet()
-		.iterator();
-
-		while (itServers.hasNext()) {
-			String keyServers = (String) itServers.next();
-
-			if (serverHealth.get(keyServers)) {
-				int sum = 0;
-				HashSet<String> servers = serverClients.get(keyServers);
-				if (servers != null) {
-					Iterator itClients = ((HashSet) servers.clone()).iterator();
-					while (itClients.hasNext()) {
-
-						String keyValue = (String) itClients.next();
-
-						Vector clients = this.clientsEmulation.get(keyValue);
-						sum = sum + (clients != null ? clients.size() : 0);
-					}
-					if (sum < min) {
-						ret = keyServers;
-						min = sum;
-					}
-				}
-			}
-		}
-		return (ret);
 	}
 
 	public void stopFirstClient() throws InvalidTransactionException {

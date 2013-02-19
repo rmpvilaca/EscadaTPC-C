@@ -1,10 +1,24 @@
-package escada.tpc.tpcc;
+/*
+ * Copyright 2013 Universidade do Minho
+ *
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ *
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software   distributed under the License is distributed on an "AS IS" BASIS,   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and limitations under the License.
+ */
 
-import java.util.Random;
+package escada.tpc.tpcc;
 
 import escada.tpc.common.StateObject;
 import escada.tpc.common.StateTransition;
 import escada.tpc.common.util.RandGen;
+
+import java.util.Random;
 
 /**
  * It defines the state machine of the TPC-C. First of all, it loads the
@@ -66,4 +80,3 @@ public class TPCCStateTransition extends StateTransition {
 	public void loadStates(Object obj) {
 	}
 }
-// arch-tag: 466c4b36-320d-4a1a-81f7-41973434eb9f

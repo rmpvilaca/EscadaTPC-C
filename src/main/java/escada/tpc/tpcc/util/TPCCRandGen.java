@@ -1,3 +1,17 @@
+/*
+ * Copyright 2013 Universidade do Minho
+ *
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ *
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software   distributed under the License is distributed on an "AS IS" BASIS,   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and limitations under the License.
+ */
+
 package escada.tpc.tpcc.util;
 
 /**
@@ -52,6 +66,3 @@ public class TPCCRandGen {
 	}
 }
 
-// arch-tag: 7697fdd2-6cda-40c2-b600-6c26f96eddfe
-// arch-tag: b8ae8fca-784f-4791-ab95-64f3b9ba8998
-// arch-tag: c514e873-ee5c-4e3e-b918-328ce4260594

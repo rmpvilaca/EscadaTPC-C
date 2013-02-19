@@ -1,12 +1,25 @@
+/*
+ * Copyright 2013 Universidade do Minho
+ *
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ *
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software   distributed under the License is distributed on an "AS IS" BASIS,   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and limitations under the License.
+ */
+
 package escada.tpc.tpcc;
-
-import java.sql.SQLException;
-
-import org.apache.log4j.Logger;
 
 import escada.tpc.common.Emulation;
 import escada.tpc.common.StateObject;
 import escada.tpc.common.util.RandGen;
+import org.apache.log4j.Logger;
+
+import java.sql.SQLException;
 
 /**
  * It extends the emulation class defining some methods according to the TPC-C
@@ -108,4 +121,3 @@ public class TPCCEmulation extends Emulation {
 		return (trans);
 	}
 }
-// arch-tag: d08fc9ef-d774-4095-a9c0-41c500320bda

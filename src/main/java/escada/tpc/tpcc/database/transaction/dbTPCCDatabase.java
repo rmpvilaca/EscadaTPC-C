@@ -1,13 +1,26 @@
+/*
+ * Copyright 2013 Universidade do Minho
+ *
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ *
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software   distributed under the License is distributed on an "AS IS" BASIS,   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and limitations under the License.
+ */
+
 package escada.tpc.tpcc.database.transaction;
+
+import escada.tpc.common.database.DatabaseManager;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Properties;
-
-import org.apache.log4j.Logger;
-
-import escada.tpc.common.database.DatabaseManager;
 
 /**
  * It defines the common methods that must be available at any dbImplementation
@@ -357,5 +370,5 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 	protected abstract void RollbackTransaction(Connection con,
 			java.lang.Exception dump, String strTrans, String strAccess)
 			throws java.sql.SQLException;
-}// arch-tag: 44ab82c5-4413-4b5c-84e3-daaa94482efb
+}
 

@@ -1,3 +1,17 @@
+/*
+ * Copyright 2013 Universidade do Minho
+ *
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ *
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software   distributed under the License is distributed on an "AS IS" BASIS,   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and limitations under the License.
+ */
+
 package escada.tpc.common;
 
 public class PerformanceCounters implements PerformanceCountersMBean {
@@ -17,12 +31,14 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 	private int abortCounter = 0;
 
 	private int commitCounter = 0;
+    private int totalNewOrderCommitCounter =0;
 
 	private long lastComputationInComming, lastComputationAbort, lastComputationCommit = 0, lastComputationLatency=0;
-	
+    private long firstNewOrderCommit =-1;
+
 	private double latencyAccumulator = 0;
 
-	private PerformanceCounters() {
+    private PerformanceCounters() {
 	}
 
 	public synchronized float getAbortRate() {
@@ -56,6 +72,14 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 
 		return (commitRate);
 	}
+
+    public synchronized float getTotalNewOrderCommitRate() {
+        long current = System.currentTimeMillis();
+        long diff = current - firstNewOrderCommit;
+        float t = ((float) totalNewOrderCommitCounter / (float) (diff)) * 1000 * 60;
+        t = (t < MINIMUM_VALUE ? 0 : t);
+        return (t);
+    }
 
 	public synchronized float getIncommingRate() {
 		long current = System.currentTimeMillis();
@@ -110,9 +134,23 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 
 	public static synchronized void setCommitRate() {
 		if (reference != null) {
-			reference.commitCounter++;
+            if (reference.firstNewOrderCommit <0)
+            {
+               reference.firstNewOrderCommit =System.currentTimeMillis();
+            }
+            reference.totalNewOrderCommitCounter++;
 		}
 	}
+
+    public static void setTPMC() {
+        if (reference != null) {
+            if (reference.firstNewOrderCommit <0)
+            {
+                reference.firstNewOrderCommit =System.currentTimeMillis();
+            }
+            reference.totalNewOrderCommitCounter++;
+        }
+    }
 
 	public static PerformanceCounters getReference() {
 		if (reference == null) {
@@ -138,4 +176,5 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 	public void setPerformanceRefreshInterval(long refreshInterval) {
 		this.performanceRefreshInterval = refreshInterval;
 	}
+
 }

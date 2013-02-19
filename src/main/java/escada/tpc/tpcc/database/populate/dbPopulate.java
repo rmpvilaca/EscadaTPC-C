@@ -1,24 +1,31 @@
+/*
+ * Copyright 2013 Universidade do Minho
+ *
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ *
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software   distributed under the License is distributed on an "AS IS" BASIS,   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and limitations under the License.
+ */
+
 package escada.tpc.tpcc.database.populate;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import escada.tpc.common.util.RandGen;
+import escada.tpc.tpcc.TPCCConst;
+import escada.tpc.tpcc.util.TPCCRandGen;
+import org.apache.log4j.Logger;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
-
-import org.apache.log4j.Logger;
-
-import escada.tpc.common.TPCConst;
-import escada.tpc.common.util.RandGen;
-import escada.tpc.tpcc.TPCCConst;
-import escada.tpc.tpcc.util.TPCCRandGen;
 
 public class dbPopulate {
 
@@ -453,76 +460,9 @@ public class dbPopulate {
 	public static void printUsage() {
 		System.err.println("Usage:");
 		System.err
-				.println("java NUMBER_WAREHOUSES [JDBC_URL] [USERNAME] [DRIVER]");
+				.println("java FILE NUMBER_WAREHOUSES [JDBC_URL] [USERNAME] [PASSWORD] [DRIVER]");
 		System.exit(2);
 	}
 
-	public static void main(String[] args) {
-		int numberOfwarehouse = 1;
-		String driver = "org.postgresql.Driver";
-		String jdbc = "jdbc:postgresql://localhost/tpcc";
-		String userName = "refmanager";
-		String password = "";
-		String file = null;
 
-		if (args.length >= 1) {
-			file = args[0];
-			numberOfwarehouse = Integer.parseInt(args[1]);
-			if (args.length >= 3)
-				jdbc = args[2];
-			if (args.length >= 4)
-				userName = args[3];
-			if (args.length >= 5)
-				password = args[4];
-			if (args.length >= 6)
-				driver = args[5];
-		} else {
-			printUsage();
-		}
-
-		try {
-
-			try {
-				Properties props = new Properties();
-
-				props.load(new FileInputStream(file));
-
-				TPCConst.setNumMinClients(Integer.parseInt(props
-						.getProperty("tpcc.numclients")));
-				TPCCConst.setNumCustomer(Integer.parseInt(props
-						.getProperty("tpcc.numcustomers")));
-				TPCCConst.setNumDistrict(Integer.parseInt(props
-						.getProperty("tpcc.numdistricts")));
-				TPCCConst.setNumItem(Integer.parseInt(props
-						.getProperty("tpcc.numitems")));
-				TPCCConst.setNumLastName(Integer.parseInt(props
-						.getProperty("tpcc.numnames")));
-
-			} catch (FileNotFoundException e) {
-				logger.debug("Running with tpcc default parameters.");
-			} catch (IOException e) {
-				logger.debug("Running with tpcc default parameters.");
-			}
-
-			Class.forName(driver);
-			Connection conn = DriverManager.getConnection(jdbc, userName,
-					password);
-			conn.setAutoCommit(false);
-
-			logger.debug("Starting populating:");
-
-			dbPopulate db = new dbPopulate();
-			db.populate(conn, numberOfwarehouse);
-			conn.close();
-
-			logger.debug("done! ");
-		} catch (SQLException e) {
-			System.err.println("getConnection error");
-			e.printStackTrace();
-			System.exit(1);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
 }

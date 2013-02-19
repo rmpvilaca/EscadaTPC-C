@@ -1,0 +1,63 @@
+# Description:
+
+Escada TPC-C is an easy to use JDBC benchmark that closely resembles the TPC-C standard for OLTP.
+DB's supported include PostgreSQL, MySQL, and Derby.
+
+# Requirements
+
+All dependencies are automatically fetched by Maven.
+
+# Build
+
+Once you have downloaded the source directory you should change dir into it and issue:
+
+1. $ mvn package
+2. $ mvn assembly:assembly
+
+This creates a tar.gz with the full benchmark.
+
+# Configuration
+
+Inside the tar.gz there are the required libraries (in lib folder),
+two UNIX scripts (one for populate and other to run clients), a script folder
+with the SQL script do create database for each supported DB and a folder etc with the configuration files.
+This etc folder contains the:
+
+- log4j.xml: To configure the proper logger level.
+- database-config.properties: To configure the database connection url, driver, username
+ and password.
+- workload-config.properties: To configure workload parameters.
+    - tpcc.number.warehouses: Set the number of warehouse to populate the database.
+    - db.class: String <class> used to instantiate the database
+    - trace-flag: It defines the usage of trace file or not (NOTRACE,TRACE,TRACESTRING,TRACETIME)
+    - prefix: It defines the composition of the trace file identification and is also used as a component of the emulator id
+    - pool: The number of entries available for connection pool...
+    - measurement.interval: Minutes used for measuring SUT performance
+    - frag: It shifts the clients in order to access different warehouses...
+    - resubmit.aborted: It enables the transaction resubmition when an error occurs.
+    - think.time: Enables/Disables user keying time
+    - clients: Number of clients concurrently accessing the database.
+
+
+# Instructions for running
+
+The benchmark can be run as a daemon and populate and
+clients are started through JMX or executed directly:
+
+# Instructions for running
+
+ A.) JMX
+        $ ./jmx.sh or java escada.tpc.jmx.JmxStarter
+
+     1. DatabasePopulateMBean.populate()
+     2. ClientEmulationStartupMBean.startClients(key,machine,clients,frag);
+ B.) Direct
+
+    1. Populate database.
+        $ ./load.sh or java escada.tpc.tpcc.database.populate.jmx.DatabasePopulate
+    2. Run clients.
+        $ ./run.sh or java escada.tpc.common.clients.jmx.ClientEmulationStartup
+
+
+
+
