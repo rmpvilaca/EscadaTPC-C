@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Vector;
@@ -76,7 +78,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
             }
             String key=props.getProperty("prefix");
             String machine=c.getDatabaseResources().getConnectionString();
-            c.startClients(key,machine,props.getProperty("clients"),props.getProperty("frag"));
+            c.startClients(key,machine,props.getProperty("clients"),props.getProperty("frag"),true);
         } catch (Exception ex) {
             Thread.dumpStack();
             System.exit(-1);
@@ -84,24 +86,24 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
     }
 
 
-    private synchronized void start(String key, String arg, String machine)
+    private synchronized void start(String key, String arg, String machine,boolean exit)
             throws InvalidTransactionException {
         String[] args = arg.split("[ ]+");
         Stage stg = this.server.getClientStage(key);
         if (stg == null) {
             server.setClientStage(key, Stage.RUNNING);
-            this.executor.execute(new Start(key, args, machine));
+            this.executor.execute(new Start(key, args, machine,exit));
         } else {
             throw new InvalidTransactionException(key + " start on " + stg);
         }
     }
 
-    public synchronized void startClients(String key, String connectionString,String clients,String frag)
+    public synchronized void startClients(String key, String connectionString,String clients,String frag,boolean exit)
             throws InvalidTransactionException {
         logger.info("Starting clients " + clients);
         String arg=this.configure(key,connectionString,clients,frag);
         this.server.addServer(connectionString);
-        this.start(key,arg,connectionString);
+        this.start(key,arg,connectionString,exit);
     }
 
 
@@ -128,7 +130,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
 
     private void startClientEmulation(String keyArgs, String machine,
-                                      String[] args) {
+                                      String[] args, boolean exit) {
         ClientEmulation e = null;
         ArgDB db = new ArgDB();
         Vector<ClientEmulation> ebs = new Vector<ClientEmulation>();
@@ -267,7 +269,9 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
                 dbManager = (DatabaseManager) co
                         .newInstance(new Object[] { new Integer(cli.num) });
             }
-            PerformanceLogger.setPrintWriter("TPCC-" + prefix.s + "-time-" + mi.num + "-clients-" + cli.num + "-frag-" + fragArg.num + "-think-" + key.flag + ".dat");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-DD_HH_mm");
+            String date=sdf.format(new Date());
+            PerformanceLogger.setPrintWriter("TPCC-"+date+"-"+ prefix.s + "-time-" + mi.num + "-clients-" + cli.num + "-frag-" + fragArg.num + "-think-" + key.flag + ".dat");
             PerformanceCounters.getReference();//Initialize instance
 
             dbManager.setConnectionPool(isConnectionPoolEnabled.flag);
@@ -353,6 +357,8 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
             }
 
             logger.info("Ebs finished their jobs..");
+            if (exit)
+                System.exit(0);
         }
     }
 
@@ -533,15 +539,17 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
         private String key;
 
         private String machine;
+        private final boolean exit;
 
-        public Start(String key, String[] args, String machine) {
+        public Start(String key, String[] args, String machine,boolean exit) {
             this.key = key;
             this.args = args;
             this.machine = machine;
+            this.exit=exit;
         }
 
         public void run() {
-            startClientEmulation(this.key, this.machine, this.args);
+            startClientEmulation(this.key, this.machine, this.args,this.exit);
         }
     }
 

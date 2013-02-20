@@ -539,9 +539,9 @@ public class dbTransactionMySql extends dbTPCCDatabase {
 					statement = con
 							.prepareStatement("select c_id, c_last, c_balance, c_first, c_middle "
 									+ " from customer where c_id = ? and c_d_id = ? and c_w_id = ?");
-					statement.setString(1, __c_last);
-					statement.setInt(2, __w_id);
-					statement.setInt(3, __d_id);
+					statement.setInt(1, __c_id);
+                    statement.setInt(2, __d_id);
+					statement.setInt(3, __w_id);
 					rs = statement.executeQuery();
 					logger.debug(__c_last+";"+__w_id+";"+__d_id);
 					if (rs.next()) {

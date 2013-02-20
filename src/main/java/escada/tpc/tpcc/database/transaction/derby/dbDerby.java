@@ -196,7 +196,7 @@ public class dbDerby extends dbTPCCDatabase {
 						statement.setInt(4, _li_no);
 						statement.setInt(5, _li_id);
 						statement.setInt(6, _li_s_w_id);
-						statement.setString(7, "1899-12-31");
+                        statement.setTimestamp(7, new Timestamp(System.currentTimeMillis()));
 						statement.setInt(8, _li_qty);
 						statement.setDouble(9, _i_price * _li_qty);
 						statement.setString(10, _s_dist);
@@ -230,7 +230,7 @@ public class dbDerby extends dbTPCCDatabase {
 				statement.setInt(2, _d_id);
 				statement.setInt(3, _w_id);
 				statement.setInt(4, _c_id_local);
-				statement.setDate(5, _o_entry_d);
+				statement.setTimestamp(5, new Timestamp(_o_entry_d.getTime()));
 				statement.setInt(6, _o_ol_cnt);
 				statement.setInt(7, _o_all_local);
 				statement.executeUpdate();
@@ -540,11 +540,11 @@ public class dbDerby extends dbTPCCDatabase {
 					statement = con
 							.prepareStatement("select c_id, c_last, c_balance, c_first, c_middle "
 									+ " from customer where c_id = ? and c_d_id = ? and c_w_id = ?");
-					statement.setString(1, __c_last);
-					statement.setInt(2, __w_id);
-					statement.setInt(3, __d_id);
+					statement.setInt(1, __c_id);
+					statement.setInt(2, __d_id);
+					statement.setInt(3, __w_id);
+                    logger.debug(__c_last+";"+__w_id+";"+__d_id);
 					rs = statement.executeQuery();
-					logger.debug(__c_last+";"+__w_id+";"+__d_id);
 					if (rs.next()) {
 						_c_id = rs.getInt("c_id");
 						_c_last = rs.getString("c_last");
@@ -571,7 +571,7 @@ public class dbDerby extends dbTPCCDatabase {
 					rs = statement.executeQuery();
 					rs.next();
 					_o_id = rs.getInt("o_id");
-					_o_entry_d = rs.getDate("o_entry_d");
+					_o_entry_d = new java.sql.Date(rs.getTimestamp("o_entry_d").getTime());
 					_o_carrier_id = rs.getInt("o_carrier_id");
 					rs.close();
 					statement.close();
