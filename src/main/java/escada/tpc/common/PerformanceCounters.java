@@ -134,10 +134,6 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 
 	public static synchronized void setCommitRate() {
 		if (reference != null) {
-            if (reference.firstNewOrderCommit <0)
-            {
-               reference.firstNewOrderCommit =System.currentTimeMillis();
-            }
             reference.totalNewOrderCommitCounter++;
 		}
 	}

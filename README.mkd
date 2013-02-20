@@ -33,6 +33,7 @@ This etc folder contains the:
     - prefix: It defines the composition of the trace file identification and is also used as a component of the emulator id
     - pool: The number of entries available for connection pool...
     - measurement.interval: Minutes used for measuring SUT performance
+    - measurement.time: Time for benchmark
     - frag: It shifts the clients in order to access different warehouses...
     - resubmit.aborted: It enables the transaction resubmition when an error occurs.
     - think.time: Enables/Disables user keying time
@@ -58,6 +59,23 @@ clients are started through JMX or executed directly:
     2. Run clients.
         $ ./run.sh or java escada.tpc.common.clients.jmx.ClientEmulationStartup
 
+# Feedback
 
+Updated source and an issue tracker are available at:
 
+        https://github.com/rmpvilaca/UBlog-Benchmark
+
+Your feedback is welcome.
+
+#Authors
+
+The following people have contributed to this project:
+ - Alfranio Correia
+ - Luis Soares
+ - Nuno Carvalho
+ - Ricardo Vilaca
+
+#Contact
+
+Ricardo VilaAa (<rmvilaca@di.uminho.pt>)
 

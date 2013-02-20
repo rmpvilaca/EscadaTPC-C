@@ -109,7 +109,7 @@ CREATE TABLE order_line (
     ol_number integer NOT NULL,
     ol_i_id integer,
     ol_supply_w_id integer,
-    ol_delivery_d date,
+    ol_delivery_d timestamp,
     ol_quantity integer,
     ol_amount decimal(6,2),
     ol_dist_info char(24)
@@ -127,7 +127,7 @@ CREATE TABLE orders (
     o_d_id integer,
     o_w_id integer,
     o_c_id integer,
-    o_entry_d date,
+    o_entry_d timestamp,
     o_carrier_id integer,
     o_ol_cnt integer,
     o_all_local integer

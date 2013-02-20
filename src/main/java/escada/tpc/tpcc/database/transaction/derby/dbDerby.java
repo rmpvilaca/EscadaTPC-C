@@ -345,7 +345,7 @@ public class dbDerby extends dbTPCCDatabase {
 
 					statement = con
 							.prepareStatement("select no_o_id from new_order where no_w_id = ? and no_d_id = ? "
-									+ "order by no_o_id asc limit 1");
+									+ "order by no_o_id asc FETCH FIRST ROW ONLY");
 					statement.setInt(1, _w_id);
 					statement.setInt(2, _d_id);
 					rs = statement.executeQuery();
@@ -386,11 +386,12 @@ public class dbDerby extends dbTPCCDatabase {
 						statement.close();
 
 						statement = con
-								.prepareStatement("update order_line set ol_delivery_d = CURRENT_TIMESTAMP where ol_w_id = ? "
+								.prepareStatement("update order_line set ol_delivery_d = ? where ol_w_id = ? "
 										+ "and ol_d_id = ? and ol_o_id = ?");
-						statement.setInt(1, _w_id);
-						statement.setInt(2, _d_id);
-						statement.setInt(3, _o_id);
+                        statement.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
+						statement.setInt(2, _w_id);
+						statement.setInt(3, _d_id);
+						statement.setInt(4, _o_id);
 						statement.executeUpdate();
 						statement.close();
 
@@ -519,7 +520,7 @@ public class dbDerby extends dbTPCCDatabase {
 							.prepareStatement("select c_id, c_last, c_balance, c_first, c_middle "
 									+ " from customer where c_last = ? and "
 									+ " c_w_id = ? and c_d_id = ? "
-									+ " order by c_w_id, c_d_id, c_last, c_first limit 1 ");
+									+ " order by c_w_id, c_d_id, c_last, c_first FETCH FIRST ROW ONLY ");
 					statement.setString(1, __c_last);
 					statement.setInt(2, __w_id);
 					statement.setInt(3, __d_id);
@@ -563,7 +564,7 @@ public class dbDerby extends dbTPCCDatabase {
 				} else {
 					statement = con
 							.prepareStatement("select o_id, o_entry_d, o_carrier_id from orders where o_c_id = ? "
-									+ " and o_d_id = ? and o_w_id = ? order by o_id asc limit 1");
+									+ " and o_d_id = ? and o_w_id = ? order by o_id asc FETCH FIRST ROW ONLY");
 					statement.setInt(1, _c_id);
 					statement.setInt(2, __d_id);
 					statement.setInt(3, __w_id);
@@ -727,7 +728,7 @@ public class dbDerby extends dbTPCCDatabase {
 				if (__c_id == 0) {
 					statement = con
 							.prepareStatement("select c_id from customer where c_last = ? and "
-									+ " c_w_id = ? and c_d_id = ? order by c_w_id, c_d_id, c_last, c_first limit 1");
+									+ " c_w_id = ? and c_d_id = ? order by c_w_id, c_d_id, c_last, c_first FETCH FIRST ROW ONLY");
 					statement.setString(1, __c_last);
 					statement.setInt(2, __c_w_id);
 					statement.setInt(3, __c_d_id);
@@ -1014,10 +1015,8 @@ public class dbDerby extends dbTPCCDatabase {
 		try {
 			Date NetStartTime = new Date();
 
-			statement = con.createStatement();
-			statement.execute("start transaction");
 			//statement.execute("set transaction isolation level serializable");
-			statement.execute("select '" + strTrans + "'");
+			//statement.execute("select '" + strTrans + "'");
 
 			Date NetFinishTime = new Date();
 
@@ -1043,8 +1042,7 @@ public class dbDerby extends dbTPCCDatabase {
 			try {
 
 				Date NetStartTime = new Date();
-				statement = con.createStatement();
-				statement.execute("commit");
+                con.commit();
 
 				Date NetFinishTime = new Date();
 
@@ -1086,8 +1084,7 @@ public class dbDerby extends dbTPCCDatabase {
 		try {
 			Date NetStartTime = new Date();
 
-			statement = con.createStatement();
-			statement.execute("ROLLBACK");
+            con.rollback();
 
 			Date NetFinishTime = new Date();
 
@@ -1107,4 +1104,3 @@ public class dbDerby extends dbTPCCDatabase {
 		}
 	}
 }
-// arch-tag: 8aaab911-6c39-40cf-9c0a-d14dc6e7c471

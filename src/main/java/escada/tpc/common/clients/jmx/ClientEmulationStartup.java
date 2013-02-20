@@ -100,6 +100,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
             throws InvalidTransactionException {
         logger.info("Starting clients " + clients);
         String arg=this.configure(key,connectionString,clients,frag);
+        this.server.addServer(connectionString);
         this.start(key,arg,connectionString);
     }
 
@@ -267,6 +268,7 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
                         .newInstance(new Object[] { new Integer(cli.num) });
             }
             PerformanceLogger.setPrintWriter("TPCC-" + prefix.s + "-time-" + mi.num + "-clients-" + cli.num + "-frag-" + fragArg.num + "-think-" + key.flag + ".dat");
+            PerformanceCounters.getReference();//Initialize instance
 
             dbManager.setConnectionPool(isConnectionPoolEnabled.flag);
             dbManager.setMaxConnection(poolArg.num);
@@ -499,19 +501,21 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
             logger.fatal("Unable to load properties from file (workload-config.properties). Using defaults!", e);
         }
 
-        str.append(" -EBclass "+props.getProperty("eb.class"));
+        str.append("-EBclass "+props.getProperty("eb.class"));
         str.append(" -LOGconfig etc/logger.xml");
-        str.append(" -KEY true "+props.getProperty("think.time"));
+        str.append(" -KEY "+props.getProperty("think.time"));
         str.append(" -CLI "+clients);
         str.append(" -STclass "+props.getProperty("st.class"));
         str.append(" -DBclass "+props.getProperty("db.class"));
-        str.append(" -TRACEFLAG TRACE -PREFIX "+props.getProperty("prefix"));
+        str.append(" -TRACEFLAG TRACE");
+        str.append(" -PREFIX "+props.getProperty("prefix"));
         str.append(" -DBpath "+ url);
         str.append(" -DBdriver "+databaseResources.getDriver());
         str.append(" -DBusr "+databaseResources.getUserName());
-        str.append(" -DBpasswd"+databaseResources.getPassword());
+        str.append(" -DBpasswd "+databaseResources.getPassword());
         str.append(" -POOL "+props.getProperty("pool"));
         str.append(" -FRAG "+ frag);
+        str.append(" -MI "+props.getProperty("measurement.time"));
         str.append(" -RESUBMIT "+props.getProperty("resubmit.aborted"));
 
         return str.toString();
