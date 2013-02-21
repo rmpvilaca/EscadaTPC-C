@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <packaging>jar</packaging>
 
-  <groupId>uminho</groupId>
+  <groupId>uminho.escada</groupId>
   <artifactId>tpc-c</artifactId>
   <name>TPC-C</name>
   <version>0.1-SNAPSHOT</version>

@@ -58,6 +58,7 @@ clients are started through JMX or executed directly:
 # Instructions for running
 
  A.) JMX
+
         $ ./jmx.sh or java escada.tpc.jmx.JmxStarter
 
      1. DatabasePopulateMBean.populate()
@@ -84,7 +85,7 @@ clients are started through JMX or executed directly:
 
 Updated source and an issue tracker are available at:
 
-        https://github.com/rmpvilaca/UBlog-Benchmark
+        https://github.com/rmpvilaca/EscadaTPC-C
 
 Your feedback is welcome.
 
@@ -103,5 +104,5 @@ This project has been partially supported by the EU Comission through the GORDA 
 
 #Contact
 
-Ricardo Vilaça (<rmvilaca@di.uminho.pt>)
+Ricardo Vilaca (<rmvilaca@di.uminho.pt>)
 
