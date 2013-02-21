@@ -30,7 +30,7 @@
 
   <files>
     <file>
-      <source>target/${project.name}-${project.version}.jar</source>
+      <source>target/${project.artifactId}-${project.version}.jar</source>
       <outputDirectory>/lib</outputDirectory>
     </file>
   </files>
