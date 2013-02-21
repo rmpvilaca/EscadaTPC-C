@@ -21,7 +21,7 @@ public interface ClientEmulationStartupMBean {
 		INIT, PAUSED, RUNNING, STOPPED, FAILOVER
 	};
 
-    public void startClients(String key, String connectionString,String clients,String frag, boolean exit)
+    public void startClients(String prefix, String connectionString,int clients,int frag,int hostId, boolean exit)
             throws InvalidTransactionException ;
 
 	public void pause(String key) throws InvalidTransactionException;

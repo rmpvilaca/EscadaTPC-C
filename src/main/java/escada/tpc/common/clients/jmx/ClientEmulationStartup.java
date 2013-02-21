@@ -15,7 +15,6 @@
 package escada.tpc.common.clients.jmx;
 
 import escada.tpc.common.PerformanceCounters;
-import escada.tpc.common.args.*;
 import escada.tpc.common.clients.ClientEmulation;
 import escada.tpc.common.clients.ClientEmulationMaster;
 import escada.tpc.common.database.DatabaseManager;
@@ -24,6 +23,7 @@ import escada.tpc.common.resources.WorkloadResources;
 import escada.tpc.common.util.Pad;
 import escada.tpc.logger.PerformanceLogger;
 import escada.tpc.tpcc.database.populate.jmx.DatabasePopulate;
+import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -62,51 +62,85 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
             logger.info("Loading resources!");
         }
 
-        databaseResources = new DatabaseResources();
-        workloadResources = new WorkloadResources();
+        this.databaseResources = new DatabaseResources();
+        this.workloadResources = new WorkloadResources();
     }
 
     public static void main(String args[]) {
+        // create Options object
+        Options options = new Options();
+        // add clients option
+        options.addOption("clients", true, "Number of clients concurrently accessing the database.");
+        options.addOption("frag", true, "It shifts the clients in order to access different warehouses.");
+        options.addOption("hostId",true,"Host identifier, allow to have statistics per host.");
+        options.addOption("dbConnectionString",true,"Database JDBC url.");
         try {
+            CommandLineParser parser = new PosixParser();
+            CommandLine cmd = parser.parse( options, args);
+
             ClientEmulationStartup c = new ClientEmulationStartup();
-            InputStream inStream = DatabasePopulate.class.getResourceAsStream("/workload-config.properties");
-            Properties props = new Properties();
-            try {
-                props.load(inStream);
-            } catch (IOException e) {
-                logger.fatal("Unable to load properties from file (workload-config.properties). Using defaults!", e);
+            String clients=cmd.getOptionValue("clients");
+            if (clients!=null)
+            {
+                c.getWorkloadResources().setClients(new Integer(clients));
             }
-            String key=props.getProperty("prefix");
-            String machine=c.getDatabaseResources().getConnectionString();
-            c.startClients(key,machine,props.getProperty("clients"),props.getProperty("frag"),true);
-        } catch (Exception ex) {
+            String frag=cmd.getOptionValue("frag");
+            if (frag!=null)
+            {
+                c.getWorkloadResources().setFrag(new Integer(frag));
+            }
+            String hostId=cmd.getOptionValue("hostId");
+            if (hostId!=null)
+            {
+                c.getWorkloadResources().setHostId(new Integer(hostId));
+            }
+            String dbConnectionString=cmd.getOptionValue("dbConnectionString");
+            if (dbConnectionString!=null)
+            {
+                c.getDatabaseResources().setConnectionString(dbConnectionString);
+            }
+            c.start(true);
+        }catch(ParseException e)
+        {
+            System.err.println( "Parsing failed.  Reason: " + e.getMessage() );
+            // automatically generate the help statement
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp( "ClientEmulationStartup", options );
+        }catch (NumberFormatException e)
+        {
+            System.err.println( "Parsing failed.  Reason: " + e.getMessage() );
+            // automatically generate the help statement
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp( "ClientEmulationStartup", options );
+        }
+        catch (Exception ex) {
             Thread.dumpStack();
             System.exit(-1);
         }
     }
 
-
-    private synchronized void start(String key, String arg, String machine,boolean exit)
+    private synchronized void start(boolean exit)
             throws InvalidTransactionException {
-        String[] args = arg.split("[ ]+");
-        Stage stg = this.server.getClientStage(key);
+        this.server.addServer(this.databaseResources.getConnectionString());
+        Stage stg = this.server.getClientStage(this.workloadResources.getPrefix());
         if (stg == null) {
-            server.setClientStage(key, Stage.RUNNING);
-            this.executor.execute(new Start(key, args, machine,exit));
+            server.setClientStage(this.workloadResources.getPrefix(), Stage.RUNNING);
+            this.executor.execute(new Start(exit));
         } else {
-            throw new InvalidTransactionException(key + " start on " + stg);
+            throw new InvalidTransactionException(this.workloadResources.getPrefix() + " start on " + stg);
         }
     }
 
-    public synchronized void startClients(String key, String connectionString,String clients,String frag,boolean exit)
+    public synchronized void startClients(String prefix, String connectionString, int clients,int frag,int hostId,boolean exit)
             throws InvalidTransactionException {
         logger.info("Starting clients " + clients);
-        String arg=this.configure(key,connectionString,clients,frag);
-        this.server.addServer(connectionString);
-        this.start(key,arg,connectionString,exit);
+        this.databaseResources.setConnectionString(connectionString);
+        this.workloadResources.setClients(clients);
+        this.workloadResources.setFrag(frag);
+        this.workloadResources.setHostId(hostId);
+        this.workloadResources.setPrefix(prefix);
+        this.start(exit);
     }
-
-
 
     public synchronized void pause(String key)
             throws InvalidTransactionException {
@@ -127,138 +161,20 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
         this.executor.submit(new Kill());
     }
 
-
-
-    private void startClientEmulation(String keyArgs, String machine,
-                                      String[] args, boolean exit) {
+    private void startClientEmulation(boolean exit){
         ClientEmulation e = null;
-        ArgDB db = new ArgDB();
         Vector<ClientEmulation> ebs = new Vector<ClientEmulation>();
         DatabaseManager dbManager = null;
-
         try {
-
-            StringArg log4jArg = new StringArg("-LOGconfig",
-                    "Configuration file for Log4J.",
-                    "% Defines the logging output.", db);
-
-            StringArg ebArg = new StringArg("-EBclass", "EB Factory",
-                    "% Factory <class> used to create EBs.", db);
-            StringArg stArg = new StringArg(
-                    "-STclass",
-                    "State Machine for Emulation",
-                    "% Defines the class used as a state machine for emulation.",
-                    db);
-
-            StringArg dbArg = new StringArg("-DBclass", "DB Database Class",
-                    "% String <class> used to instantiate the database.", db);
-
-            StringArg driverArg = new StringArg(
-                    "-DBdriver",
-                    "DBDriver Database Class",
-                    "% String <class> which specifies the driver used to contact the database.",
-                    db);
-
-            StringArg pathArg = new StringArg(
-                    "-DBpath",
-                    "DBpath Database Connection Information",
-                    "% String which specifies information used to connect to the database.",
-                    db);
-            StringArg usrArg = new StringArg(
-                    "-DBusr",
-                    "DBusr Database User",
-                    "% String <usr> which specifies the user connecting to the database",
-                    db);
-
-            StringArg passwdArg = new StringArg(
-                    "-DBpasswd",
-                    "DBpasswd User password",
-                    "% String <passwd> which specifies the password correpondent to user connecting to the database.",
-                    db);
-
-            IntArg poolArg = new IntArg("-POOL", "Connection Pool",
-                    "% The number of entries available for connection pool...",
-                    db);
-
-            DateArg st = new DateArg("-ST", "Starting time for ramp-up",
-                    "% Time (such as Nov 2, 1999 11:30:00 AM CST) "
-                            + "at which to start ramp-up."
-                            + "  Useful for synchronizing multiple RBEs.",
-                    System.currentTimeMillis() + 2000L, db);
-
-            IntArg ru = new IntArg("-RU", "Ramp-up time",
-                    "% Seconds used to warm-up the simulator.", 10 * 60, db);
-
-            IntArg mi = new IntArg("-MI", "Measurement interval",
-                    "% Minutes used for measuring SUT performance.", 30 * 60,
-                    db);
-
-            IntArg rd = new IntArg("-RD", "Ramp-down time",
-                    "% Seconds of steady-state operation following "
-                            + "measurment interval.", 5 * 60, db);
-
-            DoubleArg slow = new DoubleArg("-SLOW", "Slow-down factor",
-                    "% 1000 means one thousand real seconds equals one "
-                            + "simulated second.  "
-                            + "Accepts factional values and E notation.", 1.0,
-                    db);
-
-            BooleanArg key = new BooleanArg("-KEY", "Enable thinktime.",
-                    "% It enables or disables the think time.", true, db);
-
-            IntArg cli = new IntArg("-CLI", "Number of clients",
-                    "% Number of clients concurrently accessing the database.",
-                    db);
-
-            StringArg prefix = new StringArg(
-                    "-PREFIX",
-                    "Emulation identification and also used as part of the emulation id",
-                    "% It defines the compositon of the trace file identification and is also used as a component of the "
-                            + "emulator id.", db);
-
-            StringArg traceFlag = new StringArg(
-                    "-TRACEflag",
-                    "trace files",
-                    "% It defines the usage of trace file or not (NOTRACE,TRACE,TRACESTRING,TRACETIME)",
-                    db);
-
-            IntArg fragArg = new IntArg(
-                    "-FRAG",
-                    "Shift the clients...",
-                    "% It shifts the clients in order to access different warehouses...",
-                    1, db);
-
-            BooleanArg resArg = new BooleanArg(
-                    "-RESUBMIT",
-                    "Resubmit Transaction.",
-                    "% It enables the transaction resubmition when an error occurs.",
-                    true, db);
-
-            IntArg hostArg = new IntArg("-HOST", "Connection Pool",
-                    "% The number of entries available for connection pool...",
-                    0, db);
-
-            BooleanArg isConnectionPoolEnabled = new BooleanArg("-enabledPOOL", "Enable POOL.",
-                    "% It enables or disables the connection pool.", true, db);
-
-            if (args.length == 0) {
-                Usage(args, db);
-                return;
-            }
-
-            db.parse(args);
 
             logger.info("Starting up the client application.");
             logger.info("Remote Emulator for Database Benchmark ...");
-            logger
-                    .info("Universidade do Minho (Grupo de Sistemas Distribuidos)");
+            logger.info("Universidade do Minho (Grupo de Sistemas Distribuidos)");
             logger.info("Version 0.1");
-
-            Usage(args, db);
 
             Class cl = null;
             Constructor co = null;
-            cl = Class.forName(dbArg.s);
+            cl = Class.forName(this.workloadResources.getDbClass());
             try {
                 co = cl.getConstructor(new Class[] { Integer.TYPE });
             } catch (Exception ex) {
@@ -267,36 +183,40 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
                 dbManager = (DatabaseManager) cl.newInstance();
             } else {
                 dbManager = (DatabaseManager) co
-                        .newInstance(new Object[] { new Integer(cli.num) });
+                        .newInstance(new Object[] { new Integer(this.workloadResources.getClients()) });
             }
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-DD_HH_mm");
             String date=sdf.format(new Date());
-            PerformanceLogger.setPrintWriter("TPCC-"+date+"-"+ prefix.s + "-time-" + mi.num + "-clients-" + cli.num + "-frag-" + fragArg.num + "-think-" + key.flag + ".dat");
+            PerformanceLogger.setPrintWriter("TPCC-"+date+"-"+ this.workloadResources.getPrefix()
+                    + "-time-" + this.workloadResources.getMeasurementTime() + "-clients-"
+                    + this.workloadResources.getClients() + "-frag-" + this.workloadResources.getFrag()
+                    + "-think-" + this.workloadResources.isThinkTime() + ".dat");
             PerformanceCounters.getReference();//Initialize instance
 
-            dbManager.setConnectionPool(isConnectionPoolEnabled.flag);
-            dbManager.setMaxConnection(poolArg.num);
-            dbManager.setDriverName(driverArg.s);
-            dbManager.setjdbcPath(pathArg.s);
-            dbManager.setUserInfo(usrArg.s, passwdArg.s);
+            dbManager.setConnectionPool(this.workloadResources.isConnectionPoolEnabled());
+            dbManager.setMaxConnection(this.workloadResources.getPoolSize());
+            dbManager.setDriverName(this.databaseResources.getDriver());
+            dbManager.setjdbcPath(this.databaseResources.getConnectionString());
+            dbManager.setUserInfo(this.databaseResources.getUserName(), this.databaseResources.getPassword());
 
-            for (int i = 0; i < cli.num; i++) {
+            for (int i = 0; i < this.workloadResources.getClients(); i++) {
 
                 e = new ClientEmulation();
 
                 e.setFinished(false);
-                e.setTraceInformation(prefix.s);
-                e.setNumberConcurrentEmulators(cli.num);
-                e.setStatusThinkTime(key.flag);
-                e.setStatusReSubmit(resArg.flag);
+                e.setTraceInformation(this.workloadResources.getTrace());
+                e.setNumberConcurrentEmulators(this.workloadResources.getClients());
+                e.setStatusThinkTime(this.workloadResources.isThinkTime());
+                e.setStatusReSubmit(this.workloadResources.isResubmit());
                 e.setDatabase(dbManager);
-                e.setEmulationName(prefix.s);
-                e.setHostId(Integer.toString(hostArg.num));
+                e.setEmulationName(this.workloadResources.getPrefix());
+                e.setHostId(Integer.toString(this.workloadResources.getHostId()));
 
-                e.create(ebArg.s, stArg.s, i, fragArg.num, this, keyArgs);
+                e.create(this.workloadResources.getEbClass(), this.workloadResources.getStClass(),
+                        i, this.workloadResources.getFrag(), this, this.workloadResources.getPrefix());
 
                 Thread t = new Thread(e);
-                t.setName(prefix.s + "-" + i);
+                t.setName(this.workloadResources.getPrefix() + "-" + i);
                 e.setThread(t);
                 t.start();
 
@@ -304,16 +224,15 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
             }
 
             synchronized (this) {
-                server.setClientEmulations(keyArgs, ebs);
-                server.setClientConfiguration(keyArgs, args);
-                server.attachClientToServer(keyArgs, machine);
+                server.setClientEmulations(this.workloadResources.getPrefix(), ebs);
+                server.attachClientToServer(this.workloadResources.getPrefix(),this.databaseResources.getConnectionString());
             }
 
-            logger.info("Running simulation for " + mi.num + " minute(s).");
+            logger.info("Running simulation for " + this.workloadResources.getMeasurementTime() + " minute(s).");
 
-            waitForRampDown(keyArgs, 0, mi.num);
+            waitForRampDown(this.workloadResources.getPrefix(), 0,  this.workloadResources.getMeasurementTime());
 
-            for (int i = 0; i < cli.num; i++) {
+            for (int i = 0; i < this.workloadResources.getClients(); i++) {
                 e = (ClientEmulation) ebs.elementAt(i);
                 logger.info("Waiting for the eb " + i + " to finish its job..");
                 try {
@@ -333,20 +252,13 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
             PerformanceLogger.info("Average latency:"+PerformanceCounters.getReference().getAverageLatency());
             PerformanceLogger.info("Measured tpmC:"+PerformanceCounters.getReference().getTotalNewOrderCommitRate());
             PerformanceLogger.close();
-
-        } catch (Arg.Exception ae) {
-            logger.info("Error:");
-            logger.info(ae);
-            Usage(args, db);
-            return;
         } catch (Exception ex) {
             logger.info("Error while creating clients: ", ex);
         } finally {
             synchronized (this) {
-                this.server.removeClientEmulations(keyArgs);
-                this.server.removeClientStage(keyArgs);
-                this.server.detachClientToServer(keyArgs, machine);
-                this.server.removeClientConfiguration(keyArgs);
+                this.server.removeClientEmulations(this.workloadResources.getPrefix());
+                this.server.removeClientStage(this.workloadResources.getPrefix());
+                this.server.detachClientToServer(this.workloadResources.getPrefix(),this.databaseResources.getConnectionString());
                 notifyAll();
             }
 
@@ -368,13 +280,6 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
         for (a = 0; a < args.length; a++) {
             System.out.println("#" + Pad.l(3, "" + (a + 1)) + "  " + args[a]);
         }
-    }
-
-    private void Usage(String args[], ArgDB db) {
-        logger.info("Input command-line arguments");
-        Arguments(args);
-        logger.info("Options");
-        db.print();
     }
 
     public synchronized void notifyThreadsCompletion(String key) {
@@ -534,22 +439,14 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
     }
 
     class Start implements Runnable {
-        private String[] args;
+        private boolean exit;
 
-        private String key;
-
-        private String machine;
-        private final boolean exit;
-
-        public Start(String key, String[] args, String machine,boolean exit) {
-            this.key = key;
-            this.args = args;
-            this.machine = machine;
+        public Start(boolean exit) {
             this.exit=exit;
         }
 
         public void run() {
-            startClientEmulation(this.key, this.machine, this.args,this.exit);
+            startClientEmulation(this.exit);
         }
     }
 

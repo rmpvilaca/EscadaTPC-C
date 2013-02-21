@@ -14,15 +14,14 @@
 
 package escada.tpc.common.resources;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
-import org.apache.log4j.Logger;
-
 import escada.tpc.common.TPCConst;
 import escada.tpc.tpcc.TPCCConst;
 import escada.tpc.tpcc.database.populate.jmx.DatabasePopulate;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 public class WorkloadResources implements WorkloadResourcesMBean {
 
@@ -30,9 +29,27 @@ public class WorkloadResources implements WorkloadResourcesMBean {
 	
 	public final static String DEFAULT_NUMBER_OF_WAREHOUSES = "4";
 	
-	private int numberOfWarehouses = Integer.parseInt(DEFAULT_NUMBER_OF_WAREHOUSES);
-	
-	public WorkloadResources() {
+	private int numberOfWarehouses;
+
+
+
+    private String ebClass;
+    private String stClass;
+    private String dbClass;
+    private Integer poolSize;
+    private boolean connectionPoolEnabled;
+    private int rampUpTime;
+    private int measurementTime;
+    private int rampDownTime;
+    private boolean thinkTime;
+    private boolean resubmit;
+    private String prefix;
+    private Integer clients;
+    private Integer frag;
+    private Integer hostId;
+    private String trace;
+
+    public WorkloadResources() {
 		
 		InputStream inStream = DatabasePopulate.class.getResourceAsStream("/workload-config.properties");
 		Properties props = new Properties();
@@ -49,6 +66,26 @@ public class WorkloadResources implements WorkloadResourcesMBean {
 		TPCCConst.setNumLastName(Integer.parseInt(props.getProperty("tpcc.numnames", Integer.toString(TPCCConst.getNumLastName()))));
 		
 		this.numberOfWarehouses = Integer.parseInt(props.getProperty("tpcc.number.warehouses", DEFAULT_NUMBER_OF_WAREHOUSES));
+
+        this.ebClass= props.getProperty("eb.class");
+        this.stClass=props.getProperty("st.class");
+        this.dbClass=props.getProperty("db.class");
+        this.trace=props.getProperty("trace.flag","TRACE");
+
+        this.poolSize=new Integer(props.getProperty("pool.size","0"));
+        this.connectionPoolEnabled = new Boolean(props.getProperty("pool.enabled","true"));
+
+        this.thinkTime = new Boolean(props.getProperty("measurement.think.time"));
+        this.rampUpTime=new Integer(props.getProperty("measurement.rampUp.time","600")).intValue();
+        this.rampDownTime=new Integer(props.getProperty("measurement.rampDown.time","300")).intValue();
+        this.measurementTime=new Integer(props.getProperty("measurement.time","1800")).intValue();
+
+        this.resubmit=new Boolean(props.getProperty("resubmit"));
+
+        this.prefix=props.getProperty("prefix");
+        this.clients=new Integer(props.getProperty("clients"));
+        this.frag=new Integer(props.getProperty("frag"));
+        this.hostId=new Integer(props.getProperty("hostId"));
 	}
 
 	public synchronized void setNumberOfWarehouses(int numberOfWarehouses) {
@@ -66,5 +103,124 @@ public class WorkloadResources implements WorkloadResourcesMBean {
 	public void setNumMinClients(int i) {
 		TPCConst.setNumMinClients(i);
 	}
-	
+
+    public String getEbClass() {
+        return ebClass;
+    }
+
+    public void setEbClass(String ebClass) {
+        this.ebClass = ebClass;
+    }
+
+    public String getStClass() {
+        return stClass;
+    }
+
+    public void setStClass(String stClass) {
+        this.stClass = stClass;
+    }
+
+    public String getDbClass() {
+        return dbClass;
+    }
+
+    public void setDbClass(String dbClass) {
+        this.dbClass = dbClass;
+    }
+
+    public Integer getPoolSize() {
+        return poolSize;
+    }
+
+    public void setPoolSize(Integer poolSize) {
+        this.poolSize = poolSize;
+    }
+
+    public boolean isConnectionPoolEnabled() {
+        return connectionPoolEnabled;
+    }
+
+    public void setConnectionPoolEnabled(Boolean connectionPoolEnabled) {
+        this.connectionPoolEnabled = connectionPoolEnabled;
+    }
+
+    public int getRampUpTime() {
+        return rampUpTime;
+    }
+
+    public void setRampUpTime(int rampUpTime) {
+        this.rampUpTime = rampUpTime;
+    }
+
+    public int getMeasurementTime() {
+        return measurementTime;
+    }
+
+    public void setMeasurementTime(int measurementTime) {
+        this.measurementTime = measurementTime;
+    }
+
+    public int getRampDownTime() {
+        return rampDownTime;
+    }
+
+    public void setRampDownTime(int rampDownTime) {
+        this.rampDownTime = rampDownTime;
+    }
+
+    public boolean isThinkTime() {
+        return thinkTime;
+    }
+
+    public void setThinkTime(boolean thinkTime) {
+        this.thinkTime = thinkTime;
+    }
+
+    public boolean isResubmit() {
+        return resubmit;
+    }
+
+    public void setResubmit(boolean resubmit) {
+        this.resubmit = resubmit;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public Integer getClients() {
+        return clients;
+    }
+
+    public void setClients(Integer clients) {
+        this.clients = clients;
+    }
+
+    public Integer getFrag() {
+        return frag;
+    }
+
+    public void setFrag(Integer frag) {
+        this.frag = frag;
+    }
+
+    public Integer getHostId() {
+        return hostId;
+    }
+
+    public void setHostId(Integer hostId) {
+        this.hostId = hostId;
+    }
+
+    public String getTrace() {
+        return trace;
+    }
+
+    public void setTrace(String trace) {
+        this.trace = trace;
+    }
 }

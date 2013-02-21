@@ -3,5 +3,5 @@ for i in ./lib/*; do
 done
 
 
-"$JAVA_HOME/bin/java" -cp $CP:etc -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5010 -Xmx1024M escada.tpc.common.clients.jmx.ClientEmulationStartup
+"$JAVA_HOME/bin/java" -cp $CP:etc -Xmx1024M escada.tpc.common.clients.jmx.ClientEmulationStartup  $@
 

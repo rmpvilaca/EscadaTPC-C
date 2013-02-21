@@ -30,8 +30,6 @@ public class ServerControl {
 
 	private final Hashtable<String, HashSet<String>> serverClients = new Hashtable<String, HashSet<String>>();
 
-	private final Hashtable<String, String[]> clientConfiguration = new Hashtable<String, String[]>();
-
 	public Stage getClientStage(String key) {
 		return (clientsStage.get(key));
 	}
@@ -54,18 +52,6 @@ public class ServerControl {
 
 	public void removeClientEmulations(String key) {
 		this.clientsEmulation.remove(key);
-	}
-
-	public void setClientConfiguration(String key, String args[]) {
-		this.clientConfiguration.put(key, args);
-	}
-
-	public String[] getClientConfiguration(String key) {
-		return (this.clientConfiguration.get(key));
-	}
-
-	public void removeClientConfiguration(String key) {
-		this.clientConfiguration.remove(key);
 	}
 
 	public void attachClientToServer(String client, String machine) {
@@ -297,17 +283,7 @@ public class ServerControl {
 					this.clientsEmulation.remove(keyValue);
 					this.clientsStage.remove(keyValue);
 
-					String args[] = this.clientConfiguration.get(keyValue);
-					int cont = 0;
-					if (args != null) {
-						while (cont < args.length) {
-							if (args[cont].startsWith("jdbc")) {
-								break;
-							}
-							cont++;
-						}
-						this.detachClientToServer(keyValue, args[cont]);
-					}
+                    this.detachClientToServer(keyValue,this.findServerClient(keyValue));
 				}
 			}
 		} else {
