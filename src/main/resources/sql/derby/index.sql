@@ -15,14 +15,6 @@ CREATE INDEX ix_order_line ON order_line (ol_i_id);
 
 
 --
--- TOC entry 36 (OID 1115805)
--- Name: pk_orders; Type: INDEX; Schema: public; Owner: tpcc
---
-
-CREATE INDEX pk_orders ON orders (o_w_id, o_d_id, o_id);
-
-
---
 -- TOC entry 35 (OID 1115806)
 -- Name: ix_orders; Type: INDEX; Schema: public; Owner: tpcc
 --

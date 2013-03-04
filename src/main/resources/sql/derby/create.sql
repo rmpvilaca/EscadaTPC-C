@@ -231,3 +231,12 @@ ALTER TABLE stock
 ALTER TABLE warehouse
     ADD CONSTRAINT pk_warehouse PRIMARY KEY (w_id);
 
+--
+-- TOC entry 36 (OID 1115805)
+-- Name: pk_orders; Type: INDEX; Schema: public; Owner: tpcc
+--
+
+ALTER TABLE orders
+    ADD CONSTRAINT pk_orders PRIMARY KEY (o_w_id, o_d_id, o_id);
+
+
