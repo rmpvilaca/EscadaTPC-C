@@ -20,7 +20,6 @@ import escada.tpc.common.clients.ClientEmulationMaster;
 import escada.tpc.common.database.DatabaseManager;
 import escada.tpc.common.resources.DatabaseResources;
 import escada.tpc.common.resources.WorkloadResources;
-import escada.tpc.common.util.Pad;
 import escada.tpc.logger.PerformanceLogger;
 import escada.tpc.tpcc.database.populate.jmx.DatabasePopulate;
 import org.apache.commons.cli.*;
@@ -271,14 +270,6 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
             logger.info("Ebs finished their jobs..");
             if (exit)
                 System.exit(0);
-        }
-    }
-
-    private void Arguments(String args[]) {
-        int a;
-
-        for (a = 0; a < args.length; a++) {
-            System.out.println("#" + Pad.l(3, "" + (a + 1)) + "  " + args[a]);
         }
     }
 
