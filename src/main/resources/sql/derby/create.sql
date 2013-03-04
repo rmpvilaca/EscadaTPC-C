@@ -123,7 +123,7 @@ CREATE TABLE order_line (
 
 CREATE TABLE orders (
     oid integer NOT NULL GENERATED ALWAYS AS IDENTITY UNIQUE,
-    o_id integer,
+    o_id integer NOT NULL,
     o_d_id integer NOT NULL,
     o_w_id integer NOT NULL,
     o_c_id integer,
