@@ -124,8 +124,8 @@ CREATE TABLE order_line (
 CREATE TABLE orders (
     oid integer NOT NULL GENERATED ALWAYS AS IDENTITY UNIQUE,
     o_id integer,
-    o_d_id integer,
-    o_w_id integer,
+    o_d_id integer NOT NULL,
+    o_w_id integer NOT NULL,
     o_c_id integer,
     o_entry_d timestamp,
     o_carrier_id integer,
