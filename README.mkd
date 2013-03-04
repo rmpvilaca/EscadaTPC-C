@@ -44,7 +44,7 @@ This etc folder contains the:
     - measurement.interval: Minutes used for measuring SUT performance
     - measurement.time: Measurement interval, minutes used for measuring SUT performance.
     - resubmit.aborted: It enables the transaction resubmission when an error occurs.
-    - think.time: Enables/Disables user keying time
+    - measurement.think.time: Enables/Disables user keying time
     - frag: It shifts the clients in order to access different warehouses...
     - hostId: Host identifier, allow to have statistics per host.
     - clients: Number of clients concurrently accessing the database.
