@@ -124,8 +124,8 @@ CREATE TABLE order_line (
 CREATE TABLE orders (
     oid integer NOT NULL GENERATED ALWAYS AS IDENTITY UNIQUE,
     o_id integer,
-    o_d_id integer,
-    o_w_id integer,
+    o_d_id integer NOT NULL,
+    o_w_id integer NOT NULL,
     o_c_id integer,
     o_entry_d timestamp,
     o_carrier_id integer,
@@ -230,4 +230,13 @@ ALTER TABLE stock
 
 ALTER TABLE warehouse
     ADD CONSTRAINT pk_warehouse PRIMARY KEY (w_id);
+
+--
+-- TOC entry 36 (OID 1115805)
+-- Name: pk_orders; Type: INDEX; Schema: public; Owner: tpcc
+--
+
+ALTER TABLE orders
+    ADD CONSTRAINT pk_orders PRIMARY KEY (o_w_id, o_d_id, o_id);
+
 
