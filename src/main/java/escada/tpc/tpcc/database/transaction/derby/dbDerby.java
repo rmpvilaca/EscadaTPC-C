@@ -1084,16 +1084,16 @@ public class dbDerby extends dbTPCCDatabase {
 		try {
 			Date NetStartTime = new Date();
 
-            con.rollback();
+            		//con.rollback();
 
 			Date NetFinishTime = new Date();
 
 			processLog(NetStartTime, NetFinishTime, "aborting", strAccess,
 					strTrans);
-		}catch(SQLException e)
+		}/*catch(SQLException e)
 		{
 			e.printStackTrace();
-		} catch (Exception ex) {
+		}*/ catch (Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend");
 			ex.printStackTrace(System.err);
 			System.exit(-1);

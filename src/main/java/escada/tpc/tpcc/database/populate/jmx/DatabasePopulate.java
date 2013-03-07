@@ -86,9 +86,11 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 
         } catch (ClassNotFoundException e) {
             logger.error("Unable to load database driver!", e);
+	    e.printStackTrace();
         } catch (SQLException e) {
             logger.error(
                     "Exception caught while talking (SQL) to the database!", e);
+	    e.printStackTrace();
         }
     }
 

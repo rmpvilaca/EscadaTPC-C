@@ -67,13 +67,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 
 			logger.info("Finishing transaction new order.");
 		} catch (java.sql.SQLException sqlex) {
-			if ((sqlex.getMessage().indexOf("serialize") == -1)
-					&& (sqlex.getMessage().indexOf("deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("timeout") == -1)
-					&& (sqlex.getMessage().indexOf("Deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("not found") == -1)
-					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
-					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)) {
+			if (Exception(sqlex)) {
 				if (con != null) {
 					con.close();
 					con = null;
@@ -123,15 +117,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 
 			logger.info("Finishing trasaction delivery.");
 		} catch (java.sql.SQLException sqlex) {
-			if ((sqlex.getMessage().indexOf("serialize") == -1)
-					&& (sqlex.getMessage().indexOf("deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("timeout") == -1)
-					&& (sqlex.getMessage().indexOf("Deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("not found") == -1)
-					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
-					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
-					&& (sqlex.getMessage().indexOf("Before start of result set") == -1))
-			{
+			if (Exception(sqlex)) {
 				if (con != null) {
 					con.close();
 					con = null;
@@ -194,14 +180,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 
 			logger.info("Finishing transaction order status.");
 		} catch (java.sql.SQLException sqlex) {
-			if ((sqlex.getMessage().indexOf("serialize") == -1)
-					&& (sqlex.getMessage().indexOf("deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("timeout") == -1)
-					&& (sqlex.getMessage().indexOf("Deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("not found") == -1)
-					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
-					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
-					&& (sqlex.getMessage().indexOf("Before start of result set") == -1)) {
+			if (Exception(sqlex)) {
 				if (con != null) {
 					con.close();
 					con = null;
@@ -270,14 +249,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 			logger.info("Finishing transaction payment.");
 
 		} catch (java.sql.SQLException sqlex) {
-			if ((sqlex.getMessage().indexOf("serialize") == -1)
-					&& (sqlex.getMessage().indexOf("deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("timeout") == -1)
-					&& (sqlex.getMessage().indexOf("Deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("not found") == -1)
-					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
-					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
-					&& (sqlex.getMessage().indexOf("Before start of result set") == -1)) {
+			if (Exception(sqlex)) {
 				if (con != null) {
 					con.close();
 					con = null;
@@ -326,14 +298,7 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 
 			logger.info("Finishing transaction stock level");
 		} catch (java.sql.SQLException sqlex) {
-			if ((sqlex.getMessage().indexOf("serialize") == -1)
-					&& (sqlex.getMessage().indexOf("deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("timeout") == -1)
-					&& (sqlex.getMessage().indexOf("Deadlock") == -1)
-					&& (sqlex.getMessage().indexOf("not found") == -1)
-					&& (sqlex.getMessage().indexOf("Generated Abort") == -1)
-					&& (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
-					&& (sqlex.getMessage().indexOf("Before start of result set") == -1)) {
+			if (Exception(sqlex)) {
 				if (con != null) {
 					con.close();
 					con = null;
@@ -344,6 +309,19 @@ abstract public class dbTPCCDatabase extends DatabaseManager {
 			returnConnection(con);
 		}
 		return (dbtrace);
+	}
+	
+	private boolean Exception(java.sql.SQLException sqlex){
+		if ((sqlex.getMessage().indexOf("serialize") == -1)
+                                        && (sqlex.getMessage().indexOf("deadlock") == -1)
+                                        && (sqlex.getMessage().indexOf("timeout") == -1)
+                                        && (sqlex.getMessage().indexOf("Deadlock") == -1)
+                                        && (sqlex.getMessage().indexOf("not found") == -1)
+                                        && (sqlex.getMessage().indexOf("Generated Abort") == -1)
+                                        && (sqlex.getMessage().indexOf("Exception in Java Side") == -1)
+                                        && (sqlex.getMessage().indexOf("Before start of result set") == -1)
+					&& (sqlex.getMessage().indexOf("transaction commit") == -1)) return true;
+		else return false;
 	}
 
 	protected abstract HashSet NewOrderDB(Properties obj, Connection con)
