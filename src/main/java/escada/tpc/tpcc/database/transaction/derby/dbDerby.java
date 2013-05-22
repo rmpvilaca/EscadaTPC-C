@@ -713,7 +713,6 @@ public class dbDerby extends dbTPCCDatabase {
 				float _c_discount;
 				String _data;
 				String _c_data;
-				java.sql.Date _datetime = new java.sql.Date(2000, 1, 25);
 				float _w_ytd;
 				float _d_ytd;
 				int _cnt;
@@ -854,7 +853,7 @@ public class dbDerby extends dbTPCCDatabase {
 				statement.setInt(3, __c_w_id);
 				statement.setInt(4, _d_id_local);
 				statement.setInt(5, _w_id_local);
-				statement.setDate(6, _datetime);
+				statement.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
 				statement.setFloat(7, __h_amount);
 				statement.setString(8, _w_name + " " + _d_name);
 				statement.executeUpdate();
@@ -1084,16 +1083,16 @@ public class dbDerby extends dbTPCCDatabase {
 		try {
 			Date NetStartTime = new Date();
 
-            		//con.rollback();
+            		con.rollback();
 
 			Date NetFinishTime = new Date();
 
 			processLog(NetStartTime, NetFinishTime, "aborting", strAccess,
 					strTrans);
-		}/*catch(SQLException e)
+		}catch(SQLException e)
 		{
 			e.printStackTrace();
-		}*/ catch (Exception ex) {
+		} catch (Exception ex) {
 			logger.fatal("Unexpected error. Something bad happend");
 			ex.printStackTrace(System.err);
 			System.exit(-1);
