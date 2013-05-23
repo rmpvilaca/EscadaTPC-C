@@ -48,6 +48,11 @@ This etc folder contains the:
     - frag: It shifts the clients in order to access different warehouses...
     - hostId: Host identifier, allow to have statistics per host.
     - clients: Number of clients concurrently accessing the database.
+    - tpcc.prob.NewOrder: probability of NewOrder transaction
+    - tpcc.prob.Payment: probability of Payment transaction.
+    - tpcc.prob.OrderStatus: probability of OrderStatus transaction.
+    - tpcc.prob.Delivery: probability of Delivery transaction.
+    - tpcc.prob.StockLevel: probability of StockLevel transaction.
 
 
 # Instructions for running
