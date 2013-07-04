@@ -6,7 +6,6 @@
 --
 
 CREATE TABLE customer (
-    oid integer NOT NULL UNIQUE GENERATED ALWAYS AS IDENTITY,
     c_id integer NOT NULL,
     c_d_id integer NOT NULL,
     c_w_id integer NOT NULL,
@@ -37,7 +36,6 @@ CREATE TABLE customer (
 --
 
 CREATE TABLE district (
-    oid integer NOT NULL UNIQUE GENERATED ALWAYS AS IDENTITY,
     d_id integer NOT NULL,
     d_w_id integer NOT NULL,
     d_name char(10),
@@ -57,13 +55,12 @@ CREATE TABLE district (
 --
 
 CREATE TABLE history (
-    oid integer NOT NULL GENERATED ALWAYS AS IDENTITY UNIQUE,
-    h_c_id integer,
+    h_c_id integer NOT NULL,
     h_c_d_id integer,
     h_c_w_id integer,
     h_d_id integer,
     h_w_id integer,
-    h_date date,
+    h_date timestamp NOT NULL,
     h_amount decimal(6,2),
     h_data char(24)
 );
@@ -75,7 +72,6 @@ CREATE TABLE history (
 --
 
 CREATE TABLE item (
-    oid integer NOT NULL GENERATED ALWAYS AS IDENTITY UNIQUE,
     i_id integer NOT NULL,
     i_im_id integer,
     i_name char(24),
@@ -90,10 +86,9 @@ CREATE TABLE item (
 --
 
 CREATE TABLE new_order (
-    oid integer NOT NULL GENERATED ALWAYS AS IDENTITY UNIQUE,
-    no_o_id integer,
-    no_d_id integer,
-    no_w_id integer
+    no_o_id integer NOT NULL,
+    no_d_id integer NOT NULL,
+    no_w_id integer NOT NULL
 );
 
 --
@@ -102,7 +97,6 @@ CREATE TABLE new_order (
 --
 
 CREATE TABLE order_line (
-    oid integer NOT NULL GENERATED ALWAYS AS IDENTITY UNIQUE,
     ol_o_id integer NOT NULL,
     ol_d_id integer NOT NULL,
     ol_w_id integer NOT NULL,
@@ -122,7 +116,6 @@ CREATE TABLE order_line (
 --
 
 CREATE TABLE orders (
-    oid integer NOT NULL GENERATED ALWAYS AS IDENTITY UNIQUE,
     o_id integer NOT NULL,
     o_d_id integer NOT NULL,
     o_w_id integer NOT NULL,
@@ -139,7 +132,6 @@ CREATE TABLE orders (
 --
 
 CREATE TABLE stock (
-    oid integer NOT NULL GENERATED ALWAYS AS IDENTITY UNIQUE,
     s_i_id integer NOT NULL,
     s_w_id integer NOT NULL,
     s_quantity integer,
@@ -166,7 +158,6 @@ CREATE TABLE stock (
 --
 
 CREATE TABLE warehouse (
-    oid integer NOT NULL GENERATED ALWAYS AS IDENTITY UNIQUE,
     w_id integer NOT NULL,
     w_name char(10),
     w_street_1 char(20),
@@ -239,4 +230,10 @@ ALTER TABLE warehouse
 ALTER TABLE orders
     ADD CONSTRAINT pk_orders PRIMARY KEY (o_w_id, o_d_id, o_id);
 
+
+alter table history add constraint pk_history
+ primary key (h_date, h_c_id);
+
+alter table new_order add constraint pk_new_order
+  primary key (no_w_id, no_d_id, no_o_id);
 

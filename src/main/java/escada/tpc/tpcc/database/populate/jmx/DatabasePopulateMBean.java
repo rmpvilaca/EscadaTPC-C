@@ -18,5 +18,5 @@ import escada.tpc.common.clients.jmx.InvalidTransactionException;
 
 public interface DatabasePopulateMBean {
 
-	public void populate() throws InvalidTransactionException;
+	public void populate(String table) throws InvalidTransactionException;
 }

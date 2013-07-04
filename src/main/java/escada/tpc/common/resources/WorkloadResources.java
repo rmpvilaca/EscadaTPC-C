@@ -49,6 +49,12 @@ public class WorkloadResources implements WorkloadResourcesMBean {
     private Integer hostId;
     private String trace;
 
+    private Integer probNewOrder;
+    private Integer probOrderStatus;
+    private Integer probPayment; 
+    private Integer probDelivery;
+    private Integer probStockLevel;
+
     public WorkloadResources() {
 		
 		InputStream inStream = DatabasePopulate.class.getResourceAsStream("/workload-config.properties");
@@ -86,6 +92,12 @@ public class WorkloadResources implements WorkloadResourcesMBean {
         this.clients=new Integer(props.getProperty("clients"));
         this.frag=new Integer(props.getProperty("frag"));
         this.hostId=new Integer(props.getProperty("hostId"));
+
+	this.probNewOrder=new Integer(props.getProperty("tpcc.prob.NewOrder","45")).intValue();
+	this.probPayment=new Integer(props.getProperty("tpcc.prob.Payment","43")).intValue();
+	this.probOrderStatus=new Integer(props.getProperty("tpcc.prob.OrderStatus","4")).intValue();
+	this.probDelivery=new Integer(props.getProperty("tpcc.prob.Delivery","4")).intValue();
+	this.probStockLevel=new Integer(props.getProperty("tpcc.prob.StockLevel","4")).intValue();
 	}
 
 	public synchronized void setNumberOfWarehouses(int numberOfWarehouses) {
@@ -223,4 +235,39 @@ public class WorkloadResources implements WorkloadResourcesMBean {
     public void setTrace(String trace) {
         this.trace = trace;
     }
+
+   public Integer getProbNewOrder(){
+		return probNewOrder;
+	}
+	public void setProbNewOrder(Integer prob){
+		this.probNewOrder = prob;
+	}
+
+	public Integer getProbOrderStatus(){
+		return probOrderStatus;
+	}
+	public void setProbOrderStatus(Integer prob){
+		this.probOrderStatus = prob;
+	}
+
+	public Integer getProbPayment(){
+		return probPayment;
+	}
+	public void setProbPayment(Integer prob){
+		this.probPayment = prob;
+	}
+
+	public Integer getProbDelivery(){
+		return probDelivery;
+	}
+	public void setProbDelivery(Integer prob){
+		this.probDelivery = prob;
+	}
+
+	public Integer getProbStockLevel(){
+		return probStockLevel;
+	}
+	public void setProbStockLevel(Integer prob){
+		this.probStockLevel = prob;
+	}
 }

@@ -77,6 +77,54 @@ public class dbPopulate {
 		}
 	}
 
+	public void populateHistory(Connection conn, int numWareh){
+		PreparedStatement pstmt = null;
+                Random rg = new Random(71830);
+                Timestamp tStamp;
+		try{
+			//clean(conn);
+			logger.debug("populating history...");
+                        pstmt = conn.prepareStatement("insert into history "
+                                        + "(h_c_id,h_c_d_id,h_c_w_id,h_d_id,h_w_id,h_date,"
+                                        + "h_amount,h_data) values (?,?,?,?,?,?,?,?)");
+			int cont = 0;
+                        for (int j = 1; j < (numWareh + 1); j++) {
+                                for (int i = 1; i < (TPCCConst.getNumDistrict() + 1); i++) {
+                                        for (int a = 1; a < (TPCCConst.getNumCustomer() + 1); a++) {
+                                                pstmt.setInt(1, a);
+                                                pstmt.setInt(2, i);
+                                                pstmt.setInt(3, j);
+                                                pstmt.setInt(4, i);
+                                                pstmt.setInt(5, j);
+                                                tStamp = new Timestamp(System.currentTimeMillis());
+                                                pstmt.setTimestamp(6, tStamp);
+                                                pstmt.setInt(7, 10);
+                                                pstmt.setString(8, generateString(24));
+                                                pstmt.executeUpdate();
+                                                cont++;
+                                                if (cont == 100) {
+                                                        cont = 0;
+                                                        conn.commit();
+                                                }
+                                        }
+                                }
+
+                        }
+                        if (cont > 0)
+                                conn.commit();
+                        cont = 0;
+		} catch (SQLException e) {
+                        e.printStackTrace();
+                        try {
+                                conn.rollback();
+                        } catch (SQLException ee) {
+                                ee.printStackTrace();
+                                System.exit(-1);
+                        }
+                }
+	
+	}
+
 	public void populate(Connection conn, int numWareh) {
 
 		PreparedStatement pstmt = null;
