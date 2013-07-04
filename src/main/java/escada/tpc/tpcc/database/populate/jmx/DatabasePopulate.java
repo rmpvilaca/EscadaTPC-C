@@ -48,14 +48,19 @@ public class DatabasePopulate implements DatabasePopulateMBean {
     public static void main(String[] args) {
         try {
             DatabasePopulate db=new DatabasePopulate();
-            db.populate();
+	    logger.info("no main");
+            if(args.length > 0){
+		logger.info("args > 0");
+		db.populate("history");
+	    }
+	    else db.populate(null);
         } catch (InvalidTransactionException e) {
             logger.error("Unable to populate!", e);
         }
     }
 
 
-    public void populate() throws InvalidTransactionException {
+    public void populate(String table) throws InvalidTransactionException {
 
         if (logger.isInfoEnabled()) {
             logger.info("Connecting to database using driver: "
@@ -77,8 +82,14 @@ public class DatabasePopulate implements DatabasePopulateMBean {
             }
 
             dbPopulate db = new dbPopulate();
-            db.populate(conn, workloadResources.getNumberOfWarehouses());
-            conn.close();
+	    if (table == null) {
+		db.populate(conn, workloadResources.getNumberOfWarehouses());
+            }
+	    else {
+		logger.info("CALLING POPULATE HISTORY");
+		db.populateHistory(conn, workloadResources.getNumberOfWarehouses());
+           } 
+	   conn.close();
 
             if (logger.isInfoEnabled()) {
                 logger.info("POPULATE process ENDED!");
@@ -86,9 +97,11 @@ public class DatabasePopulate implements DatabasePopulateMBean {
 
         } catch (ClassNotFoundException e) {
             logger.error("Unable to load database driver!", e);
+	    e.printStackTrace();
         } catch (SQLException e) {
             logger.error(
                     "Exception caught while talking (SQL) to the database!", e);
+	    e.printStackTrace();
         }
     }
 

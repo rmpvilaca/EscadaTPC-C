@@ -18,6 +18,7 @@ import escada.tpc.common.Emulation;
 import escada.tpc.common.StateObject;
 import escada.tpc.common.TPCConst;
 import escada.tpc.common.util.RandGen;
+import escada.tpc.common.resources.WorkloadResources;
 import escada.tpc.tpcc.database.transaction.dbTPCCDatabase;
 import escada.tpc.tpcc.util.TPCCRandGen;
 
@@ -30,6 +31,8 @@ import java.sql.SQLException;
  * value used to log traces or not and the trace file.
  */
 public class OrderStatusTrans extends StateObject {
+	private WorkloadResources workloadResources;
+
 	public void initProcess(Emulation em, String hid) throws SQLException {
 		int wid = (em.getEmulationId() / TPCConst.getNumMinClients()) + 1; 
 		int cid = 0;
@@ -83,7 +86,9 @@ public class OrderStatusTrans extends StateObject {
 	}
 
 	public void setProb() {
-		prob = 4;
+		//prob = 4;
+		this.workloadResources = new WorkloadResources();
+                prob=this.workloadResources.getProbOrderStatus();
 	}
 
 	public void setKeyingTime() {

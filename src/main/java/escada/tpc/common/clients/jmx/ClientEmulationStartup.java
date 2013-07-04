@@ -233,9 +233,21 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
 
             for (int i = 0; i < this.workloadResources.getClients(); i++) {
                 e = (ClientEmulation) ebs.elementAt(i);
+                //logger.info("Waiting for the eb " + i + " to finish its job..");
+                //try {
+                    e.setCompletion(true);
+                    //e.getThread().join();
+                /*} catch (InterruptedException inte) {
+                    inte.printStackTrace();
+                    continue;
+                }*/
+            }
+
+	    for (int i = 0; i < this.workloadResources.getClients(); i++) {
+                e = (ClientEmulation) ebs.elementAt(i);
                 logger.info("Waiting for the eb " + i + " to finish its job..");
                 try {
-                    e.setCompletion(true);
+                   // e.setCompletion(true);
                     e.getThread().join();
                 } catch (InterruptedException inte) {
                     inte.printStackTrace();
@@ -243,11 +255,10 @@ public class ClientEmulationStartup implements ClientEmulationStartupMBean,
                 }
             }
 
+
             logger.info("EBs finished.");
             PerformanceLogger.info("-------------------- SUMMARY ---------------------------");
-            PerformanceLogger.info("Incoming rate:" + PerformanceCounters.getReference().getIncommingRate());
-            PerformanceLogger.info("Commit rate:"+PerformanceCounters.getReference().getCommitRate());
-            PerformanceLogger.info("Abort rate:" + PerformanceCounters.getReference().getAbortRate());
+            PerformanceLogger.info("Abort rate:" + PerformanceCounters.getReference().getTotalAbortRate());
             PerformanceLogger.info("Average latency:"+PerformanceCounters.getReference().getAverageLatency());
             PerformanceLogger.info("Measured tpmC:"+PerformanceCounters.getReference().getTotalNewOrderCommitRate());
             PerformanceLogger.close();

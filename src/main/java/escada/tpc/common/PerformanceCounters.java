@@ -35,7 +35,8 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 
 	private long lastComputationInComming, lastComputationAbort, lastComputationCommit = 0, lastComputationLatency=0;
     private long firstNewOrderCommit =-1;
-
+	private int totalAbortCounter =0;
+	private int totalCommitCounter=0;
 	private double latencyAccumulator = 0;
 
     private PerformanceCounters() {
@@ -80,6 +81,12 @@ public class PerformanceCounters implements PerformanceCountersMBean {
         t = (t < MINIMUM_VALUE ? 0 : t);
         return (t);
     }
+
+	public synchronized float getTotalAbortRate() {
+            return ((float) totalAbortCounter*1.0f)/( (float) totalAbortCounter+totalCommitCounter);
+	
+    }
+
 
 	public synchronized float getIncommingRate() {
 		long current = System.currentTimeMillis();
@@ -129,12 +136,14 @@ public class PerformanceCounters implements PerformanceCountersMBean {
 	public static synchronized void setAbortRate() {
 		if (reference != null) {
 			reference.abortCounter++;
+			reference.totalAbortCounter++;
 		}
 	}
 
 	public static synchronized void setCommitRate() {
 		if (reference != null) {
-            reference.totalNewOrderCommitCounter++;
+			reference.commitCounter++;
+			reference.totalCommitCounter++;
 		}
 	}
 
