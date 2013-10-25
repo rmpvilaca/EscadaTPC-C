@@ -53,13 +53,13 @@
     <dependency>
       <groupId>postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>7.4.1-jdbc3</version>
+      <version>8.0-318.jdbc3</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>5.0.5</version>
+      <version>5.1.26</version>
       <scope>runtime</scope>
     </dependency>
    <dependency>
